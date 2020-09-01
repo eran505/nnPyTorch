@@ -50,7 +50,7 @@ class LR(nn.Module):
         #x = self.relu(x)
         self.relu(x,inplace=True)
         #x = self.sigmoid(x)
-        # x = self.sigmoid(x)
+        x = self.sigmoid(x)
         return x.squeeze()
 
 
