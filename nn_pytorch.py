@@ -41,16 +41,15 @@ class LR(nn.Module):
         self.linear2 = torch.nn.Linear(dim, 1)
         self.sigmoid = nn.Sigmoid()
         self.relu = F.relu
+        self.tanh = F.tanh
 
     def forward(self, x):
         x = self.linear1(x)
-        #x = self.relu(x)
         self.relu(x, inplace=True)
         x = self.linear2(x)
-        #x = self.relu(x)
         self.relu(x,inplace=True)
         #x = self.sigmoid(x)
-        x = self.sigmoid(x)
+        #x = self.sigmoid(x)
         return x.squeeze()
 
 
@@ -87,6 +86,8 @@ class NeuralNetwork(object):
     def fit_model(self, n_epochs, train_dataset, validtion_datatest):
         # For each epoch...
         ctr = 0
+        l_time=[]
+        sampels_size_batch = len(train_dataset)
         for epoch in range(n_epochs):
             # Performs one train step and returns the corresponding loss
 
@@ -103,7 +104,7 @@ class NeuralNetwork(object):
                 # x_batch.requires_grad_()
                 t = time.process_time()
                 loss = self.train_step(x_batch, y_batch)
-                print(time.process_time() - t)
+                l_time.append(time.process_time() - t)
 
                 self.losses_train.append([loss, epoch])
 
@@ -112,9 +113,12 @@ class NeuralNetwork(object):
 
                 # decay the learning rate
                 self.scheduler.step()
-
-                print('Training loss: {2} Epoch-{0} lr: {1}'.format(epoch, self.optimizer.param_groups[0]['lr'], loss))
-
+                if ctr%1000==0:
+                    print('Training loss: {2} Iter-{3} Epoch-{0} lr: {1}  Avg-Time-{4}'.format(
+                        epoch, self.optimizer.param_groups[0]['lr'], loss,ctr/sampels_size_batch,
+                    np.mean(l_time)))
+                    l_time.clear()
+                ctr=ctr+1
 
             self.log_to_files()
         torch.save(self.nn_model.state_dict(),"{}/car_model/nn/nn.pt".format(self.home))
@@ -215,7 +219,7 @@ class DataSet(object):
     def split_test_train(self):
         X_train, X_test, y_train, y_test, w_train, w_test = \
             train_test_split(self.data, self.targets, self.weights, test_size=0.00001, random_state=0)
-        loader_train = self.make_DataSet(X_train, y_train, size_batch=16, is_shuffle=False,
+        loader_train = self.make_DataSet(X_train, y_train, size_batch=batch_size, is_shuffle=False,
                                          samples_weights=w_train)
 
         loader_test = self.make_DataSet(X_test, y_test, size_batch=len(X_test), samples_weights=w_test)
@@ -247,7 +251,7 @@ def main(dim, train_dataset, test_dataset):
     lrmodel = LR(dim)
     lrmodel.to(device)
 
-    loss = torch.nn.MSELoss()  # note that CrossEntropyLoss is for targets with more than 2 classes.
+    loss = torch.nn.MSELoss(reduction="mean")  # note that CrossEntropyLoss is for targets with more than 2 classes.
     optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0001)
 
     my_nn = NeuralNetwork(loss_func=loss,
@@ -256,11 +260,12 @@ def main(dim, train_dataset, test_dataset):
 
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
+batch_size = 16
 
 if __name__ == "__main__":
     x, y = pr.MainLoader()
-    x = x[:100000]
-    y = y[:100000]
+    #x = x[:100000]
+    #y = y[:100000]
     DataLoder = DataSet(x, y)
     data_loader, test_loader = DataLoder.split_test_train()
     main(15, data_loader, test_loader)
