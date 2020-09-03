@@ -34,23 +34,42 @@ print(device)
 
 
 class LR(nn.Module):
-    def __init__(self, dim):
+    def __init__(self, dim, out=1):
         super(LR, self).__init__()
         # intialize parameters
-        self.linear1 = torch.nn.Linear(dim, dim)
-        self.linear2 = torch.nn.Linear(dim, 1)
+        self.linear1 = torch.nn.Linear(dim, 25)
+        torch.nn.init.uniform_(self.linear1.weight, a=0, b=1)
+        torch.nn.init.uniform_(self.linear1.bias, a=0, b=1)
+        self.linear2 = torch.nn.Linear(dim, out)
+        torch.nn.init.uniform_(self.linear2.weight, a=0, b=1)
+        torch.nn.init.uniform_(self.linear2.bias, a=0, b=1)
+
+        self.linear3 = torch.nn.Linear(25, dim)
+        torch.nn.init.uniform_(self.linear3.weight, a=0, b=1)
+        torch.nn.init.uniform_(self.linear3.bias, a=0, b=1)
+
+
         self.sigmoid = nn.Sigmoid()
         self.relu = F.relu
         self.tanh = F.tanh
+        print("self.parameters():\t\n |-----|")
+        for param in self.parameters():
+            print(type(param.data), param.size(),list(param))
 
     def forward(self, x):
-        x = self.linear1(x)
-        self.relu(x, inplace=True)
+        x = self.linear1(x).clamp_(min=0)
+        x = self.linear3(x).clamp_(min=0)
+
         x = self.linear2(x)
-        self.relu(x,inplace=True)
-        #x = self.sigmoid(x)
         #x = self.sigmoid(x)
         return x.squeeze()
+
+    def get_weights(self):
+        return self.linear1.weight,self.linear2.weight
+
+    def print_weights(self):
+        print("linear1_weight=\n{}".format(self.linear1.weight))
+        print("linear2_weight=\n{}".format(self.linear2.weight))
 
 
 class NeuralNetwork(object):
@@ -59,34 +78,41 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=1000000, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=10, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = expanduser("~")
-
+        self.ctr=0
     def train_step(self, x, y):
         # Sets model to TRAIN mode
-        self.nn_model.train()
+        self.ctr+=1
         # Makes predictions
 
         # check if req grad = T and where device
 
         yhat = self.nn_model(x)
+        if self.ctr%1000==0:
+            print("yhat=>",list(yhat.tolist()),"\ty=>",y.tolist())
+            self.ctr=1
+
+        self.optimizer.zero_grad()
         # Computes loss
-        loss = self.loss_function(y, yhat)
+        loss = self.loss_function(yhat, y.float())#.detach().float())
         # print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
         # Computes gradients
         loss.backward()
         # Updates parameters and zeroes gradients
         self.optimizer.step()
-        self.optimizer.zero_grad()
+
         # Returns the loss
         return loss.item()
 
     def fit_model(self, n_epochs, train_dataset, validtion_datatest):
         # For each epoch...
+
         ctr = 0
-        l_time=[]
+        l_time = []
+        loss_tmp=[]
         sampels_size_batch = len(train_dataset)
         for epoch in range(n_epochs):
             # Performs one train step and returns the corresponding loss
@@ -94,6 +120,7 @@ class NeuralNetwork(object):
             training_loader_iter = iter(train_dataset)
             test_loader_iter = iter(validtion_datatest)
             for x_train_tensor, y_train_tensor in training_loader_iter:
+                self.nn_model.train()
                 # x_train_tensor, y_train_tensor = next(training_loader_iter)
                 x_batch = x_train_tensor.to(device)
                 y_batch = y_train_tensor.to(device)
@@ -112,16 +139,20 @@ class NeuralNetwork(object):
                 #     self.eval_nn(test_loader_iter)
 
                 # decay the learning rate
-                self.scheduler.step()
-                if ctr%1000==0:
+                loss_tmp.append(loss)
+                if ctr % 1000 == 0:
                     print('Training loss: {2} Iter-{3} Epoch-{0} lr: {1}  Avg-Time-{4}'.format(
-                        epoch, self.optimizer.param_groups[0]['lr'], loss,ctr/sampels_size_batch,
-                    np.mean(l_time)))
+                        epoch, self.optimizer.param_groups[0]['lr'], np.mean(loss_tmp), ctr / sampels_size_batch,
+                        np.mean(l_time)))
                     l_time.clear()
-                ctr=ctr+1
+                    loss_tmp.clear()
+                    #print(100 * "-")
+                    #print(list(self.nn_model.parameters()))
+                ctr = ctr + 1
 
+            self.scheduler.step()
             self.log_to_files()
-        torch.save(self.nn_model.state_dict(),"{}/car_model/nn/nn.pt".format(self.home))
+            torch.save(self.nn_model.state_dict(), "{}/car_model/nn/nn.pt".format(self.home))
 
     def eval_nn(self, validtion_datatest):
         with torch.no_grad():
@@ -141,7 +172,7 @@ class NeuralNetwork(object):
 
     def log_to_files(self):
         hlp.log_file(self.losses_train, "{}/car_model/nn/loss_train.csv".format(self.home), ["loss", "epoch"])
-        #hlp.log_file(self.losses_test, "{}/car_model/nn/loss_test.csv".format(self.home), ["loss"])
+        # hlp.log_file(self.losses_test, "{}/car_model/nn/loss_test.csv".format(self.home), ["loss"])
 
 
 class DataSet(object):
@@ -191,6 +222,7 @@ class DataSet(object):
             dixt_W[ky] = d_bin[ky]['w']
         print(d_bin_occ)
         print("d_bin_occ")
+        dixt_W[1.0]=dixt_W[1.0]
         return normalize_d(dixt_W)
 
     def imbalanced_data_set_weight(self, bins=None):
@@ -234,7 +266,7 @@ class DataSet(object):
         tensor_x = torch.tensor(X_data, requires_grad=False, dtype=torch.float, device=device)
         tensor_y = torch.tensor(y_data)
         my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
-        my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=16
+        my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0
                                    , sampler=sampler)  # ),)  # create your dataloader
         return my_dataloader
 
@@ -247,12 +279,12 @@ def main(dim, train_dataset, test_dataset):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 20
+    num_iterations = 100000
     lrmodel = LR(dim)
     lrmodel.to(device)
 
-    loss = torch.nn.MSELoss(reduction="mean")  # note that CrossEntropyLoss is for targets with more than 2 classes.
-    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0001)
+    loss = torch.nn.L1Loss()  # note that CrossEntropyLoss is for targets with more than 2 classes.
+    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.01)
 
     my_nn = NeuralNetwork(loss_func=loss,
                           optimizer_object=optimizer,
@@ -260,12 +292,14 @@ def main(dim, train_dataset, test_dataset):
 
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
-batch_size = 16
+
+batch_size = 4
 
 if __name__ == "__main__":
+    number = 1000000000
     x, y = pr.MainLoader()
-    #x = x[:100000]
-    #y = y[:100000]
+    # x = x[number:number * 2]
+    # y = y[number:number * 2]
     DataLoder = DataSet(x, y)
     data_loader, test_loader = DataLoder.split_test_train()
     main(15, data_loader, test_loader)

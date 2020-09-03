@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import csv
 from os.path import expanduser
-import collections
+from collections import Counter
 
 
 def process_path(path_str):
@@ -93,7 +93,7 @@ class AttackerPaths(object):
 class QTable(object):
 
     def __init__(self, csv_table, csv_map, attcker_p, dico_game_setting):
-
+        self.bins=2
         self.ctr=0
         self.regressor = RegressionFeature(attcker_p, dico_game_setting)
         self.action_d = {}
@@ -104,6 +104,29 @@ class QTable(object):
         self.state_vector=None
         self.loader(csv_table, csv_map)
 
+    def make_target_bins_nominal(self,bin=2):
+        if bin==0:
+            return
+        assert(bin>1)
+        bins=[0.0,1.0]
+        counts = Counter(self.matrix_f[:,-1])
+        d_remain = {key: counts[key] for key in counts if key not in bins}
+        while bin>2:
+            max_key = max(d_remain, key=lambda k: d_remain[k])
+            bins.append(max_key)
+            del d_remain[max_key]
+            bin=bin-1
+        y_item = sorted(list(counts.keys()))
+        bins = sorted(bins)
+        print("->",y_item,"\t",bins)
+        bin_map = np.digitize(y_item,sorted(bins),right=True)
+        print(bin_map)
+        y_new = np.array([bins[bin_map[y_item.index(i)]] for i in self.matrix_f[:,-1]])
+        self.matrix_f[:,-1]=y_new
+        # print(y_new)
+        # for i,item_i in enumerate(self.matrix_f[:,-1]):
+        #     print("{}-->{}".format(item_i,y_new[i]))
+        #     assert(bin_map[y_item.index(item_i)]==y_new[i])
 
     def loader(self, csv_table, csv_map):
         self.df_raw = pd.read_csv(csv_table, sep=';')
@@ -112,6 +135,7 @@ class QTable(object):
         print(list(self.df_raw))
 
         self.make_features_df()
+        self.make_target_bins_nominal()
 
     def make_features_df(self):
         self.state_vector = self.state_str_to_vec(self.df_raw['id'])
@@ -225,6 +249,8 @@ class RegressionFeature(object):
                 'D_pos:':np_state[2],'D_speed':np_state[3],'action':action}
         self.d.update(tmp)
 
+
+
 def MainLoader():
 
     SEED=2000
@@ -250,7 +276,7 @@ def MainLoader():
     print(len(x))
     #x=x[:10000]
     #y=y[:10000]
-    arr = collections.Counter(y)
+    arr = Counter(y)
     new_arr = [x/len(y) for x in arr.values()]
     print(arr)
     print(new_arr)
