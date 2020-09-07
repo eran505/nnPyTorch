@@ -104,7 +104,7 @@ class QTable(object):
         self.state_vector=None
         self.loader(csv_table, csv_map)
 
-    def make_target_bins_nominal(self,bin=2):
+    def make_target_bins_nominal(self,bin=4):
         if bin==0:
             return
         assert(bin>1)

@@ -34,33 +34,34 @@ print(device)
 
 
 class LR(nn.Module):
-    def __init__(self, dim, out=1):
+    def __init__(self, dim, out=1,hidden=20,a=-1,b=1):
         super(LR, self).__init__()
         # intialize parameters
-        self.linear1 = torch.nn.Linear(dim, 25)
-        torch.nn.init.uniform_(self.linear1.weight, a=0, b=1)
-        torch.nn.init.uniform_(self.linear1.bias, a=0, b=1)
-        self.linear2 = torch.nn.Linear(dim, out)
-        torch.nn.init.uniform_(self.linear2.weight, a=0, b=1)
-        torch.nn.init.uniform_(self.linear2.bias, a=0, b=1)
+        self.linear1 = torch.nn.Linear(dim, hidden)
+        torch.nn.init.uniform_(self.linear1.weight, a=a, b=b)
+        torch.nn.init.uniform_(self.linear1.bias, a=a, b=b)
+        self.linear2 = torch.nn.Linear(hidden, hidden)
+        torch.nn.init.uniform_(self.linear2.weight, a=a, b=b)
+        torch.nn.init.uniform_(self.linear2.bias, a=a, b=b)
 
-        self.linear3 = torch.nn.Linear(25, dim)
-        torch.nn.init.uniform_(self.linear3.weight, a=0, b=1)
-        torch.nn.init.uniform_(self.linear3.bias, a=0, b=1)
+        self.linear3 = torch.nn.Linear(hidden, out)
+        torch.nn.init.uniform_(self.linear3.weight, a=a, b=b)
+        torch.nn.init.uniform_(self.linear3.bias, a=a, b=b)
 
 
-        self.sigmoid = nn.Sigmoid()
         self.relu = F.relu
+        self.Prlue = nn.PReLU
         self.tanh = F.tanh
         print("self.parameters():\t\n |-----|")
         for param in self.parameters():
             print(type(param.data), param.size(),list(param))
 
     def forward(self, x):
-        x = self.linear1(x).clamp_(min=0)
-        x = self.linear3(x).clamp_(min=0)
-
+        x = self.linear1(x)
+        x = F.leaky_relu_(x)
         x = self.linear2(x)
+        x = F.leaky_relu_(x)
+        x = self.linear3(x)
         #x = self.sigmoid(x)
         return x.squeeze()
 
@@ -78,7 +79,7 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=10, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=3, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = expanduser("~")
@@ -91,9 +92,9 @@ class NeuralNetwork(object):
         # check if req grad = T and where device
 
         yhat = self.nn_model(x)
-        if self.ctr%1000==0:
-            print("yhat=>",list(yhat.tolist()),"\ty=>",y.tolist())
-            self.ctr=1
+        #if self.ctr%1000==0:
+            #print("yhat=>",list(yhat.tolist()),"\ty=>",y.tolist())
+            #self.ctr=1
 
         self.optimizer.zero_grad()
         # Computes loss
@@ -266,7 +267,7 @@ class DataSet(object):
         tensor_x = torch.tensor(X_data, requires_grad=False, dtype=torch.float, device=device)
         tensor_y = torch.tensor(y_data)
         my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
-        my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0
+        my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=20
                                    , sampler=sampler)  # ),)  # create your dataloader
         return my_dataloader
 
@@ -283,7 +284,7 @@ def main(dim, train_dataset, test_dataset):
     lrmodel = LR(dim)
     lrmodel.to(device)
 
-    loss = torch.nn.L1Loss()  # note that CrossEntropyLoss is for targets with more than 2 classes.
+    loss = torch.nn.MSELoss()  # note that CrossEntropyLoss is for targets with more than 2 classes.
     optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.01)
 
     my_nn = NeuralNetwork(loss_func=loss,
