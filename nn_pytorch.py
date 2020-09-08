@@ -52,9 +52,10 @@ class LR(nn.Module):
         self.relu = F.relu
         self.Prlue = nn.PReLU
         self.tanh = F.tanh
-        print("self.parameters():\t\n |-----|")
+        #print("self.parameters():\t\n |-----|")
         for param in self.parameters():
-            print(type(param.data), param.size(),list(param))
+            pass
+            #print(type(param.data), param.size(),list(param))
 
     def forward(self, x):
         x = self.linear1(x)
@@ -79,7 +80,7 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=3, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=5, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = expanduser("~")
@@ -117,7 +118,6 @@ class NeuralNetwork(object):
         sampels_size_batch = len(train_dataset)
         for epoch in range(n_epochs):
             # Performs one train step and returns the corresponding loss
-
             training_loader_iter = iter(train_dataset)
             test_loader_iter = iter(validtion_datatest)
             for x_train_tensor, y_train_tensor in training_loader_iter:
@@ -267,7 +267,7 @@ class DataSet(object):
         tensor_x = torch.tensor(X_data, requires_grad=False, dtype=torch.float, device=device)
         tensor_y = torch.tensor(y_data)
         my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
-        my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=20
+        my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0
                                    , sampler=sampler)  # ),)  # create your dataloader
         return my_dataloader
 
@@ -297,7 +297,7 @@ def main(dim, train_dataset, test_dataset):
 batch_size = 4
 
 if __name__ == "__main__":
-    number = 1000000000
+    number = 4000
     x, y = pr.MainLoader()
     # x = x[number:number * 2]
     # y = y[number:number * 2]

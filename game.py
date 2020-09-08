@@ -25,7 +25,7 @@ class AgentA(object):
 
     def get_all_paths(self, csv_all_paths):
         self.read_file(csv_all_paths)
-        print("")
+
 
     def read_file(self, path_file):
         all_p = []
@@ -82,7 +82,7 @@ class AgentD(object):
             #print(f)
             expected_reward_y = self.nn(torch.tensor(norm(f)).double())
             v[i] = expected_reward_y
-        print(v)
+        #print(v)
         return np.argmax(v)
 
     def next_move(self, pos_A):
@@ -112,27 +112,27 @@ class AgentD(object):
 
 class Game(object):
 
-    def __init__(self):
+    def __init__(self,num=11):
         self.home = expanduser("~")
         self.grid_size = np.array([21, 21, 4])
         self.golas = [np.array([16, 20, 0]),np.array([19, 15, 0]) ]
         self.D = None
         self.A = None
         self.info = np.zeros(3)
-        self.construct()
+        self.construct(num)
 
-    def construct(self):
-        self.A = AgentA("{}/car_model/generalization/data/p.csv".format(self.home))
-        self.D = AgentD("/home/ERANHER/car_model/nn/nn.pt", np.array([[20, 20, 0], [0, 0, 0]]), max_speed=1)
+    def construct(self,num=2):
+        self.A = AgentA("{}/car_model/generalization/data/p1.csv".format(self.home))
+        self.D = AgentD("/home/ERANHER/car_model/nn/nn{}.pt".format(num), np.array([[20, 20, 0], [0, 0, 0]]), max_speed=1)
 
     def main_loop(self, max_iter):
         for i in range(max_iter):
             self.A.reset()
             self.D.reset()
             while True:
-                self.print_state()
+                #self.print_state()
                 if self.mini_game_end():
-                    print("END")
+                    #print("END")
                     break
                 self.D.next_move(self.A.cur_state)
                 self.A.next_move()
@@ -165,5 +165,11 @@ class Game(object):
 
 
 if __name__ == "__main__":
-    g = Game()
-    g.main_loop(23)
+    l=[]
+    for i in range(55):
+        g = Game(i)
+        g.main_loop(20)
+        l.append(g.info[2])
+    x = np.argmax(np.array(l))
+    print(x)
+

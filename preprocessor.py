@@ -3,8 +3,8 @@ import numpy as np
 import csv
 from os.path import expanduser
 from collections import Counter
-
-
+from os.path import isfile
+import pandas as pd
 def process_path(path_str):
     return [eval(x[1:-2]) for x in path_str]
 
@@ -62,9 +62,25 @@ class AttackerPaths(object):
 
     def __init__(self, d_pathz):
         self.path_info = d_pathz
+        self.np_A_positions=None
+        self.d_time_state=None
         self.to_np_arry()
         self.distance_eq = lambda vec_1, vec_2: np.sqrt(np.sum((vec_1 - vec_2) ** 2))
-        self.distance_man = lambda vec_1, vec_2: np.linalg.norm(vec_1 - vec_2, axis=0)
+        self.distance_man = lambda vec_1, vec_2: np.linalg.norm(vec_1 - vec_2, axis=1)
+        self.sorted_A_positions()
+
+    def sorted_A_positions(self):
+        l=[]
+        l2={}
+        for item in self.path_info:
+            l.append(item['np'][:,0,:])
+        np_l = np.concatenate(l,axis=0)
+        self.np_A_positions=np_l
+        for item in self.path_info:
+            for index,item2 in enumerate(item['np']):
+                l2[tuple(item2.flatten())]=index
+        self.d_time_state=l2
+
 
     def to_np_arry(self):
         for item in self.path_info:
@@ -79,6 +95,27 @@ class AttackerPaths(object):
                     res.add(ctr)
                 ctr += 1
         print(list(res))
+
+    def get_time_t_np(self,state_posA):
+        file_name = "{}/car_model/generalization/data/time_s.csv".format(expanduser("~"))
+
+        if(isfile(file_name)):
+            my_data = pd.read_csv(file_name,names=['c'])
+            return my_data['c'].to_numpy()
+        n = np.ndarray(state_posA.shape[0])
+        for index, item in enumerate(state_posA):
+            n[index]=self.d_time_state[tuple(item)]
+        np.savetxt("{}".format(file_name), n, delimiter=",")
+        return n
+
+    def closet_path_np(self,pos_D):
+        res=[]
+        for i in range(self.np_A_positions.shape[0]):
+            arr = self.distance_man(self.np_A_positions[i,:], pos_D)
+            res.append(arr)
+        x = np.array(res)
+        min_dist = np.amin(x,0)
+        return min_dist
 
     def closet_path(self, pos_D):
         min_val = 100000
@@ -136,6 +173,7 @@ class QTable(object):
 
         self.make_features_df()
         self.make_target_bins_nominal()
+        self.matrix_f = self.make_new_F(self.matrix_f[:,:-4],self.matrix_f[:,-4:-1],self.matrix_f[:,-1])
 
     def make_features_df(self):
         self.state_vector = self.state_str_to_vec(self.df_raw['id'])
@@ -178,9 +216,9 @@ class QTable(object):
     def state_str_to_vec(self,state_id):
         return self.get_state_by_id(state_id)
 
-    def func2(self,state_np,action_val,action_id):
-        res = self.regressor.get_F(self.action_d[action_id], state_np, action_val)
-        self.d_l.append(res)
+    def make_new_F(self,state_np,np_action,value_exp):
+        res = self.regressor.get_F(np_action, state_np, value_exp)
+        return res
 
 
     def get_state_by_id(self, id_num):
@@ -220,23 +258,40 @@ class RegressionFeature(object):
         self.attcker_path = AttackerPath_obj
         self.game_info_dict = game_setting
         self.distance_eq = lambda vec_1, vec_2: np.sqrt(np.sum((vec_1 - vec_2) ** 2))
-        self.distance_man = lambda vec_1, vec_2: np.linalg.norm(vec_1 - vec_2, axis=0)
+        self.distance_man = lambda vec_1, vec_2: np.absolute(vec_1 - vec_2)
         self.distance_function=self.distance_man
         self.d={}
+
     def get_F(self, np_action,np_state, val):
-        self.d = {"target":val}
-        self.fix_f(np_state,np_action),val
-        return self.d
+        p_name_file = "/home/ERANHER/car_model/generalization/Fdf.csv"
+        # if(isfile(p_name_file)):
+        #     df= pd.read_csv(p_name_file)
+        #     return df.as_matrix()
+        np_arrA = self.goal_F(np_state[:,0:3])
+        np_arrD = self.goal_F(np_state[:,6:9])
+        goals_dist = np.concatenate((np_arrA,np_arrD),axis=1)
+        ad_dist = self.A_D(np_state[:,6:9],np_state[:,0:3])
+        wall_dist = self.size_F(np_state[:,6:9])
+        d,a = self.get_near_path(np_state[:,6:9],np_state[:,0:6])
+        a = a.reshape(a.shape[0],-1)
+        d = d.reshape(d.shape[0],-1)
+
+        val = val.reshape(val.shape[0],-1)
+        x = np.concatenate([wall_dist,ad_dist,a,d,np_state,np_action,val,goals_dist],axis=1)
+        #b = np.concatenate([a,d],axis=1)
+        df = pd.DataFrame(x)
+        df.to_csv(p_name_file,index=False)
+        return x
     def get_near_path(self, posD, posA):
-        dist = self.attcker_path.closet_path(posD)
-        time_t = self.attcker_path.get_time_t(positionA=posA)
+        dist = self.attcker_path.closet_path_np(posD)
+        time_t = self.attcker_path.get_time_t_np(posA)
         return dist, time_t
 
     def goal_F(self,pos_agnet):
         l=[]
         for goal_pos in self.game_info_dict['P_G']:
-            l.append(self.distance_function(pos_agnet,goal_pos))
-        return np.array(np.array(l))
+            l.append(self.distance_function(pos_agnet[:,:],goal_pos))
+        return np.concatenate(np.array(l),axis=1)
 
     def A_D(self,pos_D,pos_A):
         return self.distance_function(pos_D,pos_A)
