@@ -26,7 +26,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
-  <component name="RunManager" selected="Python.preprocessor">
+  <component name="RunManager" selected="Python.plotRTDP">
     <configuration name="game" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="nnPyTorch" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -90,6 +90,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="plotRTDP" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="nnPyTorch" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/plotRTDP.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="preprocessor" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="nnPyTorch" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -113,10 +134,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.plotRTDP" />
         <item itemvalue="Python.preprocessor" />
         <item itemvalue="Python.nn_pytorch" />
-        <item itemvalue="Python.game" />
         <item itemvalue="Python.helper" />
+        <item itemvalue="Python.game" />
       </list>
     </recent_temporary>
   </component>
@@ -144,55 +166,73 @@
       <screen x="61" y="0" width="1859" height="1080" />
     </state>
     <state x="555" y="200" width="800" height="677" key="#Inspections/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599044935270" />
-    <state width="1527" height="506" key="DebuggerActiveHint" timestamp="1599558160457">
-      <screen x="65" y="24" width="1855" height="1056" />
+    <state x="905" y="376" width="800" height="712" key="#Plugins" timestamp="1599637798170">
+      <screen x="61" y="27" width="2499" height="1413" />
+    </state>
+    <state x="905" y="376" width="800" height="712" key="#Plugins/61.27.2499.1413@61.27.2499.1413" timestamp="1599637798170" />
+    <state x="1217" y="468" width="176" height="528" key="#xdebugger.XInspectDialog" timestamp="1599639291411">
+      <screen x="61" y="27" width="2499" height="1413" />
+    </state>
+    <state x="1217" y="468" width="176" height="528" key="#xdebugger.XInspectDialog/61.27.2499.1413@61.27.2499.1413" timestamp="1599639291411" />
+    <state width="2058" height="678" key="DebuggerActiveHint" timestamp="1599641476896">
+      <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1527" height="506" key="DebuggerActiveHint/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1599558160457" />
-    <state width="1832" height="334" key="GridCell.Tab.0.bottom" timestamp="1599573437584">
-      <screen x="65" y="24" width="1855" height="1056" />
+    <state width="2058" height="678" key="DebuggerActiveHint/61.27.2499.1413@61.27.2499.1413" timestamp="1599641476896" />
+    <state width="2476" height="487" key="GridCell.Tab.0.bottom" timestamp="1599643087278">
+      <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.bottom/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
     <state width="1832" height="334" key="GridCell.Tab.0.bottom/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1599573437584" />
-    <state width="1832" height="334" key="GridCell.Tab.0.center" timestamp="1599573437584">
-      <screen x="65" y="24" width="1855" height="1056" />
+    <state width="2476" height="487" key="GridCell.Tab.0.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1599643087278" />
+    <state width="2476" height="487" key="GridCell.Tab.0.center" timestamp="1599643087278">
+      <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.center/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
     <state width="1832" height="334" key="GridCell.Tab.0.center/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1599573437584" />
-    <state width="1832" height="334" key="GridCell.Tab.0.left" timestamp="1599573437584">
-      <screen x="65" y="24" width="1855" height="1056" />
+    <state width="2476" height="487" key="GridCell.Tab.0.center/61.27.2499.1413@61.27.2499.1413" timestamp="1599643087278" />
+    <state width="2476" height="487" key="GridCell.Tab.0.left" timestamp="1599643087278">
+      <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.left/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
     <state width="1832" height="334" key="GridCell.Tab.0.left/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1599573437584" />
-    <state width="1832" height="334" key="GridCell.Tab.0.right" timestamp="1599573437584">
-      <screen x="65" y="24" width="1855" height="1056" />
+    <state width="2476" height="487" key="GridCell.Tab.0.left/61.27.2499.1413@61.27.2499.1413" timestamp="1599643087278" />
+    <state width="2476" height="487" key="GridCell.Tab.0.right" timestamp="1599643087278">
+      <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.right/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
     <state width="1832" height="334" key="GridCell.Tab.0.right/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1599573437584" />
-    <state width="1832" height="334" key="GridCell.Tab.1.bottom" timestamp="1599572950706">
-      <screen x="65" y="24" width="1855" height="1056" />
+    <state width="2476" height="487" key="GridCell.Tab.0.right/61.27.2499.1413@61.27.2499.1413" timestamp="1599643087278" />
+    <state width="2476" height="487" key="GridCell.Tab.1.bottom" timestamp="1599643087279">
+      <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.bottom/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
     <state width="1832" height="334" key="GridCell.Tab.1.bottom/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1599572950706" />
-    <state width="1832" height="334" key="GridCell.Tab.1.center" timestamp="1599572950706">
-      <screen x="65" y="24" width="1855" height="1056" />
+    <state width="2476" height="487" key="GridCell.Tab.1.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1599643087279" />
+    <state width="2476" height="487" key="GridCell.Tab.1.center" timestamp="1599643087279">
+      <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.center/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
     <state width="1832" height="334" key="GridCell.Tab.1.center/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1599572950706" />
-    <state width="1832" height="334" key="GridCell.Tab.1.left" timestamp="1599572950706">
-      <screen x="65" y="24" width="1855" height="1056" />
+    <state width="2476" height="487" key="GridCell.Tab.1.center/61.27.2499.1413@61.27.2499.1413" timestamp="1599643087279" />
+    <state width="2476" height="487" key="GridCell.Tab.1.left" timestamp="1599643087278">
+      <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.left/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
     <state width="1832" height="334" key="GridCell.Tab.1.left/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1599572950706" />
-    <state width="1832" height="334" key="GridCell.Tab.1.right" timestamp="1599572950706">
-      <screen x="65" y="24" width="1855" height="1056" />
+    <state width="2476" height="487" key="GridCell.Tab.1.left/61.27.2499.1413@61.27.2499.1413" timestamp="1599643087278" />
+    <state width="2476" height="487" key="GridCell.Tab.1.right" timestamp="1599643087279">
+      <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.right/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
     <state width="1832" height="334" key="GridCell.Tab.1.right/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1599572950706" />
-    <state x="452" y="194" key="SettingsEditor" timestamp="1599123280971">
-      <screen x="65" y="24" width="1855" height="1056" />
+    <state width="2476" height="487" key="GridCell.Tab.1.right/61.27.2499.1413@61.27.2499.1413" timestamp="1599643087279" />
+    <state x="582" y="254" key="SettingsEditor" timestamp="1599637929210">
+      <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state x="449" y="174" key="SettingsEditor/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599045911298" />
     <state x="452" y="194" key="SettingsEditor/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1599123280971" />
+    <state x="582" y="254" key="SettingsEditor/61.27.2499.1413@61.27.2499.1413" timestamp="1599637929210" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

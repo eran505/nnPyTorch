@@ -3,6 +3,7 @@ import os_util as pt
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+from os.path import expanduser
 from itertools import groupby
 
 def get_all_df_sort_by_size(p_path="/home/eranhe/car_model/debug"):
@@ -95,9 +96,100 @@ def trajectory_read(p_path):
     res = [list(g) for k, g in groupby(array, lambda x: x != "END") if k]
     return res
 
+def read_multi_csvs(p):
+    big_l=[]
+    l_csv = []
+    with open(p, 'r') as f:
+        for line in f:
+            line = str(line).replace(" ","").replace('\n','').replace('""','')
+            if len(line)<1:
+                continue
+            d={}
+            if(str(line).startswith("\"e")):
+                big_l.append(l_csv)
+                l_csv=[]
+                cols = str(line).split(';')
+                continue
+            line_arr = str(line).split(";")
+            for i,col in enumerate(cols):
+                d[col]=float(line_arr[i])
+            l_csv.append(d)
+    if(len(l_csv)>0):
+        big_l.append(l_csv)
+    df_l=[]
+    for item in big_l:
+        if len(item)>0:
+            df_l.append(pd.DataFrame(item))
 
+    return df_l
+
+def one_path_ana(path_p="/home/eranhe/car_model/one_path"):
+    print(path_p)
+    l=[]
+    res = pt.walk_rec(path_p,[],"Eval.csv")
+    for item_csv_p in res:
+        d = {}
+        print(item_csv_p)
+        d["seed_number"] = str(item_csv_p).split("/")[-1].split("_")[0]
+        d["u_id"] = str(item_csv_p).split("/")[-1].split("_")[1]
+        d["max_L"] = str(item_csv_p).split("/")[-1].split("_")[2]
+        d["df_l"] = read_multi_csvs(item_csv_p)
+
+        df_pre = mean_multi_dfs(d["df_l"][:-1])
+        last_row = d["df_l"][-1].tail(1).mean(axis=0).to_dict()
+        for ky in last_row:
+            d["{}".format(ky).replace('\"','')] =last_row[ky]
+        d['path_size'] = len(d["df_l"]) - 1
+        for ky in df_pre:
+            d["{}_{}".format("P",ky).replace('\"','')]=df_pre[ky]
+        del d["df_l"]
+        l.append(d)
+    df = pd.DataFrame(l)
+    df.to_csv("{}/all.csv".format(path_p))
+    return df
+def mean_multi_dfs(l_df,tail_row=1):
+    means_arr=[]
+    for df in l_df:
+        tail_df = df.tail(tail_row)
+        mean = tail_df.mean(axis=0)
+        means_arr.append(mean)
+    df_all = pd.DataFrame(means_arr)
+    df_mean = df_all.mean(axis=0)
+    return df_mean.to_dict()
+
+
+def one_path(path_p="/home/eranhe/car_model/out"):
+    print(path_p)
+    l = []
+    res = pt.walk_rec(path_p, [], "Eval.csv")
+    for item_csv_p in res:
+        d = {}
+        print(item_csv_p)
+        d["seed_number"] = str(item_csv_p).split("/")[-1].split("_")[0]
+        d["u_id"] = str(item_csv_p).split("/")[-1].split("_")[1]
+        d["max_L"] = str(item_csv_p).split("/")[-1].split("_")[2]
+        df = pd.read_csv(item_csv_p,sep=';')
+        df = df.dropna()
+        df_tail = df.tail(1)
+        last_row = df_tail.mean(axis=0).to_dict()
+        for ky in last_row:
+            d["{}".format(ky).replace('\"','')] =last_row[ky]
+        l.append(d)
+    df = pd.DataFrame(l)
+    df.to_csv("{}/all_one_path.csv".format(path_p))
+    return df
 
 if __name__ == "__main__":
+
+    home = expanduser("~")
+    df1 = one_path_ana("{}/car_model/one_path".format(home))
+    df2 = one_path("{}/car_model/out".format(home))
+    print(list(df1))
+    print(list(df2))
+    df3 = df1.append(df2)
+    df3.to_csv("/home/eranhe/car_model/df.csv")
+
+    exit()
     p="/home/ERANHER/car_model/results/26_04/con1"
     p_path="/home/ERANHER/car_model/results/dataEXP/old/sizeExp/roni/out"
     p_path="/home/ERANHER/car_model/exp"
