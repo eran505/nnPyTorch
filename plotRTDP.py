@@ -187,7 +187,7 @@ if __name__ == "__main__":
     print(list(df1))
     print(list(df2))
     df3 = df1.append(df2)
-    df3.to_csv("/home/eranhe/car_model/df.csv")
+    df3.to_csv("{}/car_model/df.csv".format(home))
 
     exit()
     p="/home/ERANHER/car_model/results/26_04/con1"
