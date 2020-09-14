@@ -44,14 +44,64 @@ def plot_graph(list_sorted_tuple):
         df[list_col].plot()
         plt.show()
 
-def all_policy_eval(path_p,col_name="ctr_coll"): ##"ctr_round","ctr_wall","ctr_coll","ctr_at_goal"
-    res = pt.walk_rec(path_p, [], "P.csv")
+
+def get_the_last_row(path_p,col_name="Collision"):
+    col="Collision"
+    res = pt.walk_rec(path_p, [], "Eval.csv")
+    d_list = []
+    for item in res:
+        print(item)
+        name = "_".join(str(item).split('/')[-1].split('.')[0].split('_')[:-1])
+        seedID = int(str(name).split("_")[0])
+        configID = int(str(name).split("_")[1][1:])
+        abstraction = int(str(name).split("_")[2][1:])
+        df_i = pd.read_csv(item,sep="\s+|;|,")
+        if len(df_i) < 2:
+            continue
+        df_i.dropna(inplace=True)
+        df_i = rename_col_remove_key(df_i)
+        df_i = df_i.tail(1)
+        last_row = df_i.mean(axis=0).to_dict()
+        last_row["seed"]=seedID
+        last_row["config"] = configID
+        last_row["Max Abstraction"] = abstraction
+        d_list.append(last_row)
+        print(last_row)
+    newDF = pd.DataFrame(d_list)
+    #df_new = newDF.groupby(['config', 'Max Abstraction'])[col].agg('mean').reset_index()
+    #
+    # l = list(df_new['config'].unique())
+    # d={}
+    # for x in l:
+    #     d[x]=pow(2,x-1)
+    # df_new['config'] = df_new['config'].map(d)
+    # df_new = df_new[df_new['config'] < 40]
+    df = newDF.pivot(index='config', columns='Max Abstraction', values=col)
+    ax = df.plot()
+    ax.set_xlabel("Number of Paths")
+    ax.set_ylabel('{} Rate'.format(col))
+    #ax.legend(loc='center right')
+    #
+    # newDF.plot(kind='line',x="config",y="Collision")
+    plt.savefig('{}/plot.png'.format(path_p))  # save the figure to file
+    plt.show()
+
+def rename_col_remove_key(df):
+    list_col = list(df)
+    d={}
+    for ky in list_col:
+        d[ky]=str(ky).replace('\"','')
+    return df.rename(columns=d)
+
+def all_policy_eval(path_p,col_name="Collision"): ##"ctr_round","ctr_wall","ctr_coll","ctr_at_goal"
+    res = pt.walk_rec(path_p, [], "Eval.csv")
     d = {}
     df_list = []
     newDF = pd.DataFrame()
     for item in res:
         name = "_".join(str(item).split('/')[-1].split('.')[0].split('_')[:-1])
-        df_i = pd.read_csv(item)
+        df_i = pd.read_csv(item,sep=';')
+        print(list(df_i))
         df_list.append(df_i)
         newDF["{}-{}".format(name,col_name)]=df_i[col_name]/500
 
@@ -61,7 +111,7 @@ def all_policy_eval(path_p,col_name="ctr_coll"): ##"ctr_round","ctr_wall","ctr_c
 
 
 def merge_all_policy_eval(path_p):
-    res = pt.walk_rec(path_p, [], "P.csv")
+    res = pt.walk_rec(path_p, [], "Eval.csv")
     d={}
     df_list=[]
     for item in res:
@@ -125,6 +175,8 @@ def read_multi_csvs(p):
 
 def one_path_ana(path_p="/home/eranhe/car_model/one_path"):
     print(path_p)
+    father = "/".join(str(path_p).split("/")[:-1])
+    name = str(path_p).split("/")[-1].split(".")[0]
     l=[]
     res = pt.walk_rec(path_p,[],"Eval.csv")
     for item_csv_p in res:
@@ -134,7 +186,8 @@ def one_path_ana(path_p="/home/eranhe/car_model/one_path"):
         d["u_id"] = str(item_csv_p).split("/")[-1].split("_")[1]
         d["max_L"] = str(item_csv_p).split("/")[-1].split("_")[2]
         d["df_l"] = read_multi_csvs(item_csv_p)
-
+        d["reward"]=str(name).split("r_")[-1][0]
+        d["shaffle"] = str(name).split("s_")[-1][0]
         df_pre = mean_multi_dfs(d["df_l"][:-1])
         last_row = d["df_l"][-1].tail(1).mean(axis=0).to_dict()
         for ky in last_row:
@@ -145,7 +198,7 @@ def one_path_ana(path_p="/home/eranhe/car_model/one_path"):
         del d["df_l"]
         l.append(d)
     df = pd.DataFrame(l)
-    df.to_csv("{}/all.csv".format(path_p))
+    df.to_csv("{}/{}.csv".format(father,name))
     return df
 def mean_multi_dfs(l_df,tail_row=1):
     means_arr=[]
@@ -154,7 +207,7 @@ def mean_multi_dfs(l_df,tail_row=1):
         mean = tail_df.mean(axis=0)
         means_arr.append(mean)
     df_all = pd.DataFrame(means_arr)
-    df_mean = df_all.mean(axis=0)
+    df_mean = df_all.sum(axis=0)
     return df_mean.to_dict()
 
 
@@ -179,21 +232,35 @@ def one_path(path_p="/home/eranhe/car_model/out"):
     df.to_csv("{}/all_one_path.csv".format(path_p))
     return df
 
+def one_vs_all():
+    home = expanduser("~")
+    dir_arr = ["one_path","all_path"]
+    dir_name = dir_arr[0]
+    res = pt.walk_rec("{}/car_model/{}".format(home,dir_name),[],"",False,lv=-1)
+    for item in res:
+        print(res)
+        df1 = one_path_ana(item)
+
+    res = pt.walk_rec("{}/car_model/{}".format(home,dir_name), [], ".csv", lv=-1)
+    df_all=None
+    for df_path in res:
+        df_i = pd.read_csv(df_path,index_col=0)
+        if df_all is None:
+            df_all=df_i
+        else:
+            df_all=df_all.append(df_i)
+    df_all.to_csv("{}/car_model/{}/{}".format(home,dir_name,'all.csv'))
+
 if __name__ == "__main__":
 
-    home = expanduser("~")
-    df1 = one_path_ana("{}/car_model/one_path".format(home))
-    df2 = one_path("{}/car_model/out".format(home))
-    print(list(df1))
-    print(list(df2))
-    df3 = df1.append(df2)
-    df3.to_csv("{}/car_model/df.csv".format(home))
 
-    exit()
+
+
+
     p="/home/ERANHER/car_model/results/26_04/con1"
     p_path="/home/ERANHER/car_model/results/dataEXP/old/sizeExp/roni/out"
-    p_path="/home/ERANHER/car_model/exp"
-    all_policy_eval(p_path,"ctr_at_goal") #ctr_at_goal  ctr_open
-    merge_all_policy_eval(p_path)
+    p_path="/home/eranhe/car_model/ABS/size__p_5"
+    #all_policy_eval(p_path,"ctr_at_goal") #ctr_at_goal  ctr_open
+    get_the_last_row(p_path)
     #merge_all_policy_eval()
     #res = merge_all_policy_eval(p)
