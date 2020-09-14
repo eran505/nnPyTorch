@@ -34,28 +34,17 @@ print(device)
 
 
 class LR(nn.Module):
-    def __init__(self, dim, out=1,hidden=20,a=-1,b=1):
+    def __init__(self, dim, out=1,hidden=32,a=-1,b=1):
         super(LR, self).__init__()
         # intialize parameters
-        self.linear1 = torch.nn.Linear(dim, hidden)
-        torch.nn.init.uniform_(self.linear1.weight, a=a, b=b)
-        torch.nn.init.uniform_(self.linear1.bias, a=a, b=b)
-        self.linear2 = torch.nn.Linear(hidden, hidden)
-        torch.nn.init.uniform_(self.linear2.weight, a=a, b=b)
-        torch.nn.init.uniform_(self.linear2.bias, a=a, b=b)
 
-        self.linear3 = torch.nn.Linear(hidden, out)
-        torch.nn.init.uniform_(self.linear3.weight, a=a, b=b)
-        torch.nn.init.uniform_(self.linear3.bias, a=a, b=b)
+        self.linear1 = self.make_linear(dim,hidden,a,b)
+
+        self.linear2 =  self.make_linear(hidden,hidden,a,b)
+
+        self.linear3 = self.make_linear(hidden,out,a,b)
 
 
-        self.relu = F.relu
-        self.Prlue = nn.PReLU
-        self.tanh = F.tanh
-        #print("self.parameters():\t\n |-----|")
-        for param in self.parameters():
-            pass
-            #print(type(param.data), param.size(),list(param))
 
     def forward(self, x):
         x = self.linear1(x)
@@ -72,7 +61,11 @@ class LR(nn.Module):
     def print_weights(self):
         print("linear1_weight=\n{}".format(self.linear1.weight))
         print("linear2_weight=\n{}".format(self.linear2.weight))
-
+    def make_linear(self,in_input,out_output,a_w,b_w):
+        layer = torch.nn.Linear(in_input, out_output)
+        torch.nn.init.uniform_(layer.weight, a=a_w, b=b_w)
+        torch.nn.init.uniform_(layer.bias, a=a_w, b=b_w)
+        return layer
 
 class NeuralNetwork(object):
 
@@ -93,14 +86,15 @@ class NeuralNetwork(object):
         # check if req grad = T and where device
 
         yhat = self.nn_model(x)
-        #if self.ctr%1000==0:
-            #print("yhat=>",list(yhat.tolist()),"\ty=>",y.tolist())
-            #self.ctr=1
+
+
+        for param in self.nn_model.parameters():
+            print(type(param.data), param.size(),list(param))
 
         self.optimizer.zero_grad()
         # Computes loss
         loss = self.loss_function(yhat, y.float())#.detach().float())
-        # print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
+        print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
         # Computes gradients
         loss.backward()
         # Updates parameters and zeroes gradients
@@ -125,13 +119,14 @@ class NeuralNetwork(object):
                 # x_train_tensor, y_train_tensor = next(training_loader_iter)
                 x_batch = x_train_tensor.to(device)
                 y_batch = y_train_tensor.to(device)
-                # print(Counter(y_batch.tolist()))
-                # print("x_batch={} \t y_batch={}".format(x_batch.requires_grad,y_batch.requires_grad))
+                #print(Counter(y_batch.tolist()))
+                #print("x_batch={} \t y_batch={}".format(x_batch.requires_grad,y_batch.requires_grad))
 
                 # for auto computing the auto grad
-                # x_batch.requires_grad_()
+                #x_batch.requires_grad_()
                 t = time.process_time()
                 loss = self.train_step(x_batch, y_batch)
+                print(loss)
                 l_time.append(time.process_time() - t)
 
                 self.losses_train.append([loss, epoch])
@@ -272,7 +267,7 @@ class DataSet(object):
         return my_dataloader
 
 
-def main(dim, train_dataset, test_dataset):
+def main(in_dim, train_dataset, test_dataset):
     print(device)
 
     SEED = 2809
@@ -281,7 +276,7 @@ def main(dim, train_dataset, test_dataset):
         torch.cuda.manual_seed(SEED)
     ## hyperparams
     num_iterations = 100000
-    lrmodel = LR(dim)
+    lrmodel = LR(in_dim)
     lrmodel.to(device)
 
     loss = torch.nn.MSELoss()  # note that CrossEntropyLoss is for targets with more than 2 classes.
@@ -294,13 +289,17 @@ def main(dim, train_dataset, test_dataset):
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
 
-batch_size = 4
+batch_size = 1
 
 if __name__ == "__main__":
     number = 4000
+    start = time.time()
     x, y = pr.MainLoader()
+    end = time.time()
+    print("MainLoader Time: {}".format(end - start))
+
     # x = x[number:number * 2]
     # y = y[number:number * 2]
     DataLoder = DataSet(x, y)
     data_loader, test_loader = DataLoder.split_test_train()
-    main(15, data_loader, test_loader)
+    main(x.shape[-1], data_loader, test_loader)

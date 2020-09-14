@@ -4,7 +4,9 @@ import csv
 from os.path import expanduser
 from collections import Counter
 from os.path import isfile
+import hashlib
 import pandas as pd
+import array
 def process_path(path_str):
     return [eval(x[1:-2]) for x in path_str]
 
@@ -78,7 +80,7 @@ class AttackerPaths(object):
         self.np_A_positions=np_l
         for item in self.path_info:
             for index,item2 in enumerate(item['np']):
-                l2[tuple(item2.flatten())]=index
+                l2[hashlib.sha1(array.array('h', item2.flatten().astype(int))).hexdigest()]=index
         self.d_time_state=l2
 
 
@@ -98,14 +100,19 @@ class AttackerPaths(object):
 
     def get_time_t_np(self,state_posA):
         file_name = "{}/car_model/generalization/data/time_s.csv".format(expanduser("~"))
-
-        if(isfile(file_name)):
-            my_data = pd.read_csv(file_name,names=['c'])
-            return my_data['c'].to_numpy()
+        # if(isfile(file_name)):
+        #     my_data = pd.read_csv(file_name,names=['c'])
+        #     return my_data['c'].to_numpy()
+        print(state_posA.shape)
+        # df = pd.DataFrame(state_posA)
+        # df['new_col'] = list(zip(df.lat, df.long))
+        # print(list(df))
         n = np.ndarray(state_posA.shape[0])
         for index, item in enumerate(state_posA):
-            n[index]=self.d_time_state[tuple(item)]
-        np.savetxt("{}".format(file_name), n, delimiter=",")
+            item_key = (np.squeeze(np.array(item),0).flatten().astype(int))
+            ra = array.array('h', item_key)
+            n[index]=self.d_time_state[hashlib.sha1(ra).hexdigest()]
+        #np.savetxt("{}".format(file_name), n, delimiter=",")
         return n
 
     def closet_path_np(self,pos_D):
@@ -172,8 +179,10 @@ class QTable(object):
         print(list(self.df_raw))
 
         self.make_features_df()
-        self.make_target_bins_nominal()
-        self.matrix_f = self.make_new_F(self.matrix_f[:,:-4],self.matrix_f[:,-4:-1],self.matrix_f[:,-1])
+        #self.make_target_bins_nominal()
+        array_state_F = self.make_new_state_F(self.matrix_f[:,:12])
+        data = np.append(array_state_F,self.matrix_f[:,12:],axis=1)
+        self.matrix_f=np.array(data)
 
     def make_features_df(self):
         self.state_vector = self.state_str_to_vec(self.df_raw['id'])
@@ -181,9 +190,10 @@ class QTable(object):
         state_matrix = self.state_vector.reshape(self.state_vector.shape[0],self.state_vector.shape[1]*self.state_vector.shape[2])
         matrix_val = np.asmatrix(self.df_raw[list(self.df_raw)[1:]].values)
         print("matrix_val.shape: ",matrix_val.shape)
-
-        out_matrix = self.make_matrix_flat(matrix_val,state_matrix)
-        self.matrix_f = out_matrix
+        new_array = np.append(state_matrix,matrix_val,axis=1)
+        print("new_array.shape:={}".format(new_array.shape))
+        #out_matrix = self.make_matrix_flat(matrix_val,state_matrix)
+        self.matrix_f = new_array
 
     def make_matrix_flat(self,matrix,state_matrix):
         flat_matrix = np.array(matrix).flatten()
@@ -216,8 +226,8 @@ class QTable(object):
     def state_str_to_vec(self,state_id):
         return self.get_state_by_id(state_id)
 
-    def make_new_F(self,state_np,np_action,value_exp):
-        res = self.regressor.get_F(np_action, state_np, value_exp)
+    def make_new_state_F(self,state_np):
+        res = self.regressor.get_F(state_np)
         return res
 
 
@@ -246,12 +256,17 @@ class QTable(object):
                     ctr = ctr + 1
         print(self.action_d)
 
-    def get_data_set(self):
-        class_label = self.matrix_f[:, -1]  # for last column
-        dataset = self.matrix_f[:, :-1]  # for all but last column
-        return dataset,class_label
-
-
+    def get_data_set(self,all_together=False):
+        class_label = self.matrix_f[:, -27:]  # for last column
+        dataset = self.matrix_f[:, :-27]  # for all but last column
+        if all_together:
+            return dataset,class_label
+        self.matrix_f = self.make_matrix_flat(class_label,dataset)
+        #self.make_target_bins_nominal()
+        return self.matrix_f[:,:-1],self.matrix_f[:,-1]
+    def save_data(self):
+        df = pd.DataFrame(self.matrix_f)
+        df.to_csv("{}/car_model/generalization/matrix_f.csv".format(expanduser("~")))
 class RegressionFeature(object):
 
     def __init__(self, AttackerPath_obj, game_setting):
@@ -262,11 +277,7 @@ class RegressionFeature(object):
         self.distance_function=self.distance_man
         self.d={}
 
-    def get_F(self, np_action,np_state, val):
-        p_name_file = "/home/ERANHER/car_model/generalization/Fdf.csv"
-        # if(isfile(p_name_file)):
-        #     df= pd.read_csv(p_name_file)
-        #     return df.as_matrix()
+    def get_F(self, np_state):
         np_arrA = self.goal_F(np_state[:,0:3])
         np_arrD = self.goal_F(np_state[:,6:9])
         goals_dist = np.concatenate((np_arrA,np_arrD),axis=1)
@@ -275,12 +286,15 @@ class RegressionFeature(object):
         d,a = self.get_near_path(np_state[:,6:9],np_state[:,0:6])
         a = a.reshape(a.shape[0],-1)
         d = d.reshape(d.shape[0],-1)
-
-        val = val.reshape(val.shape[0],-1)
-        x = np.concatenate([wall_dist,ad_dist,a,d,np_state,np_action,val,goals_dist],axis=1)
-        #b = np.concatenate([a,d],axis=1)
-        df = pd.DataFrame(x)
-        df.to_csv(p_name_file,index=False)
+        print("wall_dist.shape:{}".format(wall_dist.shape))
+        print("ad_dist.shape:",ad_dist.shape)
+        print("a.shape:",a.shape)
+        print("d.shape:",d.shape)
+        print("np_state.shape:",np_state.shape)
+        print("goals_dist.shape:",goals_dist.shape)
+        x = np.concatenate([wall_dist,ad_dist,a,d,np_state,goals_dist],axis=1)
+        # df = pd.DataFrame(x)
+        # df.to_csv(p_name_file,index=False)
         return x
     def get_near_path(self, posD, posA):
         dist = self.attcker_path.closet_path_np(posD)
@@ -305,7 +319,7 @@ class RegressionFeature(object):
         self.d.update(tmp)
 
 
-
+import time
 def MainLoader():
 
     SEED=2000
@@ -318,7 +332,7 @@ def MainLoader():
     map_csv = "{}/map.csv".format(dir_data)
     con_csv = "{}/con21.csv".format(dir_data)
 
-
+    start = time.time()
     loader = Loader(dir_data)
     loader.load_p(p_csv)
     loader.load_game_setting(con_csv)
@@ -326,15 +340,17 @@ def MainLoader():
     attacker_paths = loader.get_path_object()
     print(dico_info_game)
 
-    q= QTable(Q_csv, map_csv, attacker_paths, dico_info_game)
-    x,y = q.get_data_set()
-    print(len(x))
+    q = QTable(Q_csv, map_csv, attacker_paths, dico_info_game)
+    x,y = q.get_data_set(all_together=False)
+
+    #q.save_data()
+
     #x=x[:10000]
     #y=y[:10000]
-    arr = Counter(y)
-    new_arr = [x/len(y) for x in arr.values()]
-    print(arr)
-    print(new_arr)
+    # arr = Counter(y)
+    # new_arr = [x/len(y) for x in arr.values()]
+    # print(arr)
+    # print(new_arr)
 
     return x,y
 
