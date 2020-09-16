@@ -173,7 +173,7 @@ def read_multi_csvs(p):
 
     return df_l
 
-def one_path_ana(path_p="/home/eranhe/car_model/one_path"):
+def one_path_ana(path_p):
     print(path_p)
     father = "/".join(str(path_p).split("/")[:-1])
     name = str(path_p).split("/")[-1].split(".")[0]
@@ -233,15 +233,16 @@ def one_path(path_p="/home/eranhe/car_model/out"):
     return df
 
 def one_vs_all():
+    sub_dir= "car_model/singal"
     home = expanduser("~")
     dir_arr = ["one_path","all_path"]
     dir_name = dir_arr[0]
-    res = pt.walk_rec("{}/car_model/{}".format(home,dir_name),[],"",False,lv=-1)
+    res = pt.walk_rec("{}/{}/{}".format(home,sub_dir,dir_name),[],"",False,lv=-1)
     for item in res:
         print(res)
         df1 = one_path_ana(item)
 
-    res = pt.walk_rec("{}/car_model/{}".format(home,dir_name), [], ".csv", lv=-1)
+    res = pt.walk_rec("{}/{}/{}".format(home,sub_dir,dir_name), [], ".csv", lv=-1)
     df_all=None
     for df_path in res:
         df_i = pd.read_csv(df_path,index_col=0)
@@ -249,14 +250,33 @@ def one_vs_all():
             df_all=df_i
         else:
             df_all=df_all.append(df_i)
-    df_all.to_csv("{}/car_model/{}/{}".format(home,dir_name,'all.csv'))
+    df_all.to_csv("{}/{}/{}/{}".format(home,sub_dir,dir_name,'all.csv'))
+
+
+def play_data(df_all_path,df_one_path):
+    df_all_at_once = pd.read_csv(df_all_path,index_col=0)
+    df_one_by_one = pd.read_csv(df_one_path, index_col=0)
+    del df_all_at_once['path_size']
+    df_paths= df_one_by_one[['seed_number','u_id','path_size']]
+    new_df_all = pd.merge(df_all_at_once,df_paths,on=['seed_number','u_id'],how="inner")
+    print(list(new_df_all))
+    df_one_by_one['merge_episodes']=df_one_by_one['episodes']+df_one_by_one['P_episodes']
+    print(list(df_one_by_one))
+    df_one = df_one_by_one[['seed_number', 'u_id','merge_episodes','episodes','Collision','path_size','P_Collision']]
+    df_all = new_df_all[['seed_number', 'u_id','episodes','Collision','path_size']]
+    df = pd.merge(df_one,df_all,on=['seed_number', 'u_id','path_size'],how="inner",suffixes=["_one",'_all'])
+    assert (len(df)==len(df_one))
+    assert (len(df) == len(df_all))
+    print(list(df))
+    father = '/'.join(str(df_all_path).split('/')[:-1])
+    df.to_csv("{}/df.csv".format(father))
 
 if __name__ == "__main__":
+    play_data("/home/ERANHER/car_model/singal/all_path/all.csv",
+              "/home/ERANHER/car_model/singal/one_path/all.csv")
 
-
-
-
-
+    exit()
+    one_vs_all()
     p="/home/ERANHER/car_model/results/26_04/con1"
     p_path="/home/ERANHER/car_model/results/dataEXP/old/sizeExp/roni/out"
     p_path="/home/eranhe/car_model/ABS/size__p_5"

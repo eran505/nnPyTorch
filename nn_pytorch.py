@@ -14,6 +14,9 @@ import preprocessor as pr
 import helper as hlp
 from torch.utils.data.sampler import WeightedRandomSampler
 from collections import Counter
+from sklearn.datasets import make_regression, make_classification
+
+from fast_data_loader import FastTensorDataLoader
 
 
 def n_normalize(v):
@@ -34,17 +37,15 @@ print(device)
 
 
 class LR(nn.Module):
-    def __init__(self, dim, out=1,hidden=32,a=-1,b=1):
+    def __init__(self, dim, out=1, hidden=16, sec_hidden=8, a=-1.0, b=1.0):
         super(LR, self).__init__()
         # intialize parameters
 
-        self.linear1 = self.make_linear(dim,hidden,a,b)
+        self.linear1 = self.make_linear(dim, hidden, a, b)
 
-        self.linear2 =  self.make_linear(hidden,hidden,a,b)
+        self.linear2 = self.make_linear(hidden, sec_hidden, a, b)
 
-        self.linear3 = self.make_linear(hidden,out,a,b)
-
-
+        self.linear3 = self.make_linear(sec_hidden, out, a, b)
 
     def forward(self, x):
         x = self.linear1(x)
@@ -52,20 +53,22 @@ class LR(nn.Module):
         x = self.linear2(x)
         x = F.leaky_relu_(x)
         x = self.linear3(x)
-        #x = self.sigmoid(x)
+        # x = self.sigmoid(x)
         return x.squeeze()
 
     def get_weights(self):
-        return self.linear1.weight,self.linear2.weight
+        return self.linear1.weight, self.linear2.weight
 
     def print_weights(self):
         print("linear1_weight=\n{}".format(self.linear1.weight))
         print("linear2_weight=\n{}".format(self.linear2.weight))
-    def make_linear(self,in_input,out_output,a_w,b_w):
+
+    def make_linear(self, in_input, out_output, a_w, b_w):
         layer = torch.nn.Linear(in_input, out_output)
         torch.nn.init.uniform_(layer.weight, a=a_w, b=b_w)
         torch.nn.init.uniform_(layer.bias, a=a_w, b=b_w)
         return layer
+
 
 class NeuralNetwork(object):
 
@@ -76,25 +79,32 @@ class NeuralNetwork(object):
         self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=5, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
-        self.home = expanduser("~")
-        self.ctr=0
+        self.home = None
+        self.get_home()
+        self.ctr = 0
+
+    def get_home(self):
+        str_home = expanduser("~")
+        if str_home.__contains__('lab2'):
+            str_home = "/home/lab2/eranher"
+        self.home = str_home
+
     def train_step(self, x, y):
         # Sets model to TRAIN mode
-        self.ctr+=1
+        self.ctr += 1
         # Makes predictions
-
+        # print("--Step--")
         # check if req grad = T and where device
-
+        # print(x.requires_grad)
         yhat = self.nn_model(x)
 
-
-        for param in self.nn_model.parameters():
-            print(type(param.data), param.size(),list(param))
+        # for param in self.nn_model.parameters():
+        #     print(type(param.data), param.size(),list(param))
 
         self.optimizer.zero_grad()
         # Computes loss
-        loss = self.loss_function(yhat, y.float())#.detach().float())
-        print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
+        loss = self.loss_function(yhat, y.float())  # .detach().float())
+        # print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
         # Computes gradients
         loss.backward()
         # Updates parameters and zeroes gradients
@@ -108,7 +118,8 @@ class NeuralNetwork(object):
 
         ctr = 0
         l_time = []
-        loss_tmp=[]
+        data_loader_time = []
+        loss_tmp = []
         sampels_size_batch = len(train_dataset)
         for epoch in range(n_epochs):
             # Performs one train step and returns the corresponding loss
@@ -116,17 +127,18 @@ class NeuralNetwork(object):
             test_loader_iter = iter(validtion_datatest)
             for x_train_tensor, y_train_tensor in training_loader_iter:
                 self.nn_model.train()
+                t = time.process_time()
+
                 # x_train_tensor, y_train_tensor = next(training_loader_iter)
+                data_loader_time.append(time.process_time() - t)
                 x_batch = x_train_tensor.to(device)
                 y_batch = y_train_tensor.to(device)
-                #print(Counter(y_batch.tolist()))
-                #print("x_batch={} \t y_batch={}".format(x_batch.requires_grad,y_batch.requires_grad))
+                # print(Counter(y_batch.tolist()))
+                # print("x_batch={} \t y_batch={}".format(x_batch.requires_grad,y_batch.requires_grad))
 
                 # for auto computing the auto grad
-                #x_batch.requires_grad_()
                 t = time.process_time()
                 loss = self.train_step(x_batch, y_batch)
-                print(loss)
                 l_time.append(time.process_time() - t)
 
                 self.losses_train.append([loss, epoch])
@@ -137,13 +149,14 @@ class NeuralNetwork(object):
                 # decay the learning rate
                 loss_tmp.append(loss)
                 if ctr % 1000 == 0:
-                    print('Training loss: {2} Iter-{3} Epoch-{0} lr: {1}  Avg-Time-{4}'.format(
+                    print('Training loss: {2} Iter-{3} Epoch-{0} lr: {1}  Avg-Time:{4} DataLoader(time):{5} '.format(
                         epoch, self.optimizer.param_groups[0]['lr'], np.mean(loss_tmp), ctr / sampels_size_batch,
-                        np.mean(l_time)))
+                        np.mean(l_time), np.mean(data_loader_time)))
                     l_time.clear()
+                    data_loader_time.clear()
                     loss_tmp.clear()
-                    #print(100 * "-")
-                    #print(list(self.nn_model.parameters()))
+                    # print(100 * "-")
+                    # print(list(self.nn_model.parameters()))
                 ctr = ctr + 1
 
             self.scheduler.step()
@@ -176,7 +189,7 @@ class DataSet(object):
     def __init__(self, data, targets):
         self.data = data
         self.targets = targets
-        self.weights = None
+        self.weights = []
         self.debug_d = None
         self.norm_without_negative()
         self.imbalanced_data_set_weight()
@@ -218,7 +231,7 @@ class DataSet(object):
             dixt_W[ky] = d_bin[ky]['w']
         print(d_bin_occ)
         print("d_bin_occ")
-        dixt_W[1.0]=dixt_W[1.0]
+        dixt_W[1.0] = dixt_W[1.0]
         return normalize_d(dixt_W)
 
     def imbalanced_data_set_weight(self, bins=None):
@@ -249,6 +262,7 @@ class DataSet(object):
             train_test_split(self.data, self.targets, self.weights, test_size=0.00001, random_state=0)
         loader_train = self.make_DataSet(X_train, y_train, size_batch=batch_size, is_shuffle=False,
                                          samples_weights=w_train)
+        # l = torch.multinomial(torch.tensor(w_test),len(w_test),False).tolist()
 
         loader_test = self.make_DataSet(X_test, y_test, size_batch=len(X_test), samples_weights=w_test)
 
@@ -259,6 +273,7 @@ class DataSet(object):
             weights=samples_weights,
             num_samples=len(samples_weights),
             replacement=True)
+
         tensor_x = torch.tensor(X_data, requires_grad=False, dtype=torch.float, device=device)
         tensor_y = torch.tensor(y_data)
         my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
@@ -289,17 +304,19 @@ def main(in_dim, train_dataset, test_dataset):
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
 
-batch_size = 1
+batch_size = 4
 
 if __name__ == "__main__":
-    number = 4000
+    number = 1000000
     start = time.time()
     x, y = pr.MainLoader()
     end = time.time()
     print("MainLoader Time: {}".format(end - start))
-
+    # x,y = make_classification(n_samples=1000000,n_features=16,n_informative=8,n_classes=2)
     # x = x[number:number * 2]
     # y = y[number:number * 2]
     DataLoder = DataSet(x, y)
-    data_loader, test_loader = DataLoder.split_test_train()
-    main(x.shape[-1], data_loader, test_loader)
+    train_loader, test_loader = DataLoder.split_test_train()
+    # train_loader = FastTensorDataLoader(torch.tensor(x[:-100]).float(),torch.tensor(y[:-100]).float(),batch_size=4)
+    # test_loader  = FastTensorDataLoader(torch.tensor(x[-100:]).float(), torch.tensor(y[-100:]).float(), batch_size=4)
+    main(x.shape[-1], train_loader, test_loader)

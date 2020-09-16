@@ -5,6 +5,7 @@ from os.path import expanduser
 from collections import Counter
 from os.path import isfile
 import hashlib
+import time
 import pandas as pd
 import array
 def process_path(path_str):
@@ -99,7 +100,7 @@ class AttackerPaths(object):
         print(list(res))
 
     def get_time_t_np(self,state_posA):
-        file_name = "{}/car_model/generalization/data/time_s.csv".format(expanduser("~"))
+        file_name = "{}/car_model/generalization/data/time_s.csv".format(home)
         # if(isfile(file_name)):
         #     my_data = pd.read_csv(file_name,names=['c'])
         #     return my_data['c'].to_numpy()
@@ -266,7 +267,7 @@ class QTable(object):
         return self.matrix_f[:,:-1],self.matrix_f[:,-1]
     def save_data(self):
         df = pd.DataFrame(self.matrix_f)
-        df.to_csv("{}/car_model/generalization/matrix_f.csv".format(expanduser("~")))
+        df.to_csv("{}/car_model/generalization/matrix_f.csv".format(home))
 class RegressionFeature(object):
 
     def __init__(self, AttackerPath_obj, game_setting):
@@ -319,12 +320,14 @@ class RegressionFeature(object):
         self.d.update(tmp)
 
 
-import time
+home = expanduser("~")
+if home.__contains__('lab2'):
+    home = "/home/lab2/eranher"
+
 def MainLoader():
 
     SEED=2000
     np.random.seed(SEED)
-    home = expanduser("~")
     dir_data = "{}/car_model/generalization/data".format(home)
     print(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)
