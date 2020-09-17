@@ -17,6 +17,18 @@ from collections import Counter
 from sklearn.datasets import make_regression, make_classification
 
 from fast_data_loader import FastTensorDataLoader
+# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# print(device)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('Using device:', device)
+#Additional Info when using cuda
+if device.type == 'cuda':
+    print(torch.cuda.get_device_name(0))
+    print('Memory Usage:')
+    print('Allocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
+    print('Cached:   ', round(torch.cuda.memory_cached(0)/1024**3,1), 'GB')
+
+
 
 
 def n_normalize(v):
@@ -31,9 +43,6 @@ def normalize_d(d, target=1.0):
     factor = target / raw
     return {key: value * factor for key, value in d.items()}
 
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
 
 
 class LR(nn.Module):
@@ -76,7 +85,7 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=5, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=2, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = None
@@ -161,7 +170,7 @@ class NeuralNetwork(object):
 
             self.scheduler.step()
             self.log_to_files()
-            torch.save(self.nn_model.state_dict(), "{}/car_model/nn/nn.pt".format(self.home))
+            torch.save(self.nn_model.state_dict(), "{}/car_model/nn/nn{}.pt".format(self.home,epoch))
 
     def eval_nn(self, validtion_datatest):
         with torch.no_grad():
@@ -268,31 +277,33 @@ class DataSet(object):
 
         return loader_train, loader_test
 
-    def make_DataSet(self, X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None):
+    def make_DataSet(self, X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None,pin_memo = False):
         sampler = WeightedRandomSampler(
             weights=samples_weights,
             num_samples=len(samples_weights),
             replacement=True)
 
-        tensor_x = torch.tensor(X_data, requires_grad=False, dtype=torch.float, device=device)
+        if device != 'cpu':
+            pin_memo = True
+
+        tensor_x = torch.tensor(X_data, requires_grad=False, dtype=torch.float)
         tensor_y = torch.tensor(y_data)
         my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
-        my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0
-                                   , sampler=sampler)  # ),)  # create your dataloader
+        my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=16
+                                   , sampler=sampler,pin_memory=pin_memo)  # ),)  # create your dataloader
         return my_dataloader
 
 
 def main(in_dim, train_dataset, test_dataset):
     print(device)
-
     SEED = 2809
     torch.manual_seed(SEED)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 100000
+    num_iterations = 10
     lrmodel = LR(in_dim)
-    lrmodel.to(device)
+    lrmodel = lrmodel.to(device)
 
     loss = torch.nn.MSELoss()  # note that CrossEntropyLoss is for targets with more than 2 classes.
     optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.01)
@@ -304,7 +315,9 @@ def main(in_dim, train_dataset, test_dataset):
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
 
-batch_size = 4
+batch_size = 2
+
+
 
 if __name__ == "__main__":
     number = 1000000

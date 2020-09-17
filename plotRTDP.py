@@ -179,6 +179,7 @@ def one_path_ana(path_p):
     name = str(path_p).split("/")[-1].split(".")[0]
     l=[]
     res = pt.walk_rec(path_p,[],"Eval.csv")
+    print("res:",len(res))
     for item_csv_p in res:
         d = {}
         print(item_csv_p)
@@ -215,6 +216,7 @@ def one_path(path_p="/home/eranhe/car_model/out"):
     print(path_p)
     l = []
     res = pt.walk_rec(path_p, [], "Eval.csv")
+
     for item_csv_p in res:
         d = {}
         print(item_csv_p)
@@ -232,11 +234,11 @@ def one_path(path_p="/home/eranhe/car_model/out"):
     df.to_csv("{}/all_one_path.csv".format(path_p))
     return df
 
-def one_vs_all():
+def one_vs_all(int_dix):
     sub_dir= "car_model/singal"
     home = expanduser("~")
     dir_arr = ["one_path","all_path"]
-    dir_name = dir_arr[0]
+    dir_name = dir_arr[int_dix]
     res = pt.walk_rec("{}/{}/{}".format(home,sub_dir,dir_name),[],"",False,lv=-1)
     for item in res:
         print(res)
@@ -256,6 +258,8 @@ def one_vs_all():
 def play_data(df_all_path,df_one_path):
     df_all_at_once = pd.read_csv(df_all_path,index_col=0)
     df_one_by_one = pd.read_csv(df_one_path, index_col=0)
+    print(len(df_all_at_once))
+    print(len(df_one_by_one))
     del df_all_at_once['path_size']
     df_paths= df_one_by_one[['seed_number','u_id','path_size']]
     new_df_all = pd.merge(df_all_at_once,df_paths,on=['seed_number','u_id'],how="inner")
@@ -265,6 +269,8 @@ def play_data(df_all_path,df_one_path):
     df_one = df_one_by_one[['seed_number', 'u_id','merge_episodes','episodes','Collision','path_size','P_Collision']]
     df_all = new_df_all[['seed_number', 'u_id','episodes','Collision','path_size']]
     df = pd.merge(df_one,df_all,on=['seed_number', 'u_id','path_size'],how="inner",suffixes=["_one",'_all'])
+    print(" df size: ",len(df))
+    print("one size: ",len(df_one))
     assert (len(df)==len(df_one))
     assert (len(df) == len(df_all))
     print(list(df))
@@ -272,11 +278,14 @@ def play_data(df_all_path,df_one_path):
     df.to_csv("{}/df.csv".format(father))
 
 if __name__ == "__main__":
+    one_vs_all(0)
+    one_vs_all(1)
     play_data("/home/ERANHER/car_model/singal/all_path/all.csv",
               "/home/ERANHER/car_model/singal/one_path/all.csv")
+    
+    exit()
 
     exit()
-    one_vs_all()
     p="/home/ERANHER/car_model/results/26_04/con1"
     p_path="/home/ERANHER/car_model/results/dataEXP/old/sizeExp/roni/out"
     p_path="/home/eranhe/car_model/ABS/size__p_5"

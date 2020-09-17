@@ -66,7 +66,7 @@ class AgentD(object):
 
 
     def load_nn(self, path_to_model):
-        self.nn = nnpy.LR(15)
+        self.nn = nnpy.LR(35)
         self.nn.load_state_dict(torch.load(path_to_model))
         self.nn = self.nn.double()
         self.nn.eval()
@@ -122,7 +122,7 @@ class Game(object):
         self.construct(num)
 
     def construct(self,num=2):
-        self.A = AgentA("{}/car_model/generalization/data/p1.csv".format(self.home))
+        self.A = AgentA("{}/car_model/generalization/data/p.csv".format(self.home))
         self.D = AgentD("/home/ERANHER/car_model/nn/nn{}.pt".format(num), np.array([[20, 20, 0], [0, 0, 0]]), max_speed=1)
 
     def main_loop(self, max_iter):
