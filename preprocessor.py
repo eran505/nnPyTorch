@@ -9,8 +9,8 @@ import time
 import pandas as pd
 import array
 def process_path(path_str):
-    return [eval(x[1:-2]) for x in path_str]
-
+    arr = [eval(x[1:-2]) for x in path_str if len(x)>5]
+    return arr
 
 class FeatureOperation(object):
     pass
@@ -26,6 +26,8 @@ class Loader(object):
         with open(p, "r") as f:
             reader = csv.reader(f, delimiter=";")
             for i, line in enumerate(reader):
+                if len(line)<1:
+                    continue
                 def pro(line):
                     d = {'p': float(str(line[0]).split(':')[-1]), 'traj': process_path(line[1:])}
                     return d
@@ -174,34 +176,58 @@ class QTable(object):
         #     assert(bin_map[y_item.index(item_i)]==y_new[i])
 
     def loader(self, csv_table, csv_map):
+
+        names = ["S" + str(i) for i in range(1, 13)]
+        names.insert(0,"id")
+
         self.df_raw = pd.read_csv(csv_table, sep=';')
-        self.map_df = pd.read_csv(csv_map, sep=';', names=["id", "state"])
-
-        print(list(self.df_raw))
-
+        self.map_df = pd.read_csv(csv_map, sep=';',names=names)
+        self.merge_dfs()
         self.make_features_df()
-        #self.make_target_bins_nominal()
+
         array_state_F = self.make_new_state_F(self.matrix_f[:,:12])
         data = np.append(array_state_F,self.matrix_f[:,12:],axis=1)
+        df_tmp = pd.DataFrame(data)
+        self.make_matrix_flat_V2(df_tmp)
+        exit()
         self.matrix_f=np.array(data)
 
-    def make_features_df(self):
-        self.state_vector = self.state_str_to_vec(self.df_raw['id'])
-        print (self.state_vector.shape)
-        state_matrix = self.state_vector.reshape(self.state_vector.shape[0],self.state_vector.shape[1]*self.state_vector.shape[2])
-        matrix_val = np.asmatrix(self.df_raw[list(self.df_raw)[1:]].values)
-        print("matrix_val.shape: ",matrix_val.shape)
-        new_array = np.append(state_matrix,matrix_val,axis=1)
-        print("new_array.shape:={}".format(new_array.shape))
-        #out_matrix = self.make_matrix_flat(matrix_val,state_matrix)
-        self.matrix_f = new_array
+    def merge_dfs(self):
+        print(list(self.df_raw))
+        print ("self.df_raw:",len(self.df_raw))
+        print("map_df:", len(self.map_df))
+        self.map_df['id']=self.map_df['id'].astype('uint64')
+        self.df_raw = pd.merge(self.map_df,self.df_raw,how='inner',on=['id'])
+        print(len(self.df_raw))
 
+    def make_features_df(self):
+        #self.make_target_bins_nominal()
+        self.matrix_f = np.asmatrix(self.df_raw[list(self.df_raw)[1:]].values)
+
+
+    def make_matrix_flat_V2(self,df):
+        l=[]
+        arr_cols = list(df)
+        print(arr_cols)
+        arr_f = arr_cols[:-27]
+        first_action_idx_col = arr_cols[-27:][0]
+        for ky in self.action_d:
+            col_v = ky+first_action_idx_col
+            dfi = df[arr_f]
+            dfi['V']= df[col_v]
+            dfi['a0'] = self.action_d[ky][0]
+            dfi['a1'] = self.action_d[ky][1]
+            dfi['a2'] = self.action_d[ky][2]
+            print(list(dfi))
+            l.append(dfi)
+        df_all = df.append(l)
+        return df_all
     def make_matrix_flat(self,matrix,state_matrix):
         flat_matrix = np.array(matrix).flatten()
         print("flat_matrix.shape: ", flat_matrix.shape)
         a = np.empty((flat_matrix.shape[0], state_matrix.shape[1] + 4))
         print("a.shape: ", a.shape)
-        action_number = len(list(self.df_raw)) - 1
+        action_number = matrix.shape[1]
         i = 0
 
         while i < matrix.shape[0]:
@@ -328,12 +354,12 @@ def MainLoader():
 
     SEED=2000
     np.random.seed(SEED)
-    dir_data = "{}/car_model/generalization/data".format(home)
+    dir_data = "{}/car_model/generalization/2data".format(home)
     print(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)
     p_csv = "{}/p.csv".format(dir_data)
     map_csv = "{}/map.csv".format(dir_data)
-    con_csv = "{}/con21.csv".format(dir_data)
+    con_csv = "{}/con.csv".format(dir_data)
 
     start = time.time()
     loader = Loader(dir_data)
