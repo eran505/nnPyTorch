@@ -1,11 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="lab2@10.46.128.17:22 password" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="eranhe@132.72.64.21:22 password" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
-      <paths name="lab2@10.46.128.17:22 password">
+      <paths name="eranhe@132.72.64.21:22 password">
         <serverdata>
           <mappings>
-            <mapping deploy="/tmp/pycharm_project_697" local="$PROJECT_DIR$" />
+            <mapping deploy="/tmp/pycharm_project_373" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="guy">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/local/BGU-USERS/eranhe/eran/py_remote" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="ise@132.72.67.147:22 password">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/pycharm_project_185" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="ise@132.72.67.147:22 password (1)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/pycharm_project_185" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="ise@132.72.67.147:22 password (2)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/pycharm_project_185" local="$PROJECT_DIR$" />
           </mappings>
         </serverdata>
       </paths>

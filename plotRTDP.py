@@ -185,7 +185,7 @@ def one_path_ana(path_p):
         print(item_csv_p)
         d["seed_number"] = str(item_csv_p).split("/")[-1].split("_")[0]
         d["u_id"] = str(item_csv_p).split("/")[-1].split("_")[1]
-        d["max_L"] = str(item_csv_p).split("/")[-1].split("_")[2]
+        d["learn_mode"] = str(item_csv_p).split("/")[-1].split("_")[2]
         d["df_l"] = read_multi_csvs(item_csv_p)
         d["reward"]=str(name).split("r_")[-1][0]
         d["shaffle"] = str(name).split("s_")[-1][0]
@@ -199,6 +199,7 @@ def one_path_ana(path_p):
         del d["df_l"]
         l.append(d)
     df = pd.DataFrame(l)
+    df["SUM_episodes"]=df['episodes']+df['P_episodes']
     df.to_csv("{}/{}.csv".format(father,name))
     return df
 def mean_multi_dfs(l_df,tail_row=1):
@@ -277,15 +278,22 @@ def play_data(df_all_path,df_one_path):
     father = '/'.join(str(df_all_path).split('/')[:-1])
     df.to_csv("{}/df.csv".format(father))
 
+def get_data_from_exp(path_to_df):
+    all_df = pd.read_csv(path_to_df, index_col=0)
+
+    print(list(all_df))
+
+
 if __name__ == "__main__":
+    print("hello world")
+    one_path_ana("/home/ise/car_model/out/eranh")
+    exit()
     one_vs_all(0)
     one_vs_all(1)
     play_data("/home/ERANHER/car_model/singal/all_path/all.csv",
               "/home/ERANHER/car_model/singal/one_path/all.csv")
     
-    exit()
 
-    exit()
     p="/home/ERANHER/car_model/results/26_04/con1"
     p_path="/home/ERANHER/car_model/results/dataEXP/old/sizeExp/roni/out"
     p_path="/home/eranhe/car_model/ABS/size__p_5"
