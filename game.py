@@ -104,14 +104,14 @@ class AgentD(object):
         v = np.zeros(27)
         f = self.get_F_D(pos_A)
         f = np.hstack((f.flatten(), np.zeros(3))).ravel()
-        print(pos_A.flatten(),self.cur_state.flatten())
+        #print(pos_A.flatten(),self.cur_state.flatten())
         for i in range(27):
 
             f[-3:] = self.actions[i]
             expected_reward_y = self.nn(torch.tensor(norm(f)).double())
             v[i] = expected_reward_y
-            print("{}:->{}".format(i,v[i]))
-        print("np.argmax = {} ".format(np.argmax(v)))
+            #print("{}:->{}".format(i,v[i]))
+        #print("np.argmax = {} ".format(np.argmax(v)))
         return np.argmax(v)
 
     def get_F_D(self, posA):
