@@ -262,8 +262,10 @@ class DataSet(object):
         self.debug_d = result
 
     def norm_without_negative(self):
-        print(self.data.min(0))
-        print(self.data.ptp(0))
+        print("####"*50)
+        print(list(self.data.min(0)))
+        print(list(self.data.ptp(0)))
+        print("####"*50)
         self.data = (self.data - self.data.min(0)) / self.data.ptp(0)
 
     def split_test_train(self):

@@ -1,17 +1,39 @@
 from os.path import expanduser
 import nn_pytorch as nnpy
 import torch
-import numba as nb
 import numpy as np
 import csv
+from preprocessor import Loader, RegressionFeature
 
-min = np.array([1., 0., 0., 0., 0., - 1., 9., 9., 0., - 1., - 1., - 1., - 1., - 1., - 1.])
-ptp = np.array([17., 19., 2., 2., 2., 2., 11., 11., 3., 2., 2., 2., 2., 2., 2.])
+min = np.array([4.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, -2.0, 0.0, -1.0, 0.0, 8.0, 0.0, -1.0, -1.0, -1.0, 2.0, 2.0, 0.0, 2.0, 2.0, 0.0, 0.0, 2.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0, -1.0])
+ptp = np.array([7.0, 11.0, 3.0, 8.0, 19.0, 3.0, 11.0, 5.385164807134504, 6.0, 17.0, 3.0, 4.0, 2.0, 2.0, 7.0, 11.0, 3.0, 2.0, 2.0, 2.0, 6.0, 17.0, 3.0, 6.0, 17.0, 3.0, 3.0, 17.0, 3.0, 7.0, 11.0, 3.0, 7.0, 11.0, 3.0, 5.0, 11.0, 3.0, 2.0, 2.0, 2.0])
+
 
 def norm(f):
     f_norm = (f - min) / ptp
 
     return f_norm
+
+
+class Transformer(object):
+
+    def __init__(self, dir_data):
+        self.loader = None
+        self.reg = None
+        self.loader_init(dir_data)
+        self.distance_man = lambda vec_1, vec_2: np.absolute(vec_1 - vec_2)
+
+    def loader_init(self, dir_data):
+        self.loader = Loader(dir_data)
+        self.loader.load_p("{}/p.csv".format(dir_data))
+        self.loader.load_game_setting("{}/con.csv".format(dir_data))
+        dico_info_game = self.loader.get_config_id(0)
+        attacker_paths = self.loader.get_path_object()
+        self.reg = RegressionFeature(attacker_paths, dico_info_game)
+
+    def get_F(self, np_arr):
+        return self.reg.get_F(np_arr)
+
 
 class AgentA(object):
 
@@ -26,27 +48,30 @@ class AgentA(object):
     def get_all_paths(self, csv_all_paths):
         self.read_file(csv_all_paths)
 
-
     def read_file(self, path_file):
         all_p = []
         with open(path_file, newline='') as csvfile:
             spamreader = csv.reader(csvfile, delimiter=';')
             for row in spamreader:
+                if len(row) < 2:
+                    continue
                 self.w_paths.append(float(row[0].split(":")[-1]))
-                l = np.array(list(map(lambda x: np.array(eval(x[1:-2])), row[1:])))
+                arr = [list(eval(x[1:-2])) for x in row[1:] if len(x) > 5]
+                l = np.array(arr)
                 all_p.append(l)
-        self.all_paths = np.array(all_p)
+        self.all_paths = all_p
+
 
     def next_move(self):
         self.step_t += 1
         if (self.step_t >= self.all_paths[self.path_number].shape[0]):
             raise Exception("EndOfPathException")
-        self.cur_state = self.all_paths[self.path_number, self.step_t, :]
+        self.cur_state = self.all_paths[self.path_number][self.step_t, :]
 
     def reset(self):
         self.path_number = np.random.choice(self.path_indexes, 1, False, p=self.w_paths)[0]
         self.step_t = 0
-        self.cur_state = self.all_paths[self.path_number, self.step_t, :]
+        self.cur_state = self.all_paths[self.path_number][self.step_t, :]
 
     def __str__(self):
         return "A_" + str([tuple(x) for x in self.cur_state])
@@ -54,7 +79,7 @@ class AgentA(object):
 
 class AgentD(object):
 
-    def __init__(self, nn_path, start_pos, max_speed=1):
+    def __init__(self, data_path, nn_path, start_pos, max_speed=1):
         self.max_speed = 1
         self.actions = None
         self.make_action_list()
@@ -63,10 +88,10 @@ class AgentD(object):
         self.load_nn(nn_path)
         self.cur_state = None
         self.reset()
-
+        self.trans = Transformer(data_path)
 
     def load_nn(self, path_to_model):
-        self.nn = nnpy.LR(35)
+        self.nn = nnpy.LR(41)
         self.nn.load_state_dict(torch.load(path_to_model))
         self.nn = self.nn.double()
         self.nn.eval()
@@ -76,14 +101,22 @@ class AgentD(object):
 
     def get_move(self, pos_A):
         v = np.zeros(27)
-        f = np.hstack((pos_A.flatten(), self.cur_state.flatten(), np.zeros(3))).ravel()
+        f = self.get_F_D(pos_A)
+        f = np.hstack((f.flatten(), np.zeros(3))).ravel()
+
         for i in range(27):
+
             f[-3:] = self.actions[i]
-            #print(f)
             expected_reward_y = self.nn(torch.tensor(norm(f)).double())
             v[i] = expected_reward_y
-        #print(v)
+        # print(v)
         return np.argmax(v)
+
+    def get_F_D(self, posA):
+        a = np.array([posA.flatten(), self.cur_state.flatten()]).flatten()
+        a = np.expand_dims(a,axis=0)
+        return self.trans.get_F(a)
+
 
     def next_move(self, pos_A):
         action_a_id = self.get_move(pos_A)
@@ -112,39 +145,51 @@ class AgentD(object):
 
 class Game(object):
 
-    def __init__(self,num=11):
+    def __init__(self, dir_data, dir_nn, num=11):
         self.home = expanduser("~")
-        self.grid_size = np.array([21, 21, 4])
-        self.golas = [np.array([16, 20, 0]),np.array([19, 15, 0]) ]
+
+        self.grid_size = None
+        self.golas = None
+        self.d_setting=None
         self.D = None
         self.A = None
+        self.get_info_game(dir_data)
         self.info = np.zeros(3)
-        self.construct(num)
+        self.construct(dir_data, dir_nn, num)
 
-    def construct(self,num=2):
-        self.A = AgentA("{}/car_model/generalization/data/p.csv".format(self.home))
-        self.D = AgentD("/home/ERANHER/car_model/nn/nn{}.pt".format(num), np.array([[20, 20, 0], [0, 0, 0]]), max_speed=1)
+    def get_info_game(self, dir_data):
+        obj = Loader(dir_data)
+        obj.load_game_setting("{}/con.csv".format(dir_data))
+        d = obj.get_config_id(0)
+        self.grid_size = np.array([d['X'],d['Y'],d['Z']])
+        self.golas=d['P_G']
+        self.d_setting=d
+
+
+    def construct(self, dir_data, dir_nn, num=2):
+        self.A = AgentA("{}/p.csv".format(dir_data))
+        self.D = AgentD(dir_data, "{}/nn{}.pt".format(dir_nn, num),
+                        np.array([self.d_setting['D_start'].squeeze(0), np.zeros(3)]))
 
     def main_loop(self, max_iter):
-        for i in range(max_iter):
+        for _ in range(max_iter):
             self.A.reset()
             self.D.reset()
             while True:
-                #self.print_state()
+                # self.print_state()
                 if self.mini_game_end():
-                    #print("END")
+                    # print("END")
                     break
-                self.D.next_move(self.A.cur_state)
+                self.D.get_move(self.A.cur_state)
                 self.A.next_move()
 
         self.print_info()
-
 
     def mini_game_end(self):
         if self.if_A_at_goal(self.A.cur_state[0, :]):
             self.info[0] += 1
             return True
-        if np.any(self.grid_size <= self.D.cur_state[0, :]) or np.any(self.D.cur_state[0, :]<0) :
+        if np.any(self.grid_size <= self.D.cur_state[0, :]) or np.any(self.D.cur_state[0, :] < 0):
             self.info[1] += 1
             return True
         if np.all(self.D.cur_state[0, :] == self.A.cur_state[0, :]):
@@ -154,22 +199,23 @@ class Game(object):
     def print_info(self):
         print("Goal:{}\tWall:{}\tCollision:{}".format(self.info[0], self.info[1], self.info[2]))
 
-    def if_A_at_goal(self,pos_A):
+    def if_A_at_goal(self, pos_A):
         for item_goal in self.golas:
-            if np.array_equal(pos_A,item_goal):
+            if np.array_equal(pos_A, item_goal):
                 return True
         return False
 
     def print_state(self):
-        print("{}|{}".format(str(self.A),str(self.D)))
+        print("{}|{}".format(str(self.A), str(self.D)))
 
 
 if __name__ == "__main__":
-    l=[]
+    l = []
+    data_path = "/home/ERANHER/car_model/generalization/2data"
+    nn_path = "/home/ERANHER/car_model/nn"
     for i in range(55):
-        g = Game(i)
+        g = Game(data_path, nn_path, i)
         g.main_loop(20)
         l.append(g.info[2])
     x = np.argmax(np.array(l))
-    print(x)
 
