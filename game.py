@@ -4,6 +4,7 @@ import torch
 import numpy as np
 import csv
 from preprocessor import Loader, RegressionFeature
+from socket import gethostname
 
 min = np.array([4.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, -2.0, 0.0, -1.0, 0.0, 8.0, 0.0, -1.0, -1.0, -1.0, 2.0, 2.0, 0.0, 2.0, 2.0, 0.0, 0.0, 2.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0, -1.0])
 ptp = np.array([7.0, 11.0, 3.0, 8.0, 19.0, 3.0, 11.0, 5.385164807134504, 6.0, 17.0, 3.0, 4.0, 2.0, 2.0, 7.0, 11.0, 3.0, 2.0, 2.0, 2.0, 6.0, 17.0, 3.0, 6.0, 17.0, 3.0, 3.0, 17.0, 3.0, 7.0, 11.0, 3.0, 7.0, 11.0, 3.0, 5.0, 11.0, 3.0, 2.0, 2.0, 2.0])
@@ -103,13 +104,14 @@ class AgentD(object):
         v = np.zeros(27)
         f = self.get_F_D(pos_A)
         f = np.hstack((f.flatten(), np.zeros(3))).ravel()
-
+        print(pos_A.flatten(),self.cur_state.flatten())
         for i in range(27):
 
             f[-3:] = self.actions[i]
             expected_reward_y = self.nn(torch.tensor(norm(f)).double())
             v[i] = expected_reward_y
-        # print(v)
+            print("{}:->{}".format(i,v[i]))
+        print("np.argmax = {} ".format(np.argmax(v)))
         return np.argmax(v)
 
     def get_F_D(self, posA):
@@ -180,7 +182,7 @@ class Game(object):
                 if self.mini_game_end():
                     # print("END")
                     break
-                self.D.get_move(self.A.cur_state)
+                self.D.next_move(self.A.cur_state)
                 self.A.next_move()
 
         self.print_info()
@@ -211,8 +213,12 @@ class Game(object):
 
 if __name__ == "__main__":
     l = []
+
     data_path = "/home/ERANHER/car_model/generalization/2data"
     nn_path = "/home/ERANHER/car_model/nn"
+    if (gethostname() == 'lab2'):
+        data_path = "/home/lab2/eranher/car_model/generalization/2data"
+        nn_path = "/home/lab2/eranher/car_model/nn"
     for i in range(55):
         g = Game(data_path, nn_path, i)
         g.main_loop(20)

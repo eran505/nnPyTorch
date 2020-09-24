@@ -317,7 +317,7 @@ def main(in_dim, train_dataset, test_dataset):
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
 
-batch_size = 2
+batch_size = 16
 
 
 
