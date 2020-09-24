@@ -46,7 +46,7 @@ def normalize_d(d, target=1.0):
 
 
 class LR(nn.Module):
-    def __init__(self, dim, out=1, hidden=16, sec_hidden=8, a=-1.0, b=1.0):
+    def __init__(self, dim, out=1, hidden=32, sec_hidden=16, a=-1.0, b=1.0):
         super(LR, self).__init__()
         # intialize parameters
 
@@ -317,7 +317,7 @@ def main(in_dim, train_dataset, test_dataset):
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
 
-batch_size = 16
+batch_size = 8
 
 
 
