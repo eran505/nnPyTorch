@@ -189,7 +189,7 @@ class QTable(object):
         data = np.append(array_state_F,self.matrix_f[:,12:],axis=1)
         df_tmp = pd.DataFrame(data)
         self.make_matrix_flat_V2(df_tmp)
-        exit()
+
         self.matrix_f=np.array(data)
 
     def merge_dfs(self):
@@ -206,21 +206,23 @@ class QTable(object):
 
 
     def make_matrix_flat_V2(self,df):
-        l=[]
+        print("--"*30)
         arr_cols = list(df)
-        print(arr_cols)
         arr_f = arr_cols[:-27]
         first_action_idx_col = arr_cols[-27:][0]
+        ctr=0
+        l=[]
         for ky in self.action_d:
             col_v = ky+first_action_idx_col
-            dfi = df[arr_f]
-            dfi['V']= df[col_v]
-            dfi['a0'] = self.action_d[ky][0]
-            dfi['a1'] = self.action_d[ky][1]
-            dfi['a2'] = self.action_d[ky][2]
-            print(list(dfi))
+            dfi = df[arr_f].copy(deep=True)
+            dfi.loc[:,'V']= df.loc[:,col_v]
+            dfi.loc[:,'a0'] = self.action_d[ky][0]
+            dfi.loc[:,'a1']= self.action_d[ky][1]
+            dfi.loc[:,'a2']= self.action_d[ky][2]
+            dfi[arr_f]=df[arr_f]
+            ctr+=len(dfi)
             l.append(dfi)
-        df_all = df.append(l)
+        df_all = pd.concat(l,ignore_index=True)
         return df_all
     def make_matrix_flat(self,matrix,state_matrix):
         flat_matrix = np.array(matrix).flatten()
