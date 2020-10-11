@@ -228,10 +228,10 @@ class Game(object):
 if __name__ == "__main__":
     l = []
 
-    data_path = "/home/eranhe/car_model/generalization/2data"
+    data_path = "/home/eranhe/car_model/generalization/3data"
     nn_path = "/home/eranhe/car_model/nn"
     if (gethostname() == 'lab2'):
-        data_path = "/home/lab2/eranher/car_model/generalization/2data"
+        data_path = "/home/lab2/eranher/car_model/generalization/3data"
         nn_path = "/home/lab2/eranher/car_model/nn"
     for i in range(55):
         g = Game(data_path, nn_path, i)

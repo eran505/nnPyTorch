@@ -304,15 +304,15 @@ class DataSet(object):
                                          samples_weights=w_train)
         # l = torch.multinomial(torch.tensor(w_test),len(w_test),False).tolist()
 
-        loader_test = self.make_DataSet(X_test, y_test, size_batch=len(y_test), samples_weights=w_test)
+        loader_test = self.make_DataSet(X_test, y_test, size_batch=1, samples_weights=w_test)
 
         return loader_train, loader_test
 
     def make_DataSet(self, X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None,pin_memo = False):
-        sampler = WeightedRandomSampler(
-            weights=samples_weights,
-            num_samples=len(samples_weights),
-            replacement=True)
+        # sampler = WeightedRandomSampler(
+        #     weights=samples_weights,
+        #     num_samples=len(samples_weights),
+        #     replacement=True)
         print("-----------batch size = {}".format(size_batch))
         if device.type != 'cpu':
             pin_memo = True
@@ -321,7 +321,7 @@ class DataSet(object):
         tensor_y = torch.tensor(y_data)
         my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
         my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0
-                                    , sampler=sampler,pin_memory=pin_memo)  # ),)  # create your dataloader
+                                   )#, sampler=sampler,pin_memory=pin_memo)  # ),)  # create your dataloader
         return my_dataloader
 
 
@@ -346,12 +346,38 @@ def main(in_dim, train_dataset, test_dataset):
 
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
+def test_main(path_to_model):
+    df = pd.read_csv("/home/eranhe/car_model/generalization/split_data/all.csv")
+    matrix_df = df.as_matrix()
+    DataLoder = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
+    _, test_loader = DataLoder.split_test_train(0.99)
+    in_p = matrix_df.shape[-1]-27
+    my_model = LR(in_p)
+    my_loss_function= XSigmoidLoss()
+    my_model.load_state_dict(torch.load(path_to_model))
+    #self.nn = self.nn.double()
+    my_model.eval()
+    ctr=0
+    with torch.no_grad():
+        for x_val, y_val in iter(test_loader):
+            x_val = x_val.to(device)
+            y_val = y_val.to(device)
+
+            my_model.eval()
+            print("ctr:",ctr)
+            yhat = my_model(x_val)
+            print("Y^:{}\t\tY:{}".format(yhat.tolist(),y_val.tolist()))
+            val_loss = my_loss_function(y_val, yhat)
+
+            print("test loss= {}".format(val_loss.item()))
+    exit()
 
 batch_size = 64
 
 
 import pandas as pd
 if __name__ == "__main__":
+    test_main("/home/eranhe/car_model/nn/nn0.pt")
 
     start = time.time()
     # x, y = pr.MainLoader()
@@ -364,8 +390,8 @@ if __name__ == "__main__":
     # x = x[number:number * 2]
     # y = y[number:number * 2]
     DataLoder = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
-    train_loader,_ = DataLoder.split_test_train(0.000001)
-    _, test_loader = DataLoder.split_test_train(0.1)
+    train_loader,test_loader = DataLoder.split_test_train(0.000001)
+
 
     # train_loader = FastTensorDataLoader(torch.tensor(x[:-100]).float(),torch.tensor(y[:-100]).float(),batch_size=4)
     # test_loader  = FastTensorDataLoader(torch.tensor(x[-100:]).float(), torch.tensor(y[-100:]).float(), batch_size=4)
