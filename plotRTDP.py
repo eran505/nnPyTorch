@@ -205,6 +205,7 @@ def one_path_ana(path_p):
         del d["df_l"]
         l.append(d)
     df = pd.DataFrame(l)
+    df["P_episodes"]=df["P_episodes"].fillna(0)
     df["SUM_episodes"] = df['episodes'] + df['P_episodes']
     df.to_csv("{}/{}.csv".format(father, name))
     return df
@@ -297,7 +298,7 @@ def get_data_from_exp(path_to_df):
 
 if __name__ == "__main__":
     print("hello world")
-    one_path_ana("/home/ise/car_model/out")
+    one_path_ana("/home/eranhe/car_model/out")
     exit()
     one_path_ana("/home/ise/car_model/out/eranh")
     one_vs_all(0)

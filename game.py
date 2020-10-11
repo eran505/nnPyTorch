@@ -9,9 +9,14 @@ from socket import gethostname
 min = np.array([4.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, -2.0, 0.0, -1.0, 0.0, 8.0, 0.0, -1.0, -1.0, -1.0, 2.0, 2.0, 0.0, 2.0, 2.0, 0.0, 0.0, 2.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0, -1.0])
 ptp = np.array([7.0, 11.0, 3.0, 8.0, 19.0, 3.0, 11.0, 5.385164807134504, 6.0, 17.0, 3.0, 4.0, 2.0, 2.0, 7.0, 11.0, 3.0, 2.0, 2.0, 2.0, 6.0, 17.0, 3.0, 6.0, 17.0, 3.0, 3.0, 17.0, 3.0, 7.0, 11.0, 3.0, 7.0, 11.0, 3.0, 5.0, 11.0, 3.0, 2.0, 2.0, 2.0])
 
+min_ = np.array([4.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, -2.0, 0.0, -1.0, 0.0, 8.0, 0.0, -1.0, -1.0, -1.0, 2.0,
+        2.0, 0.0, 2.0, 2.0, 0.0, 0.0, 2.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+ptp_ = np.array([7.0, 11.0, 3.0, 8.0, 19.0, 3.0, 11.0, 5.385164807134504, 6.0, 17.0, 3.0, 4.0, 2.0, 2.0, 7.0, 11.0, 3.0, 2.0,
+        2.0, 2.0, 6.0, 17.0, 3.0, 6.0, 17.0, 3.0, 3.0, 17.0, 3.0, 7.0, 11.0, 3.0, 7.0, 11.0, 3.0, 5.0, 11.0, 3.0])
+
 
 def norm(f):
-    f_norm = (f - min) / ptp
+    f_norm = (f - min_) / ptp_
 
     return f_norm
 
@@ -92,7 +97,7 @@ class AgentD(object):
         self.trans = Transformer(data_path)
 
     def load_nn(self, path_to_model):
-        self.nn = nnpy.LR(41)
+        self.nn = nnpy.LR(38)
         self.nn.load_state_dict(torch.load(path_to_model))
         self.nn = self.nn.double()
         self.nn.eval()
@@ -104,15 +109,24 @@ class AgentD(object):
         v = np.zeros(27)
         f = self.get_F_D(pos_A)
         f = np.hstack((f.flatten(), np.zeros(3))).ravel()
-        #print(pos_A.flatten(),self.cur_state.flatten())
         for i in range(27):
-
             f[-3:] = self.actions[i]
             expected_reward_y = self.nn(torch.tensor(norm(f)).double())
             v[i] = expected_reward_y
-            #print("{}:->{}".format(i,v[i]))
-        #print("np.argmax = {} ".format(np.argmax(v)))
+            print("{}:->{}".format(i,v[i]))
+        print("np.argmax = {} ".format(np.argmax(v)))
+        exit()
         return np.argmax(v)
+
+    def get_move_all(self, pos_A):
+        f = self.get_F_D(pos_A)
+        f = np.hstack((f.flatten())).ravel()
+        #print(len(f))
+        expected_reward_y = self.nn(torch.tensor(norm(f)).double())
+        #print(expected_reward_y)
+        arg_max_action = np.argmax(expected_reward_y.detach().numpy())
+        #print("np.argmax = {} ".format(arg_max_action))
+        return arg_max_action
 
     def get_F_D(self, posA):
         a = np.array([posA.flatten(), self.cur_state.flatten()]).flatten()
@@ -121,7 +135,7 @@ class AgentD(object):
 
 
     def next_move(self, pos_A):
-        action_a_id = self.get_move(pos_A)
+        action_a_id = self.get_move_all(pos_A)
         self.apply_action(action_a_id)
 
     def apply_action(self, action_id):
@@ -178,7 +192,7 @@ class Game(object):
             self.A.reset()
             self.D.reset()
             while True:
-                # self.print_state()
+                #self.print_state()
                 if self.mini_game_end():
                     # print("END")
                     break
@@ -214,8 +228,8 @@ class Game(object):
 if __name__ == "__main__":
     l = []
 
-    data_path = "/home/ERANHER/car_model/generalization/2data"
-    nn_path = "/home/ERANHER/car_model/nn"
+    data_path = "/home/eranhe/car_model/generalization/2data"
+    nn_path = "/home/eranhe/car_model/nn"
     if (gethostname() == 'lab2'):
         data_path = "/home/lab2/eranher/car_model/generalization/2data"
         nn_path = "/home/lab2/eranher/car_model/nn"

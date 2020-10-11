@@ -122,12 +122,13 @@ class AttackerPaths(object):
         return n
 
     def closet_path_np(self,pos_D):
+        #res = np.zeros(self.np_A_positions.shape[0])
         res=[]
         for i in range(self.np_A_positions.shape[0]):
             arr = self.distance_man(self.np_A_positions[i,:], pos_D)
             res.append(arr)
         x = np.array(res)
-        min_dist = np.amin(x,0)
+        min_dist = np.amin(res,0)
         return min_dist
 
     def closet_path(self, pos_D):
@@ -185,6 +186,7 @@ class QTable(object):
 
         self.df_raw = pd.read_csv(csv_table, sep=';')
         self.map_df = pd.read_csv(csv_map, sep=';',names=names)
+
         self.merge_dfs()
         self.make_features_df()
 
@@ -201,11 +203,13 @@ class QTable(object):
         print("map_df:", len(self.map_df))
         self.map_df['id']=self.map_df['id'].astype('uint64')
         self.df_raw = pd.merge(self.map_df,self.df_raw,how='inner',on=['id'])
+        self.map_df=None
         print(len(self.df_raw))
 
     def make_features_df(self):
         #self.make_target_bins_nominal()
         self.matrix_f = np.asmatrix(self.df_raw[list(self.df_raw)[1:]].values)
+        self.df_raw=None
 
 
     def make_matrix_flat_V2(self,df):
@@ -296,9 +300,12 @@ class QTable(object):
         self.matrix_f = self.make_matrix_flat(class_label,dataset)
         #self.make_target_bins_nominal()
         return self.matrix_f[:,:-1],self.matrix_f[:,-1]
-    def save_data(self):
+    def save_data(self,name_file):
         df = pd.DataFrame(self.matrix_f)
-        df.to_csv("{}/car_model/generalization/matrix_f.csv".format(home))
+        df.to_csv("{}/car_model/generalization/{}.csv".format(home,name_file))
+
+
+
 class RegressionFeature(object):
 
     def __init__(self, AttackerPath_obj, game_setting):
@@ -315,23 +322,29 @@ class RegressionFeature(object):
         goals_dist = np.concatenate((np_arrA,np_arrD),axis=1)
         ad_dist = self.A_D(np_state[:,6:9],np_state[:,0:3])
         wall_dist = self.size_F(np_state[:,6:9])
-        d,a = self.get_near_path(np_state[:,6:9],np_state[:,0:6])
+        #d,a = self.get_near_path(np_state[:,6:9],np_state[:,0:6])
+        a=self.get_time_t(np_state[:,0:6])
         a = a.reshape(a.shape[0],-1)
-        d = d.reshape(d.shape[0],-1)
+        #d = d.reshape(d.shape[0],-1)
         # print("wall_dist.shape:{}".format(wall_dist.shape))
         # print("ad_dist.shape:",ad_dist.shape)
         # print("a.shape:",a.shape)
         # print("d.shape:",d.shape)
         # print("np_state.shape:",np_state.shape)
         # print("goals_dist.shape:",goals_dist.shape)
-        x = np.concatenate([wall_dist,ad_dist,a,d,np_state,goals_dist],axis=1)
+        x = np.concatenate([wall_dist,ad_dist,a,np_state,goals_dist],axis=1)
         # df = pd.DataFrame(x)
         # df.to_csv(p_name_file,index=False)
         return x
+
     def get_near_path(self, posD, posA):
         dist = self.attcker_path.closet_path_np(posD)
         time_t = self.attcker_path.get_time_t_np(posA)
         return dist, time_t
+
+    def get_time_t(self, posA):
+        time_t = self.attcker_path.get_time_t_np(posA)
+        return  time_t
 
     def goal_F(self,pos_agnet):
         l=[]
@@ -356,17 +369,16 @@ if home.__contains__('lab2'):
     home = "/home/lab2/eranher"
 
 def MainLoader():
-
+    #12788732673721550297
     SEED=2000
     np.random.seed(SEED)
-    dir_data = "{}/car_model/generalization/2data".format(home)
+    dir_data = "{}/car_model/generalization/3data".format(home)
     print(dir_data)
-    Q_csv = "{}/Q.csv".format(dir_data)
+    Q_csv = "{}/split/split_ad.csv".format(dir_data)
     p_csv = "{}/p.csv".format(dir_data)
     map_csv = "{}/map.csv".format(dir_data)
     con_csv = "{}/con.csv".format(dir_data)
 
-    start = time.time()
     loader = Loader(dir_data)
     loader.load_p(p_csv)
     loader.load_game_setting(con_csv)
@@ -375,9 +387,11 @@ def MainLoader():
     print(dico_info_game)
 
     q = QTable(Q_csv, map_csv, attacker_paths, dico_info_game)
-    x,y = q.get_data_set(all_together=False)
-
-    #q.save_data()
+    x,y = q.get_data_set(all_together=True)
+    print()
+    #print((Counter(y)))
+    file_name = str(Q_csv).split('/')[-1].split(".")[0]
+    q.save_data(file_name)
 
     #x=x[:10000]
     #y=y[:10000]
