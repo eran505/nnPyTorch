@@ -388,9 +388,9 @@ if __name__ == "__main__":
     # x, y = pr.MainLoader()
     end = time.time()
     print("MainLoader Time: {}".format(end - start))
-    df = pd.read_csv("{}/car_model/generalization/all.csv".format(str_home))
-    matrix_df = df.as_matrix()
-
+    df = pd.read_csv("{}/car_model/generalization/all.csv".format(str_home),index_col=0)
+    matrix_df = df.to_numpy()
+    print(len(list(df)))
     # x,y = make_classification(n_samples=1000000,n_features=16,n_informative=8,n_classes=2)
     # x = x[number:number * 2]
     # y = y[number:number * 2]
