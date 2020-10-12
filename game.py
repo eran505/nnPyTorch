@@ -2,23 +2,35 @@ from os.path import expanduser
 import nn_pytorch as nnpy
 import torch
 import numpy as np
-import csv
+import csv,math
 from preprocessor import Loader, RegressionFeature
 from socket import gethostname
 
-min = np.array([4.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, -2.0, 0.0, -1.0, 0.0, 8.0, 0.0, -1.0, -1.0, -1.0, 2.0, 2.0, 0.0, 2.0, 2.0, 0.0, 0.0, 2.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0, -1.0])
-ptp = np.array([7.0, 11.0, 3.0, 8.0, 19.0, 3.0, 11.0, 5.385164807134504, 6.0, 17.0, 3.0, 4.0, 2.0, 2.0, 7.0, 11.0, 3.0, 2.0, 2.0, 2.0, 6.0, 17.0, 3.0, 6.0, 17.0, 3.0, 3.0, 17.0, 3.0, 7.0, 11.0, 3.0, 7.0, 11.0, 3.0, 5.0, 11.0, 3.0, 2.0, 2.0, 2.0])
 
-min_ = np.array([4.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, -2.0, 0.0, -1.0, 0.0, 8.0, 0.0, -1.0, -1.0, -1.0, 2.0,
-        2.0, 0.0, 2.0, 2.0, 0.0, 0.0, 2.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-ptp_ = np.array([7.0, 11.0, 3.0, 8.0, 19.0, 3.0, 11.0, 5.385164807134504, 6.0, 17.0, 3.0, 4.0, 2.0, 2.0, 7.0, 11.0, 3.0, 2.0,
-        2.0, 2.0, 6.0, 17.0, 3.0, 6.0, 17.0, 3.0, 3.0, 17.0, 3.0, 7.0, 11.0, 3.0, 7.0, 11.0, 3.0, 5.0, 11.0, 3.0])
+min_ = np.array([10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0])
+ptp_ = np.array([162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0,
+        300.0, 300.0, 3.0, 162.0, 160.0, 3.0])
 
 
 def norm(f):
     f_norm = (f - min_) / ptp_
 
     return f_norm
+
+
+class schedulerAction(object):
+
+
+    @staticmethod
+    def get_move(diff):
+        max_diff = max(diff)
+        b = math.ceil(math.log2(max_diff))
+        b= max(b-3,0)
+        action_number = pow(2,b)
+        return action_number
+
+
 
 
 class Transformer(object):
@@ -68,14 +80,15 @@ class AgentA(object):
         self.all_paths = all_p
 
 
-    def next_move(self):
-        self.step_t += 1
-        if (self.step_t >= self.all_paths[self.path_number].shape[0]):
-            raise Exception("EndOfPathException")
+    def next_move(self,num_repeated_action):
+        self.step_t += num_repeated_action
+        if self.step_t >= self.all_paths[self.path_number].shape[0]:
+            self.step_t=self.all_paths[self.path_number].shape[0]-1
+            #raise Exception("EndOfPathException")
         self.cur_state = self.all_paths[self.path_number][self.step_t, :]
 
     def reset(self):
-        self.path_number = np.random.choice(self.path_indexes, 1, False, p=self.w_paths)[0]
+        self.path_number = np.random.choice(self.path_indexes, 1, False)[0]#, p=self.w_paths)[0]
         self.step_t = 0
         self.cur_state = self.all_paths[self.path_number][self.step_t, :]
 
@@ -97,9 +110,9 @@ class AgentD(object):
         self.trans = Transformer(data_path)
 
     def load_nn(self, path_to_model):
-        self.nn = nnpy.LR(38)
-        self.nn.load_state_dict(torch.load(path_to_model))
-        self.nn = self.nn.double()
+        self.nn = nnpy.LR(25)
+        self.nn.load_state_dict(torch.load(path_to_model,map_location=device))
+        #self.nn = self.nn.double()
         self.nn.eval()
 
     def reset(self):
@@ -121,8 +134,9 @@ class AgentD(object):
     def get_move_all(self, pos_A):
         f = self.get_F_D(pos_A)
         f = np.hstack((f.flatten())).ravel()
+        f = f.astype('f')
         #print(len(f))
-        expected_reward_y = self.nn(torch.tensor(norm(f)).double())
+        expected_reward_y = self.nn(torch.tensor(norm(f)).unsqueeze(0).float()) #.double()
         #print(expected_reward_y)
         arg_max_action = np.argmax(expected_reward_y.detach().numpy())
         #print("np.argmax = {} ".format(arg_max_action))
@@ -134,9 +148,11 @@ class AgentD(object):
         return self.trans.get_F(a)
 
 
-    def next_move(self, pos_A):
+    def next_move(self, pos_A,num_repeated_action):
         action_a_id = self.get_move_all(pos_A)
-        self.apply_action(action_a_id)
+        #action_a_id=1
+        for _ in range(num_repeated_action):
+            self.apply_action(action_a_id)
 
     def apply_action(self, action_id):
         action_a = self.actions[action_id]
@@ -158,12 +174,12 @@ class AgentD(object):
     def __str__(self):
         return "D_" + str([tuple(x) for x in self.cur_state])
 
-
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class Game(object):
 
     def __init__(self, dir_data, dir_nn, num=11):
         self.home = expanduser("~")
-
+        self.pow2diffs=[np.array([pow(2,3+x),pow(2,3+x),4]) for x in range(12)]
         self.grid_size = None
         self.golas = None
         self.d_setting=None
@@ -182,6 +198,7 @@ class Game(object):
         self.d_setting=d
 
 
+
     def construct(self, dir_data, dir_nn, num=2):
         self.A = AgentA("{}/p.csv".format(dir_data))
         self.D = AgentD(dir_data, "{}/nn{}.pt".format(dir_nn, num),
@@ -192,12 +209,13 @@ class Game(object):
             self.A.reset()
             self.D.reset()
             while True:
-                #self.print_state()
+                num_actions = schedulerAction.get_move(np.abs(self.A.cur_state[0,:]-self.D.cur_state[0,:]))
+                #self.print_state(num_actions)
                 if self.mini_game_end():
-                    # print("END")
+                    #print("END")
                     break
-                self.D.next_move(self.A.cur_state)
-                self.A.next_move()
+                self.D.next_move(self.A.cur_state,num_actions)
+                self.A.next_move(num_actions)
 
         self.print_info()
 
@@ -221,21 +239,21 @@ class Game(object):
                 return True
         return False
 
-    def print_state(self):
-        print("{}|{}".format(str(self.A), str(self.D)))
+    def print_state(self,num_actions):
+        print("{}|{} [A]:{}".format(str(self.A), str(self.D),num_actions))
 
 
 if __name__ == "__main__":
     l = []
 
-    data_path = "/home/eranhe/car_model/generalization/3data"
-    nn_path = "/home/eranhe/car_model/nn"
-    if (gethostname() == 'lab2'):
-        data_path = "/home/lab2/eranher/car_model/generalization/3data"
-        nn_path = "/home/lab2/eranher/car_model/nn"
-    for i in range(55):
+    home = expanduser("~")
+
+    data_path = "{}/car_model/generalization/3data".format(home)
+    nn_path = "{}/car_model/nn".format(home)
+
+    for i in range(1,12):
         g = Game(data_path, nn_path, i)
-        g.main_loop(20)
+        g.main_loop(100)
         l.append(g.info[2])
     x = np.argmax(np.array(l))
 

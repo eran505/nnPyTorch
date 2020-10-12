@@ -71,7 +71,6 @@ class LR(nn.Module):
             nn.BatchNorm1d(sec_hidden),  # applying batch norm
             nn.ReLU(),
             self.make_linear(sec_hidden, out, a, b)
-
         )
 
     def forward(self, x):
@@ -169,7 +168,7 @@ class NeuralNetwork(object):
 
                 # decay the learning rate
                 loss_tmp.append(loss)
-                if ctr % 100 == 0:
+                if ctr % 500 == 0:
                     print('Training loss: {2} Iter-{3} Epoch-{0} lr: {1}  Avg-Time:{4} DataLoader(time):{5} '.format(
                         epoch, self.optimizer.param_groups[0]['lr'], np.mean(loss_tmp), ctr / sampels_size_batch,
                         np.mean(l_time), np.mean(data_loader_time)))
@@ -325,8 +324,8 @@ class DataSet(object):
         if device.type != 'cpu':
             pin_memo = True
 
-        tensor_x = torch.tensor(X_data, requires_grad=False, dtype=torch.float)
-        tensor_y = torch.tensor(y_data)
+        tensor_x = torch.tensor(X_data, requires_grad=False, dtype=torch.float).contiguous()
+        tensor_y = torch.tensor(y_data).contiguous()
         my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
         my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0
                                    )#, sampler=sampler,pin_memory=pin_memo)  # ),)  # create your dataloader
@@ -340,7 +339,7 @@ def main(in_dim, train_dataset, test_dataset):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 20
+    num_iterations = 40
     lrmodel = LR(in_dim)
     lrmodel = lrmodel.to(device)
 
@@ -357,30 +356,36 @@ def main(in_dim, train_dataset, test_dataset):
 def test_main(path_to_model):
 
     df = pd.read_csv("/home/ERANHER/car_model/generalization/all.csv",index_col=0)
-    matrix_df = df[756251:756254].to_numpy()
+    matrix_df = df.to_numpy()#[756251:756254]
+    print(len(matrix_df[:, :-27]))
     print(matrix_df)
     obj = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
-    test_loader = DataSet.make_DataSet(obj.data, obj.targets)
+    test_loader = DataSet.make_DataSet(obj.data, obj.targets,size_batch=1)
     in_p = matrix_df.shape[-1]-27
     my_model = LR(in_p)
     my_loss_function= XSigmoidLoss()
-    my_model.load_state_dict(torch.load(path_to_model))
+    my_model.load_state_dict(torch.load(path_to_model,map_location=device))
+    my_model.cpu()
     #self.nn = self.nn.double()
     my_model.eval()
-    ctr=0
+    sum=0
     with torch.no_grad():
         for x_val, y_val in iter(test_loader):
             x_val = x_val.to(device)
             y_val = y_val.to(device)
 
             my_model.eval()
-            print("ctr:",ctr)
             yhat = my_model(x_val)
-            print("Y^:{}\t\tY:{}".format(yhat.tolist(),y_val.tolist()))
-            val_loss = my_loss_function(y_val, yhat)
 
-            print("test loss= {}".format(val_loss.item()))
-            print("MSE:\t",((yhat-y_val)**2).mean())
+            # for i,j in list(zip(yhat, y_val.squeeze())):
+            #     print("Y^:{} | Y:{}".format(i,j))
+
+            sum+=F.l1_loss(y_val.squeeze(), yhat).item()
+            print("---- losses --------")
+            print("MAE: ",F.l1_loss(y_val.squeeze(), yhat).item())
+            print("XSigmoidLoss: {}".format(my_loss_function(y_val.squeeze(), yhat).item()))
+            print("MSE: ", F.mse_loss(y_val.squeeze(), yhat).item())
+    print("SUM -> ", sum)
     exit()
 
 batch_size = 64
@@ -393,7 +398,7 @@ if __name__ == "__main__":
     if str_home.__contains__('lab2'):
         str_home = "/home/lab2/eranher"
 
-    #test_main("{}/car_model/nn/nn0.pt".format(str_home))
+    #test_main("{}/car_model/nn/nn10.pt".format(str_home))
 
     start = time.time()
     # x, y = pr.MainLoader()
