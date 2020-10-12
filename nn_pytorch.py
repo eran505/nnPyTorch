@@ -21,6 +21,9 @@ from my_losses import XTanhLoss,LogCoshLoss,XSigmoidLoss
 from fast_data_loader import FastTensorDataLoader
 # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # print(device)
+
+
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Using device:', device)
 #Additional Info when using cuda
@@ -226,8 +229,8 @@ class DataSet(object):
         return len(self.data)
 
     def make_dataLoader(self,x,y):
-        min_ = [4.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, -2.0, 0.0, -1.0, 0.0, 8.0, 0.0, -1.0, -1.0, -1.0, 2.0, 2.0, 0.0, 2.0, 2.0, 0.0, 0.0, 2.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        ptp_ = [7.0, 11.0, 3.0, 8.0, 19.0, 3.0, 11.0, 5.385164807134504, 6.0, 17.0, 3.0, 4.0, 2.0, 2.0, 7.0, 11.0, 3.0, 2.0, 2.0, 2.0, 6.0, 17.0, 3.0, 6.0, 17.0, 3.0, 3.0, 17.0, 3.0, 7.0, 11.0, 3.0, 7.0, 11.0, 3.0, 5.0, 11.0, 3.0]
+        min_ = [10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        ptp_ = [162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0, 300.0, 300.0, 3.0, 162.0, 160.0, 3.0]
 
         x = (x - min_)/ ptp_
         tensor_x = torch.tensor(x, requires_grad=False, dtype=torch.float)
@@ -237,7 +240,7 @@ class DataSet(object):
         return my_dataloader
 
     def minmax(self,foo):
-        return preprocessing.minmax_scale(foo, feature_range=(-1, 1))
+        return preprocessing.maxabs_scale(foo)
     def norm(self):
         self.data = normalize(self.data, axis=0, norm='l1')
 
@@ -291,24 +294,29 @@ class DataSet(object):
 
     def norm_without_negative(self,table_data):
         print("####"*50)
-        print(list(table_data.min(0)))
-        print(list(table_data.ptp(0)))
+        min_arr=table_data.min(0)
+        ptp_arr = table_data.ptp(0)
+        print(list(min_arr))
+        print(list(ptp_arr))
+        # min_arr = [10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        # ptp_arr = [162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0, 300.0, 300.0, 3.0, 162.0, 160.0, 3.0]
+
         print("####"*50)
-        return (table_data - table_data.min(0)) / table_data.ptp(0)
+        return (table_data - min_arr) / ptp_arr
 
     def split_test_train(self,raito=0.001):
         self.weights=np.ones(self.data.shape[0])
         X_train, X_test, y_train, y_test, w_train, w_test = \
             train_test_split(self.data, self.targets, self.weights, test_size=raito, random_state=0)
-        loader_train = self.make_DataSet(X_train, y_train, size_batch=batch_size, is_shuffle=False,
+        loader_train = DataSet.make_DataSet(X_train, y_train, size_batch=batch_size, is_shuffle=False,
                                          samples_weights=w_train)
         # l = torch.multinomial(torch.tensor(w_test),len(w_test),False).tolist()
 
-        loader_test = self.make_DataSet(X_test, y_test, size_batch=1, samples_weights=w_test)
+        loader_test = DataSet.make_DataSet(X_test, y_test, size_batch=1, samples_weights=w_test)
 
         return loader_train, loader_test
-
-    def make_DataSet(self, X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None,pin_memo = False):
+    @staticmethod
+    def make_DataSet( X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None,pin_memo = False):
         # sampler = WeightedRandomSampler(
         #     weights=samples_weights,
         #     num_samples=len(samples_weights),
@@ -348,10 +356,11 @@ def main(in_dim, train_dataset, test_dataset):
 
 def test_main(path_to_model):
 
-    df = pd.read_csv("/home/eranhe/car_model/generalization/split_data/all.csv")
-    matrix_df = df.as_matrix()
-    DataLoder = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
-    _, test_loader = DataLoder.split_test_train(0.99)
+    df = pd.read_csv("/home/ERANHER/car_model/generalization/all.csv",index_col=0)
+    matrix_df = df[756251:756254].to_numpy()
+    print(matrix_df)
+    obj = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
+    test_loader = DataSet.make_DataSet(obj.data, obj.targets)
     in_p = matrix_df.shape[-1]-27
     my_model = LR(in_p)
     my_loss_function= XSigmoidLoss()
@@ -371,10 +380,12 @@ def test_main(path_to_model):
             val_loss = my_loss_function(y_val, yhat)
 
             print("test loss= {}".format(val_loss.item()))
+            print("MSE:\t",((yhat-y_val)**2).mean())
     exit()
 
 batch_size = 64
 
+# 756253:756251 index
 
 import pandas as pd
 if __name__ == "__main__":
@@ -382,7 +393,7 @@ if __name__ == "__main__":
     if str_home.__contains__('lab2'):
         str_home = "/home/lab2/eranher"
 
-    #test_main("/home/eranhe/car_model/nn/nn0.pt")
+    #test_main("{}/car_model/nn/nn0.pt".format(str_home))
 
     start = time.time()
     # x, y = pr.MainLoader()
@@ -391,6 +402,7 @@ if __name__ == "__main__":
     df = pd.read_csv("{}/car_model/generalization/all.csv".format(str_home),index_col=0)
     matrix_df = df.to_numpy()
     print(len(list(df)))
+
     # x,y = make_classification(n_samples=1000000,n_features=16,n_informative=8,n_classes=2)
     # x = x[number:number * 2]
     # y = y[number:number * 2]

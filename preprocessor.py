@@ -369,7 +369,6 @@ if home.__contains__('lab2'):
     home = "/home/lab2/eranher"
 
 def MainLoader():
-    #12788732673721550297
     SEED=2000
     np.random.seed(SEED)
     dir_data = "{}/car_model/generalization/3data".format(home)
