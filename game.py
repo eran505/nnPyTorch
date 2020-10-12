@@ -25,6 +25,8 @@ class schedulerAction(object):
     @staticmethod
     def get_move(diff):
         max_diff = max(diff)
+        if max_diff==0:
+            return 1
         b = math.ceil(math.log2(max_diff))
         b= max(b-3,0)
         action_number = pow(2,b)
@@ -251,7 +253,7 @@ if __name__ == "__main__":
     data_path = "{}/car_model/generalization/3data".format(home)
     nn_path = "{}/car_model/nn".format(home)
 
-    for i in range(1,12):
+    for i in range(16,28):
         g = Game(data_path, nn_path, i)
         g.main_loop(100)
         l.append(g.info[2])

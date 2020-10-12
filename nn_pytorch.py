@@ -168,7 +168,7 @@ class NeuralNetwork(object):
 
                 # decay the learning rate
                 loss_tmp.append(loss)
-                if ctr % 500 == 0:
+                if ctr % 100 == 0:
                     print('Training loss: {2} Iter-{3} Epoch-{0} lr: {1}  Avg-Time:{4} DataLoader(time):{5} '.format(
                         epoch, self.optimizer.param_groups[0]['lr'], np.mean(loss_tmp), ctr / sampels_size_batch,
                         np.mean(l_time), np.mean(data_loader_time)))
@@ -316,10 +316,10 @@ class DataSet(object):
         return loader_train, loader_test
     @staticmethod
     def make_DataSet( X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None,pin_memo = False):
-        # sampler = WeightedRandomSampler(
-        #     weights=samples_weights,
-        #     num_samples=len(samples_weights),
-        #     replacement=True)
+        sampler = WeightedRandomSampler(
+            weights=samples_weights,
+            num_samples=len(samples_weights),
+            replacement=True)
         print("-----------batch size = {}".format(size_batch))
         if device.type != 'cpu':
             pin_memo = True
@@ -328,7 +328,7 @@ class DataSet(object):
         tensor_y = torch.tensor(y_data).contiguous()
         my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
         my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0
-                                   )#, sampler=sampler,pin_memory=pin_memo)  # ),)  # create your dataloader
+                                   , sampler=sampler,pin_memory=pin_memo)  # ),)  # create your dataloader
         return my_dataloader
 
 
@@ -343,7 +343,8 @@ def main(in_dim, train_dataset, test_dataset):
     lrmodel = LR(in_dim)
     lrmodel = lrmodel.to(device)
 
-    loss = XSigmoidLoss()
+    #loss = F.l2_loss
+    loss=XSigmoidLoss()
     # SGD/Adam
     optimizer = torch.optim.Adam(lrmodel.parameters(), lr=0.01)
 
@@ -360,7 +361,7 @@ def test_main(path_to_model):
     print(len(matrix_df[:, :-27]))
     print(matrix_df)
     obj = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
-    test_loader = DataSet.make_DataSet(obj.data, obj.targets,size_batch=1)
+    test_loader = DataSet.make_DataSet(obj.data, obj.targets,size_batch=32)
     in_p = matrix_df.shape[-1]-27
     my_model = LR(in_p)
     my_loss_function= XSigmoidLoss()
@@ -369,6 +370,7 @@ def test_main(path_to_model):
     #self.nn = self.nn.double()
     my_model.eval()
     sum=0
+    ctr=0
     with torch.no_grad():
         for x_val, y_val in iter(test_loader):
             x_val = x_val.to(device)
@@ -381,10 +383,13 @@ def test_main(path_to_model):
             #     print("Y^:{} | Y:{}".format(i,j))
 
             sum+=F.l1_loss(y_val.squeeze(), yhat).item()
-            print("---- losses --------")
-            print("MAE: ",F.l1_loss(y_val.squeeze(), yhat).item())
-            print("XSigmoidLoss: {}".format(my_loss_function(y_val.squeeze(), yhat).item()))
-            print("MSE: ", F.mse_loss(y_val.squeeze(), yhat).item())
+            if ctr%1000==0:
+                print("{}".format(ctr))
+            ctr+=1
+            # print("---- losses --------")
+            # print("MAE: ",F.l1_loss(y_val.squeeze(), yhat).item())
+            # print("XSigmoidLoss: {}".format(my_loss_function(y_val.squeeze(), yhat).item()))
+            # print("MSE: ", F.mse_loss(y_val.squeeze(), yhat).item())
     print("SUM -> ", sum)
     exit()
 
@@ -398,7 +403,7 @@ if __name__ == "__main__":
     if str_home.__contains__('lab2'):
         str_home = "/home/lab2/eranher"
 
-    #test_main("{}/car_model/nn/nn10.pt".format(str_home))
+#    test_main("{}/car_model/nn/nn10.pt".format(str_home))
 
     start = time.time()
     # x, y = pr.MainLoader()
