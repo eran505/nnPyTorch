@@ -347,6 +347,7 @@ def main(in_dim, train_dataset, test_dataset):
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
 def test_main(path_to_model):
+
     df = pd.read_csv("/home/eranhe/car_model/generalization/split_data/all.csv")
     matrix_df = df.as_matrix()
     DataLoder = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
@@ -377,13 +378,17 @@ batch_size = 64
 
 import pandas as pd
 if __name__ == "__main__":
-    test_main("/home/eranhe/car_model/nn/nn0.pt")
+    str_home = expanduser("~")
+    if str_home.__contains__('lab2'):
+        str_home = "/home/lab2/eranher"
+
+    #test_main("/home/eranhe/car_model/nn/nn0.pt")
 
     start = time.time()
     # x, y = pr.MainLoader()
     end = time.time()
     print("MainLoader Time: {}".format(end - start))
-    df = pd.read_csv("/home/eranhe/car_model/generalization/split_data/all.csv")
+    df = pd.read_csv("{}/car_model/generalization/all.csv".format(str_home))
     matrix_df = df.as_matrix()
 
     # x,y = make_classification(n_samples=1000000,n_features=16,n_informative=8,n_classes=2)

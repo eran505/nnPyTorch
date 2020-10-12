@@ -374,7 +374,7 @@ def MainLoader():
     np.random.seed(SEED)
     dir_data = "{}/car_model/generalization/3data".format(home)
     print(dir_data)
-    Q_csv = "{}/split/split_ad.csv".format(dir_data)
+    Q_csv = "{}/Q.csv".format(dir_data)
     p_csv = "{}/p.csv".format(dir_data)
     map_csv = "{}/map.csv".format(dir_data)
     con_csv = "{}/con.csv".format(dir_data)
@@ -390,7 +390,7 @@ def MainLoader():
     x,y = q.get_data_set(all_together=True)
     print()
     #print((Counter(y)))
-    file_name = str(Q_csv).split('/')[-1].split(".")[0]
+    file_name = "F_"+str(Q_csv).split('/')[-1].split(".")[0]
     q.save_data(file_name)
 
     #x=x[:10000]
