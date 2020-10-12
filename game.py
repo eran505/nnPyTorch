@@ -253,7 +253,7 @@ if __name__ == "__main__":
     data_path = "{}/car_model/generalization/3data".format(home)
     nn_path = "{}/car_model/nn".format(home)
 
-    for i in range(16,28):
+    for i in range(0,40):
         g = Game(data_path, nn_path, i)
         g.main_loop(100)
         l.append(g.info[2])
