@@ -348,7 +348,7 @@ def main(in_dim, train_dataset, test_dataset=None):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 200
+    num_iterations = 50
     lrmodel = LR(in_dim).double()
     lrmodel = lrmodel.to(device)
 

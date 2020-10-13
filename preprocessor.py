@@ -370,10 +370,16 @@ def only_max_value(df):
     l_col_v = l_col[-27:]
     print(l_col_v)
     df['max'] = df.iloc[:, -27:].max(axis=1)
+    df['arg_max'] = df.iloc[:, -27:].idxmax(axis=1)
+
     for i in l_col_v:
         df.loc[(df['max'] > df[i]) & (df[i] > 0), i] = -100
+    for i in l_col_v:
+        df.loc[(df['max'] == df[i]) & (i > df['arg_max']), i] = -100
     del df['max']
+    del df['arg_max']
     return df
+
 
 
 home = expanduser("~")
@@ -417,5 +423,5 @@ def MainLoader():
 
 
 if __name__ == "__main__":
-    #only_max_value("/home/ERANHER/car_model/generalization/all.csv")
+    only_max_value(pd.read_csv("/home/ERANHER/car_model/generalization/all.csv",index_col=0))
     MainLoader()
