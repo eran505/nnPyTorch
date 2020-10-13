@@ -376,6 +376,8 @@ def only_max_value(df):
         df.loc[(df['max'] > df[i]) & (df[i] > 0), i] = -100
     for i in l_col_v:
         df.loc[(df['max'] == df[i]) & (i > df['arg_max']), i] = -100
+    for i in l_col_v:
+        df.loc[(df['max'] == df[i]) & (i == df['arg_max']), i] = 100
     del df['max']
     del df['arg_max']
     return df

@@ -140,9 +140,9 @@ class AgentD(object):
         #print(len(f))
         expected_reward_y = self.nn(torch.tensor(norm(f)).unsqueeze(0).float()) #.double()
         arg_max_action = np.argmax(expected_reward_y.detach().numpy())
-        # print("A{} D{}".format(pos_A.flatten(),self.cur_state.flatten()))
-        # print("{}   argmax={} ".format(expected_reward_y.tolist(), arg_max_action))
-        # print('-'*10)
+        print("A{} D{}".format(pos_A.flatten(),self.cur_state.flatten()))
+        print("{}   argmax={} ".format(expected_reward_y.tolist(), arg_max_action))
+        print('-'*10)
         return arg_max_action
 
     def get_F_D(self, posA):
