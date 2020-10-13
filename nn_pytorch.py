@@ -304,8 +304,8 @@ class DataSet(object):
         ptp_arr = table_data.ptp(0)
         print(list(min_arr))
         print(list(ptp_arr))
-        min_arr = [10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        ptp_arr = [162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0, 300.0, 300.0, 3.0, 162.0, 160.0, 3.0]
+        # min_arr = [10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        # ptp_arr = [162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0, 300.0, 300.0, 3.0, 162.0, 160.0, 3.0]
 
         print("####" * 50)
         return (table_data - min_arr) / ptp_arr
@@ -422,7 +422,8 @@ if __name__ == "__main__":
     end = time.time()
     print("MainLoader Time: {}".format(end - start))
     df = pd.read_csv("{}/car_model/generalization/all.csv".format(str_home),index_col=0)
-    matrix_df = df[756250:857255].to_numpy()
+    df = pr.only_max_value(df)
+    matrix_df = df.to_numpy()
     print(len(list(df)))
 
     # x,y = make_classification(n_samples=1000000,n_features=16,n_informative=8,n_classes=2)

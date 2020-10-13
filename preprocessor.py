@@ -364,17 +364,15 @@ class RegressionFeature(object):
         self.d.update(tmp)
 
 
-def only_max_value(df_path):
-    df = pd.read_csv(df_path,index_col=0)
+def only_max_value(df):
     l_col = list(df)
-    print(l_col)
     l_col_v = l_col[-27:]
     print(l_col_v)
-    df=df[:10]
     df['max']=df.iloc[:,-27:].max(axis=1)
-    np.where(df['max'] > df[l_col_v[0]] and df[l_col_v[0]] > 0, 0, -1)
-    #df.loc[df['max'] > df[l_col_v[0]] and  df[l_col_v[0]]>0 , [df[l_col_v[0]]]] = 0
-    exit()
+    for i in l_col_v:
+        df.loc[(df['max'] > df[i]) & (df[i]>0), i] = 0
+    del df['max']
+    return df
 
 home = expanduser("~")
 if home.__contains__('lab2'):

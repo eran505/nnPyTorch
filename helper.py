@@ -17,6 +17,9 @@ def plot_loss(path):
     plt.show()
 
 
+
+
+
 if __name__ == "__main__":
     plot_loss("/home/ERANHER/car_model/nn/loss_train.csv")
     pass
