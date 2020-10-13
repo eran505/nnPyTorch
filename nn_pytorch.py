@@ -55,17 +55,18 @@ class LR(nn.Module):
         self.classifier = nn.Sequential(
 
             self.make_linear(dim, hidden, a, b),
-            nn.BatchNorm1d(hidden),  # applying batch norm
             nn.ReLU(),
+            nn.BatchNorm1d(hidden),  # applying batch norm
             self.make_linear(hidden, hidden, a, b),
-            nn.BatchNorm1d(hidden),
+            #nn.BatchNorm1d(hidden),
             nn.ReLU(),
             self.make_linear(hidden, sec_hidden, a, b),
-            nn.BatchNorm1d(sec_hidden),  # applying batch norm
+            #nn.BatchNorm1d(sec_hidden),  # applying batch norm
             nn.ReLU(),
             self.make_linear(sec_hidden, sec_hidden, a, b),
-            nn.BatchNorm1d(sec_hidden),  # applying batch norm
             nn.ReLU(),
+            nn.BatchNorm1d(sec_hidden),  # applying batch norm
+
             self.make_linear(sec_hidden, out, a, b)
         )
 
@@ -424,6 +425,8 @@ if __name__ == "__main__":
     df = pd.read_csv("{}/car_model/generalization/all.csv".format(str_home),index_col=0)
     df = pr.only_max_value(df)
     matrix_df = df.to_numpy()
+
+
     print(len(list(df)))
 
     # x,y = make_classification(n_samples=1000000,n_features=16,n_informative=8,n_classes=2)
