@@ -422,7 +422,7 @@ if __name__ == "__main__":
     # x, y = pr.MainLoader()
     end = time.time()
     print("MainLoader Time: {}".format(end - start))
-    df = pd.read_csv("{}/car_model/generalization/4data/dataNN/all.csv".format(str_home),index_col=0)
+    df = pd.read_csv("{}/car_model/generalization/4data/dataNN/all.csv".format(str_home))
     df = pr.only_max_value(df)
     matrix_df = df.to_numpy()
 
