@@ -366,6 +366,7 @@ class RegressionFeature(object):
 
 
 def only_max_value(df):
+    return df
     l_col = list(df)
     l_col_v = l_col[-27:]
     print(l_col_v)
@@ -377,7 +378,7 @@ def only_max_value(df):
     for i in l_col_v:
         df.loc[(df['max'] == df[i]) & (i > df['arg_max']), i] = -100
     for i in l_col_v:
-        df.loc[(df['max'] == df[i]) & (i == df['arg_max']), i] = 100
+        df.loc[(df['max'] == df[i]) & (i == df['arg_max']), i] = 1000
     del df['max']
     del df['arg_max']
     return df

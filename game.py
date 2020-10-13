@@ -153,7 +153,7 @@ class AgentD(object):
 
     def next_move(self, pos_A,num_repeated_action):
         action_a_id = self.get_move_all(pos_A)
-        #action_a_id=1
+
         for _ in range(num_repeated_action):
             self.apply_action(action_a_id)
 
