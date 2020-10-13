@@ -93,7 +93,7 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=4, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=5, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = None
@@ -122,7 +122,7 @@ class NeuralNetwork(object):
         self.optimizer.zero_grad()
         # Computes loss
         loss = self.loss_function(yhat, y)  # .detach().float())
-        # print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
+        #print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
         # Computes gradients
         loss.backward()
         # Updates parameters and zeroes gradients
@@ -131,7 +131,7 @@ class NeuralNetwork(object):
         # Returns the loss
         return loss.item()
 
-    def fit_model(self, n_epochs, train_dataset, validtion_datatest):
+    def fit_model(self, n_epochs, train_dataset, validtion_datatest=None):
         # For each epoch...
 
         ctr = 0
@@ -304,8 +304,8 @@ class DataSet(object):
         ptp_arr = table_data.ptp(0)
         print(list(min_arr))
         print(list(ptp_arr))
-        # min_arr = [10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        # ptp_arr = [162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0, 300.0, 300.0, 3.0, 162.0, 160.0, 3.0]
+        min_arr = [10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        ptp_arr = [162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0, 300.0, 300.0, 3.0, 162.0, 160.0, 3.0]
 
         print("####" * 50)
         return (table_data - min_arr) / ptp_arr
@@ -324,10 +324,10 @@ class DataSet(object):
 
     @staticmethod
     def make_DataSet(X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None, pin_memo=False):
-        # sampler = WeightedRandomSampler(
-        #     weights=samples_weights,
-        #     num_samples=len(samples_weights),
-        #     replacement=True)
+        sampler = WeightedRandomSampler(
+            weights=samples_weights,
+            num_samples=len(samples_weights),
+            replacement=True)
         print("-----------batch size = {}".format(size_batch))
         if device.type != 'cpu':
             pin_memo = True
@@ -336,19 +336,19 @@ class DataSet(object):
         tensor_y = torch.tensor(y_data, dtype=torch.float64).contiguous()
         my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
         my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0
-                                   )#, sampler=sampler, pin_memory=pin_memo)  # ),)  # create your dataloader
+                                   , sampler=sampler, pin_memory=pin_memo)  # ),)  # create your dataloader
         return my_dataloader
 
 
 
-def main(in_dim, train_dataset, test_dataset):
+def main(in_dim, train_dataset, test_dataset=None):
     print(device)
     SEED = 2809
     torch.manual_seed(SEED)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 40
+    num_iterations = 200
     lrmodel = LR(in_dim).double()
     lrmodel = lrmodel.to(device)
 
@@ -366,8 +366,8 @@ def main(in_dim, train_dataset, test_dataset):
 
 
 def test_main(path_to_model):
-    df = pd.read_csv("/home/ERANHER/car_model/generalization/all.csv", index_col=0)
-    matrix_df = df[756253:856255].to_numpy()  # [756251:756254]
+    df = pd.read_csv("/home/ERANHER/car_model/generalization/rel_state_Q.csv", index_col=0)
+    matrix_df = df.to_numpy()  # [756251:756254]
     print(len(matrix_df[:, :-27]))
     print(matrix_df)
     obj = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
@@ -429,7 +429,9 @@ if __name__ == "__main__":
     # x,y = make_classification(n_samples=1000000,n_features=16,n_informative=8,n_classes=2)
     # x = x[number:number * 2]
     # y = y[number:number * 2]
+    test_loader=None
     DataLoder = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
+    #train_loader = DataSet.make_DataSet(DataLoder.data,DataLoder.targets,3)
     train_loader, test_loader = DataLoder.split_test_train(0.000001)
 
     # train_loader = FastTensorDataLoader(torch.tensor(x[:-100]).float(),torch.tensor(y[:-100]).float(),batch_size=4)
@@ -437,6 +439,6 @@ if __name__ == "__main__":
     # df = pd.read_csv("/home/eranhe/car_model/generalization/first_stateV2.csv",sep='\t',index_col=0)
     # df= df.as_matrix()
     # first_state_loader = DataLoder.make_dataLoader(df[:,:-27],df[:,-27:])
-    print(len(train_loader))
-    print(len(test_loader))
+    #print(len(train_loader))
+
     main(matrix_df.shape[-1] - 27, train_loader, test_loader)
