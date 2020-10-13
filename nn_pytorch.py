@@ -304,8 +304,8 @@ class DataSet(object):
         ptp_arr = table_data.ptp(0)
         print(list(min_arr))
         print(list(ptp_arr))
-        min_arr = [10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        ptp_arr = [162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0, 300.0, 300.0, 3.0, 162.0, 160.0, 3.0]
+        # min_arr = [10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        # ptp_arr = [162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0, 300.0, 300.0, 3.0, 162.0, 160.0, 3.0]
 
         print("####" * 50)
         return (table_data - min_arr) / ptp_arr
@@ -348,7 +348,7 @@ def main(in_dim, train_dataset, test_dataset=None):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 50
+    num_iterations = 200
     lrmodel = LR(in_dim).double()
     lrmodel = lrmodel.to(device)
 
