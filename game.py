@@ -140,9 +140,9 @@ class AgentD(object):
         #print(len(f))
         expected_reward_y = self.nn(torch.tensor(norm(f)).unsqueeze(0).float()) #.double()
         arg_max_action = np.argmax(expected_reward_y.detach().numpy())
-        print("A{} D{}".format(pos_A.flatten(),self.cur_state.flatten()))
-        print("{}   argmax={} ".format(expected_reward_y.tolist(), arg_max_action))
-        print('-'*10)
+        # print("A{} D{}".format(pos_A.flatten(),self.cur_state.flatten()))
+        # print("{}   argmax={} ".format(expected_reward_y.tolist(), arg_max_action))
+        # print('-'*10)
         return arg_max_action
 
     def get_F_D(self, posA):
@@ -254,7 +254,7 @@ if __name__ == "__main__":
     data_path = "{}/car_model/generalization/3data".format(home)
     nn_path = "{}/car_model/nn".format(home)
 
-    for i in range(0,40):
+    for i in range(0,55):
         g = Game(data_path, nn_path, i)
         g.main_loop(100)
         l.append(g.info[2])

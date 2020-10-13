@@ -189,7 +189,7 @@ class QTable(object):
 
         self.df_raw = pd.read_csv(csv_table, sep=';')
         self.map_df = pd.read_csv(csv_map, sep=';', names=names)
-
+        self.df_raw=self.df_raw[1000000:]
         self.merge_dfs()
         self.make_features_df()
 
@@ -393,12 +393,12 @@ if home.__contains__('lab2'):
 def MainLoader():
     SEED = 2000
     np.random.seed(SEED)
-    dir_data = "{}/car_model/generalization/3data".format(home)
+    dir_data = "{}/car_model/generalization/4data".format(home)
     print(dir_data)
     # Q_csv = "{}/Q.csv".format(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)
     p_csv = "{}/p.csv".format(dir_data)
-    map_csv = "{}/Last_States.csv".format(dir_data)  # map.csv
+    map_csv = "{}/map.csv".format(dir_data)  # map.csv
     con_csv = "{}/con.csv".format(dir_data)
 
     loader = Loader(dir_data)
@@ -412,7 +412,7 @@ def MainLoader():
     x, y = q.get_data_set(all_together=True)
     print()
     # print((Counter(y)))
-    file_name = "rel_state_" + str(Q_csv).split('/')[-1].split(".")[0]
+    file_name = "all_" + str(Q_csv).split('/')[-1].split(".")[0]
     q.save_data(file_name)
 
     # x=x[:10000]

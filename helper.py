@@ -27,9 +27,18 @@ def value_statistic(matrix_df):
         print("{},{}".format(item[0],item[1]))
     exit()
 
+def concat_df():
+    res = pt.walk_rec("/home/ERANHER/car_model/generalization/4data/dataNN",[],".csv")
+    l=[]
+    for item in res:
+        l.append(pd.read_csv(item))
+    df_all = pd.concat(l)
+    df_all.to_csv("/home/ERANHER/car_model/generalization/4data/dataNN/all.csv",index=False)
 
 
 
 if __name__ == "__main__":
+    concat_df()
+    exit()
     plot_loss("/home/ERANHER/car_model/nn/loss_train.csv")
     pass
