@@ -146,7 +146,8 @@ class AttackerPaths(object):
 
 class QTable(object):
 
-    def __init__(self, csv_table, csv_map, attcker_p, dico_game_setting):
+    def __init__(self, csv_table, csv_map, attcker_p, dico_game_setting,csv_last):
+        self.add_ctr=True
         self.bins = 2
         self.ctr = 0
         self.regressor = RegressionFeature(attcker_p, dico_game_setting)
@@ -156,7 +157,7 @@ class QTable(object):
         self.df_raw = None
         self.map_df = None
         self.state_vector = None
-        self.loader(csv_table, csv_map)
+        self.loader(csv_table, csv_map,csv_last)
 
     def make_target_bins_nominal(self, bin=4):
         if bin == 0:
@@ -182,7 +183,7 @@ class QTable(object):
         #     print("{}-->{}".format(item_i,y_new[i]))
         #     assert(bin_map[y_item.index(item_i)]==y_new[i])
 
-    def loader(self, csv_table, csv_map):
+    def loader(self, csv_table, csv_map,csv_last_states):
 
         names = ["S" + str(i) for i in range(1, 13)]
         names.insert(0, "id")
@@ -190,25 +191,43 @@ class QTable(object):
         self.df_raw = pd.read_csv(csv_table, sep=';')
         self.map_df = pd.read_csv(csv_map, sep=';', names=names)
         #self.df_raw=self.df_raw[]
-        self.merge_dfs()
+        self.merge_dfs(csv_last_states)
         self.make_features_df()
 
         array_state_F = self.make_new_state_F(self.matrix_f[:, :12])
         data = np.append(array_state_F, self.matrix_f[:, 12:], axis=1)
         df_tmp = pd.DataFrame(data)
-        self.make_matrix_flat_V2(df_tmp)
+
+        #self.make_matrix_flat_V2(df_tmp)
 
         self.matrix_f = np.array(data)
 
-    def merge_dfs(self):
+    def merge_dfs(self,csv_last_states):
         print(list(self.df_raw))
         print("self.df_raw:", len(self.df_raw))
         print("map_df:", len(self.map_df))
         self.map_df['id'] = self.map_df['id'].astype('uint64')
         self.df_raw = pd.merge(self.map_df, self.df_raw, how='inner', on=['id'])
+
+        if self.add_ctr:
+            self.df_raw = self.add_ctr_col(csv_last_states)
+
         self.map_df = None
         print(len(self.df_raw))
         print()
+
+    def add_ctr_col(self,csv_last_states):
+        ctr_df = self.get_count_state(csv_last_states)
+        df_raw = pd.merge(self.df_raw, ctr_df, how='left', on=['id'])
+        df_raw['ctr'].fillna(1,inplace=True)
+        return df_raw
+    def get_count_state(self,csv_last):
+        colz = ["S" + str(i) for i in range(1, 13)]
+        colz.insert(0, "id")
+        colz.append("ctr")
+        df_last_states = pd.read_csv(csv_last,names=colz,sep=';')
+        df_last_states['id'] = df_last_states['id'].astype('uint64')
+        return df_last_states[["id","ctr"]]
 
     def make_features_df(self):
         # self.make_target_bins_nominal()
@@ -304,7 +323,7 @@ class QTable(object):
 
     def save_data(self, name_file):
         df = pd.DataFrame(self.matrix_f)
-        df.to_csv("{}/car_model/generalization/4data/{}.csv".format(home, name_file),index=False)
+        df.to_csv("{}".format(name_file),index=False)
 
 
 class RegressionFeature(object):
@@ -393,13 +412,14 @@ if home.__contains__('lab2'):
 def MainLoader():
     SEED = 2000
     np.random.seed(SEED)
-    dir_data = "{}/car_model/generalization/4data".format(home)
+    dir_data = "{}/car_model/generalization/6data".format(home)
     print(dir_data)
     # Q_csv = "{}/Q.csv".format(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)
     p_csv = "{}/p.csv".format(dir_data)
-    map_csv = "{}/Last_States.csv".format(dir_data)  # map.csv
+    map_csv = "{}/map.csv".format(dir_data)  # map.csv
     con_csv = "{}/con.csv".format(dir_data)
+    csv_last_states = "{}/Last_States.csv".format(dir_data)
 
     loader = Loader(dir_data)
     loader.load_p(p_csv)
@@ -408,12 +428,11 @@ def MainLoader():
     attacker_paths = loader.get_path_object()
     print(dico_info_game)
 
-    q = QTable(Q_csv, map_csv, attacker_paths, dico_info_game)
+    q = QTable(Q_csv, map_csv, attacker_paths, dico_info_game,csv_last_states)
     x, y = q.get_data_set(all_together=True)
     print()
     # print((Counter(y)))
-    file_name = "litt"
-    q.save_data(file_name)
+    q.save_data("{}/all.csv".format(dir_data))
 
     # x=x[:10000]
     # y=y[:10000]

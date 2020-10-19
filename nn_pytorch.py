@@ -67,7 +67,8 @@ class LR(nn.Module):
             # self.make_linear(sec_hidden, sec_hidden, a, b),
             # nn.Tanh(),
              #nn.BatchNorm1d(sec_hidden),  # applying batch norm
-            self.make_linear(hidden, out, a, b)
+            self.make_linear(sec_hidden, out, a, b)
+            ,nn.LogSoftmax()
         )
 
     def forward(self, x):
@@ -94,7 +95,7 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=5, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=3, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = None
@@ -122,7 +123,9 @@ class NeuralNetwork(object):
 
         self.optimizer.zero_grad()
         # Computes loss
-        loss = self.loss_function(yhat, y)#)reduction="sum")  # .detach().float())
+        #y = nn.Softmax(y)
+        loss = self.loss_function(yhat,y )#)reduction="sum")  # .detach().float())
+
         #print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
         # Computes gradients
         loss.backward()
@@ -164,7 +167,7 @@ class NeuralNetwork(object):
                 l_time.append(time.process_time() - t)
 
                 self.losses_train.append([loss, epoch])
-                if ctr % 100 == 0:
+                if ctr % 10000 == 0:
                     test_loader_iter = iter(validtion_datatest)
                     self.eval_nn(test_loader_iter)
 
@@ -197,9 +200,9 @@ class NeuralNetwork(object):
 
                 yhat = self.nn_model(x_val)
                 # print("X:{}\t\tY^:{}\t\tY:{}".format(x_val.tolist(),yhat.tolist(),y_val.tolist()))
-                val_loss = self.loss_function(y_val, yhat,reduction="sum")
+                val_loss = self.loss_function(y_val, yhat)
                 self.losses_test.append(val_loss.item())
-
+                break
             print("test loss= avg:{}  max:{}".format(sum(self.losses_test) / len(self.losses_test),max(self.losses_test)))
 
     def log_to_files(self):
@@ -214,18 +217,22 @@ class NeuralNetwork(object):
 
 class DataSet(object):
 
-    def __init__(self, data, targets):
+    def __init__(self, data, targets,W=[]):
         print("data shape:{}\ntarget shape:{}\n".format(data.shape, targets.shape))
         self.data = data
         self.targets = targets
-        self.weights = []
+        self.weights = W
         self.debug_d = None
         self.data = self.norm_without_negative(self.data)
         print(len(self.targets))
-        self.targets = self.minmax(self.targets)
+        self.targets = self.min_max_zero_to_one(self.targets)
         print(len(self.targets))
         print("done")
-        self.imbalanced_data_set_weight()
+        if len(W)==0:
+            self.imbalanced_data_set_weight()
+        else:
+            self.weights = normalize(self.weights[:,np.newaxis], axis=0).ravel()
+
 
     def __getitem__(self, index):
         x = self.data[index]
@@ -235,21 +242,11 @@ class DataSet(object):
     def __len__(self):
         return len(self.data)
 
-    def make_dataLoader(self, x, y):
-        min_ = [10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0,
-                0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        ptp_ = [162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0,
-                2.0, 2.0, 300.0, 300.0, 3.0, 162.0, 160.0, 3.0]
-
-        x = (x - min_) / ptp_
-        tensor_x = torch.tensor(x, requires_grad=False, dtype=torch.double)
-        tensor_y = torch.tensor(y)
-        my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
-        my_dataloader = DataLoader(my_dataset, shuffle=True, batch_size=len(y), num_workers=0)
-        return my_dataloader
-
-    def minmax(self, foo):
+    def scale_negtive_one_to_one(self, foo):
         return preprocessing.maxabs_scale(foo)
+
+    def min_max_zero_to_one(self,foo):
+        return preprocessing.minmax_scale(foo)
 
     def norm(self):
         self.data = normalize(self.data, axis=0, norm='l1')
@@ -320,17 +317,18 @@ class DataSet(object):
                                             samples_weights=w_train)
         # l = torch.multinomial(torch.tensor(w_test),len(w_test),False).tolist()
 
-        loader_test = DataSet.make_DataSet(X_test, y_test, size_batch=1, samples_weights=w_test)
+        loader_test = DataSet.make_DataSet(X_test, y_test, size_batch=16, samples_weights=w_test)
 
         return loader_train, loader_test
 
     @staticmethod
-    def make_DataSet(X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None, pin_memo=False,over_sample=False):
+    def make_DataSet(X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None
+                     , pin_memo=False,over_sample=True):
         sampler=None
-        # sampler = WeightedRandomSampler(
-        #     weights=samples_weights,
-        #     num_samples=len(samples_weights),
-        #     replacement=True)
+        sampler = WeightedRandomSampler(
+            weights=samples_weights,
+            num_samples=len(samples_weights),
+            replacement=True)
         print("-----------batch size = {}".format(size_batch))
         if device.type != 'cpu':
             pin_memo = True
@@ -359,8 +357,9 @@ def main(in_dim, train_dataset, test_dataset=None):
     lrmodel = LR(in_dim).double()
     lrmodel = lrmodel.to(device)
 
-    # loss = F.l2_loss
-    loss = F.mse_loss
+    loss = nn.NLLLoss
+    loss = nn.functional.kl_div
+    loss= nn.KLDivLoss()
     #loss = XSigmoidLoss()
     #loss=F.smooth_l1_loss
     # SGD/Adam
@@ -415,7 +414,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 16751
+batch_size = 32
 
 # 756253:756251 index
 
@@ -432,28 +431,28 @@ if __name__ == "__main__":
     start = time.time()
     # x, y = pr.MainLoader()
     end = time.time()
-    df = pd.read_csv("{}/car_model/generalization/4data/nn_DATA/rel.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/5data/all.csv".format(str_home))
     print(len(df))
-    df = df.sample(frac=1).reset_index(drop=True)
+    #df = df.sample(frac=1).reset_index(drop=True)
     print(len(df))
-    df = pr.only_max_value(df)
+    #df = pr.only_max_value(df)
     matrix_df = df.to_numpy()
 
 
     print(len(list(df)))
 
     test_loader=None
-    DataLoder = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
+    DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])
     train_loader, _ = DataLoder.split_test_train(0.0000001)
 
-    df = pd.read_csv("{}/car_model/generalization/4data/nn_DATA/rel.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/5data/all.csv".format(str_home))
     df = pr.only_max_value(df)
     matrix_df = df.to_numpy()
-    DataLoder = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
-    _, test_loader = DataLoder.split_test_train(0.5)
+    DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])
+    _, test_loader = DataLoder.split_test_train(0.1)
 
 
 
     print("len - train_loader:",len(train_loader))
 
-    main(matrix_df.shape[-1] - 27, train_loader, test_loader)
+    main(matrix_df.shape[-1] - 28, train_loader, test_loader)

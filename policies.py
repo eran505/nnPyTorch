@@ -1,24 +1,53 @@
-import os
 import pandas as pd
-import helper as hlp
+from os.path import expanduser
+import numpy as np
+import hashlib
 
-def func(dataPoint):
+class Qpolicy(object):
 
-    seed = 0
-    i = 0
-    while True:
-        seed ^= dataPoint[i][0] + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= dataPoint[i][1] + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= dataPoint[i][2] + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        i+=1
-        print("\n\nin")
-        if i == 4:
-            break
-    return seed
+    def __init__(self):
+        self.home = expanduser("~")
+        self.Q=None
+        self.rel=None
+        self.map= {}
+        self.matrix_f=None
+        self.loader_all_data()
+
+    def loader_all_data(self,csv_table="/home/ERANHER/car_model/debug/Q.csv",csv_map="/home/ERANHER/car_model/debug/map.csv"):
+        names = ["S" + str(i) for i in range(1, 13)]
+        names.insert(0, "id")
+
+        df_raw = pd.read_csv(csv_table, sep=';')
+        map_df = pd.read_csv(csv_map, sep=';', names=names)
+        map_df['id'] = map_df['id'].astype('uint64')
+
+        df_raw = pd.merge(map_df, df_raw, how='inner', on=['id'])
+        ctr_df = self.get_count_state()
+        df_raw = pd.merge(df_raw, ctr_df, how='left', on=['id'])
+        df_raw['ctr'].fillna(1,inplace=True)
+        self.colz=list(df_raw)
+        print(self.colz)
+        df_raw.to_csv("{}/car_model/generalization/5data/f.csv".format(self.home),index=False)
+        self.matrix_f = df_raw.to_numpy()
+        idz = self.matrix_f[:,0]
+        for i,id_number in enumerate(idz):
+            self.map[self.hash_func(self.matrix_f[i,1:13])]=(i,id_number)
+        print("END")
+
+    def hash_func(self,dataPoint):
+        return hash(tuple(dataPoint))
+
+    def get_count_state(self,):
+        colz = ["S" + str(i) for i in range(1, 13)]
+        colz.insert(0, "id")
+        colz.append("ctr")
+
+        df_last_states = pd.read_csv("{}/car_model/debug/Last_States.csv".format(self.home),names=colz,sep=';')
+        df_last_states['id'] = df_last_states['id'].astype('uint64')
+
+        return df_last_states[["id","ctr"]]
 
 
 if __name__ == "__main__":
-    hash =  9932841145013996982
-    x    =  205026338093898251492784180662
-    l=[(121,122,0),(2,2,0),(128,128,0),(-1,-1,0)]
-    print(func(l))
+    q = Qpolicy()
+    pass

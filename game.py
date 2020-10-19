@@ -7,9 +7,10 @@ from preprocessor import Loader, RegressionFeature
 from socket import gethostname
 
 
-min_ = np.array([10.0, 10.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 162.0, 165.0, 0.0, -1.0, -1.0, -1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
-ptp_ = np.array([138.0, 135.0, 3.0, 300.0, 300.0, 2.0, 158.0, 299.0, 299.0, 2.0, 2.0, 2.0, 1.0, 138.0, 135.0, 3.0, 2.0, 2.0, 2.0, 299.0, 299.0, 2.0, 138.0, 135.0, 3.0])
-
+min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -2.0, -2.0, -1.0, 131.0, 131.0, 0.0, -1.0, -1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+ptp_ = np.array([168.0, 168.0, 3.0, 299.0, 299.0, 3.0, 167.0, 260.0, 269.0, 3.0, 4.0, 4.0, 2.0, 168.0, 168.0, 3.0, 2.0, 2.0, 2.0, 260.0, 269.0, 3.0, 129.0, 139.0, 3.0])
+# min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -2.0, -2.0, -1.0, 131.0, 131.0, 0.0, -1.0, -1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+# ptp_ = np.array([168.0, 168.0, 3.0, 299.0, 299.0, 3.0, 167.0, 260.0, 269.0, 3.0, 4.0, 4.0, 2.0, 168.0, 168.0, 3.0, 2.0, 2.0, 2.0, 260.0, 269.0, 3.0, 129.0, 139.0, 3.0])
 
 def norm(f):
     f_norm = (f - min_) / ptp_
@@ -187,6 +188,7 @@ class Game(object):
         self.d_setting=None
         self.D = None
         self.A = None
+        self.debug_dict={}
         self.get_info_game(dir_data)
         self.info = np.zeros(3)
         self.construct(dir_data, dir_nn, num)
@@ -207,18 +209,19 @@ class Game(object):
                         np.array([self.d_setting['D_start'].squeeze(0), np.zeros(3)]))
 
     def main_loop(self, max_iter):
+        d={}
         for _ in range(max_iter):
             self.A.reset()
             self.D.reset()
             while True:
                 num_actions = schedulerAction.get_move(np.abs(self.A.cur_state[0,:]-self.D.cur_state[0,:]))
+                self.inset_to_debug_dict(num_actions)
                 #self.print_state(num_actions)
                 if self.mini_game_end():
                     #print("END")
                     break
                 self.D.next_move(self.A.cur_state,num_actions)
                 self.A.next_move(num_actions)
-
         self.print_info()
 
     def mini_game_end(self):
@@ -234,6 +237,14 @@ class Game(object):
 
     def print_info(self):
         print("Goal:{}\tWall:{}\tCollision:{}".format(self.info[0], self.info[1], self.info[2]))
+        acc= sum(self.debug_dict.values())
+        for key in sorted(self.debug_dict.keys()):
+            print("{} : {}".format(key,self.debug_dict[key]/acc))
+
+    def inset_to_debug_dict(self,action_num):
+        if action_num not in self.debug_dict:
+            self.debug_dict[action_num]=0
+        self.debug_dict[action_num]+=1
 
     def if_A_at_goal(self, pos_A):
         for item_goal in self.golas:
@@ -250,10 +261,11 @@ if __name__ == "__main__":
 
     home = expanduser("~")
 
-    data_path = "{}/car_model/generalization/4data".format(home)
+    data_path = "{}/car_model/generalization/5data".format(home)
     nn_path = "{}/car_model/nn".format(home)
 
-    for i in range(0,8):
+    for i in range(0,26):
+        print("NN[{}]".format(i))
         g = Game(data_path, nn_path, i)
         g.main_loop(300)
         l.append(g.info[2])
