@@ -7,10 +7,8 @@ from preprocessor import Loader, RegressionFeature
 from socket import gethostname
 
 
-min_ = np.array([10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0])
-ptp_ = np.array([162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0,
-        300.0, 300.0, 3.0, 162.0, 160.0, 3.0])
+min_ = np.array([10.0, 10.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 162.0, 165.0, 0.0, -1.0, -1.0, -1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+ptp_ = np.array([138.0, 135.0, 3.0, 300.0, 300.0, 2.0, 158.0, 299.0, 299.0, 2.0, 2.0, 2.0, 1.0, 138.0, 135.0, 3.0, 2.0, 2.0, 2.0, 299.0, 299.0, 2.0, 138.0, 135.0, 3.0])
 
 
 def norm(f):
@@ -137,12 +135,13 @@ class AgentD(object):
         f = self.get_F_D(pos_A)
         f = np.hstack((f.flatten())).ravel()
         f = f.astype('f')
-        #print(len(f))
+        # print((f))
         expected_reward_y = self.nn(torch.tensor(norm(f)).unsqueeze(0).float()) #.double()
         arg_max_action = np.argmax(expected_reward_y.detach().numpy())
         # print("A{} D{}".format(pos_A.flatten(),self.cur_state.flatten()))
         # print("{}   argmax={} ".format(expected_reward_y.tolist(), arg_max_action))
         # print('-'*10)
+        # exit()
         return arg_max_action
 
     def get_F_D(self, posA):
@@ -251,12 +250,12 @@ if __name__ == "__main__":
 
     home = expanduser("~")
 
-    data_path = "{}/car_model/generalization/3data".format(home)
+    data_path = "{}/car_model/generalization/4data".format(home)
     nn_path = "{}/car_model/nn".format(home)
 
-    for i in range(0,55):
+    for i in range(0,8):
         g = Game(data_path, nn_path, i)
-        g.main_loop(100)
+        g.main_loop(300)
         l.append(g.info[2])
     x = np.argmax(np.array(l))
 

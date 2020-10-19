@@ -20,6 +20,7 @@ from sklearn.datasets import make_regression, make_classification
 from my_losses import XTanhLoss, LogCoshLoss, XSigmoidLoss
 from fast_data_loader import FastTensorDataLoader
 
+
 # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # print(device)
 
@@ -48,26 +49,25 @@ def normalize_d(d, target=1.0):
 
 
 class LR(nn.Module):
-    def __init__(self, dim, out=27, hidden=400, sec_hidden=300, a=-1.0, b=1.0):
+    def __init__(self, dim, out=27, hidden=300, sec_hidden=300, a=-1.0, b=1.0):
         super(LR, self).__init__()
         # intialize parameters
 
         self.classifier = nn.Sequential(
 
             self.make_linear(dim, hidden, a, b),
-            nn.ReLU(),
-            nn.BatchNorm1d(hidden),  # applying batch norm
-            self.make_linear(hidden, hidden, a, b),
-            #nn.BatchNorm1d(hidden),
-            nn.ReLU(),
+            nn.PReLU(),
+            # nn.BatchNorm1d(hidden),  # applying batch norm
+            # self.make_linear(hidden, hidden, a, b),
+            # #nn.BatchNorm1d(hidden),
+            # nn.Tanh(),
             self.make_linear(hidden, sec_hidden, a, b),
-            #nn.BatchNorm1d(sec_hidden),  # applying batch norm
-            nn.ReLU(),
-            self.make_linear(sec_hidden, sec_hidden, a, b),
-            nn.ReLU(),
-            nn.BatchNorm1d(sec_hidden),  # applying batch norm
-
-            self.make_linear(sec_hidden, out, a, b)
+            # #nn.BatchNorm1d(sec_hidden),  # applying batch norm
+            nn.PReLU(),
+            # self.make_linear(sec_hidden, sec_hidden, a, b),
+            # nn.Tanh(),
+             #nn.BatchNorm1d(sec_hidden),  # applying batch norm
+            self.make_linear(hidden, out, a, b)
         )
 
     def forward(self, x):
@@ -122,7 +122,7 @@ class NeuralNetwork(object):
 
         self.optimizer.zero_grad()
         # Computes loss
-        loss = self.loss_function(yhat, y)  # .detach().float())
+        loss = self.loss_function(yhat, y)#)reduction="sum")  # .detach().float())
         #print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
         # Computes gradients
         loss.backward()
@@ -134,7 +134,6 @@ class NeuralNetwork(object):
 
     def fit_model(self, n_epochs, train_dataset, validtion_datatest=None):
         # For each epoch...
-
         ctr = 0
         l_time = []
         data_loader_time = []
@@ -143,6 +142,7 @@ class NeuralNetwork(object):
         for epoch in range(n_epochs):
             # Performs one train step and returns the corresponding loss
             training_loader_iter = iter(train_dataset)
+            ctr=0
             for x_train_tensor, y_train_tensor in training_loader_iter:
 
                 self.nn_model.train()
@@ -157,14 +157,16 @@ class NeuralNetwork(object):
 
                 # for auto computing the auto grad
                 t = time.process_time()
-                loss = self.train_step(x_batch, y_batch)
+                losser=[]
+
+                loss = self.train_step(x_batch,y_batch)
 
                 l_time.append(time.process_time() - t)
 
                 self.losses_train.append([loss, epoch])
-                # if ctr % 1000 == 0:
-                #     test_loader_iter = iter(validtion_datatest)
-                #     self.eval_nn(test_loader_iter)
+                if ctr % 100 == 0:
+                    test_loader_iter = iter(validtion_datatest)
+                    self.eval_nn(test_loader_iter)
 
                 # decay the learning rate
                 loss_tmp.append(loss)
@@ -185,6 +187,7 @@ class NeuralNetwork(object):
             torch.save(self.nn_model.state_dict(), "{}/car_model/nn/nn{}.pt".format(self.home, epoch))
 
     def eval_nn(self, validtion_datatest):
+        self.losses_test=[]
         with torch.no_grad():
             for x_val, y_val in validtion_datatest:
                 x_val = x_val.to(device)
@@ -194,10 +197,10 @@ class NeuralNetwork(object):
 
                 yhat = self.nn_model(x_val)
                 # print("X:{}\t\tY^:{}\t\tY:{}".format(x_val.tolist(),yhat.tolist(),y_val.tolist()))
-                val_loss = self.loss_function(y_val, yhat)
+                val_loss = self.loss_function(y_val, yhat,reduction="sum")
                 self.losses_test.append(val_loss.item())
 
-                print("test loss= {}".format(val_loss.item()))
+            print("test loss= avg:{}  max:{}".format(sum(self.losses_test) / len(self.losses_test),max(self.losses_test)))
 
     def log_to_files(self):
         hlp.log_file(self.losses_train, "{}/car_model/nn/loss_train.csv".format(self.home), ["loss", "epoch"])
@@ -305,8 +308,6 @@ class DataSet(object):
         ptp_arr = table_data.ptp(0)
         print(list(min_arr))
         print(list(ptp_arr))
-        # min_arr = [10.0, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 138.0, 140.0, 0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        # ptp_arr = [162.0, 167.0, 3.0, 300.0, 300.0, 3.0, 162.0, 300.0, 300.0, 3.0, 2.0, 2.0, 2.0, 162.0, 167.0, 3.0, 2.0, 2.0, 2.0, 300.0, 300.0, 3.0, 162.0, 160.0, 3.0]
 
         print("####" * 50)
         return (table_data - min_arr) / ptp_arr
@@ -324,11 +325,12 @@ class DataSet(object):
         return loader_train, loader_test
 
     @staticmethod
-    def make_DataSet(X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None, pin_memo=False):
-        sampler = WeightedRandomSampler(
-            weights=samples_weights,
-            num_samples=len(samples_weights),
-            replacement=True)
+    def make_DataSet(X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None, pin_memo=False,over_sample=False):
+        sampler=None
+        # sampler = WeightedRandomSampler(
+        #     weights=samples_weights,
+        #     num_samples=len(samples_weights),
+        #     replacement=True)
         print("-----------batch size = {}".format(size_batch))
         if device.type != 'cpu':
             pin_memo = True
@@ -336,9 +338,13 @@ class DataSet(object):
         tensor_x = torch.tensor(X_data, requires_grad=False, dtype=torch.float64)
         tensor_y = torch.tensor(y_data, dtype=torch.float64).contiguous()
         my_dataset = TensorDataset(tensor_x, tensor_y)  # create your datset
-        my_dataloader = DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0
+        if over_sample:
+            return DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0
                                    , sampler=sampler, pin_memory=pin_memo)  # ),)  # create your dataloader
-        return my_dataloader
+        else:
+            return DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0)
+
+
 
 
 
@@ -349,25 +355,28 @@ def main(in_dim, train_dataset, test_dataset=None):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 200
+    num_iterations = 30
     lrmodel = LR(in_dim).double()
     lrmodel = lrmodel.to(device)
 
     # loss = F.l2_loss
     loss = F.mse_loss
     #loss = XSigmoidLoss()
+    #loss=F.smooth_l1_loss
     # SGD/Adam
-    optimizer = torch.optim.Adam(lrmodel.parameters(), lr=0.01)
+    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0955)
 
     my_nn = NeuralNetwork(loss_func=loss,
                           optimizer_object=optimizer,
                           model=lrmodel)
 
+    # hlp.get_the_best_lr(lrmodel,loss,train_dataset)
+    # exit()
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
 
 def test_main(path_to_model):
-    df = pd.read_csv("/home/ERANHER/car_model/generalization/rel_state_Q.csv", index_col=0)
+    df = pd.read_csv("/home/eranhe/car_model/generalization/4data/nn_DATA/all.csv")
     matrix_df = df.to_numpy()  # [756251:756254]
     print(len(matrix_df[:, :-27]))
     print(matrix_df)
@@ -389,59 +398,62 @@ def test_main(path_to_model):
 
             my_model.eval()
             yhat = my_model(x_val)
-
+            k=0
             for i,j in list(zip(yhat, y_val.squeeze())):
-                print("Y^:{} | Y:{}".format(i,j))
+                print("{}| Y^:{} | Y:{}".format(k,i,j))
+                k+=1
 
-            sum += F.l1_loss(y_val.squeeze(), yhat).item()
+            sum += F.smooth_l1_loss(y_val.squeeze(), yhat).item()
             if ctr % 1000 == 0:
                 print("{}".format(ctr))
             ctr += 1
-            # print("---- losses --------")
-            # print("MAE: ",F.l1_loss(y_val.squeeze(), yhat).item())
-            # print("XSigmoidLoss: {}".format(my_loss_function(y_val.squeeze(), yhat).item()))
-            # print("MSE: ", F.mse_loss(y_val.squeeze(), yhat).item())
+            print("---- losses --------")
+            print("MAE: ",F.l1_loss(y_val.squeeze(), yhat).item())
+            print("MSE: ", F.mse_loss(y_val.squeeze(), yhat).item())
+            exit()
     print("SUM -> ", sum)
     exit()
 
 
-batch_size = 64
+batch_size = 16751
 
 # 756253:756251 index
 
 
 
 if __name__ == "__main__":
+    np.random.seed(3)
     str_home = expanduser("~")
     if str_home.__contains__('lab2'):
         str_home = "/home/lab2/eranher"
 
-    #test_main("{}/car_model/nn/nn10.pt".format(str_home))
+    #test_main("{}/car_model/nn/nn15.pt".format(str_home))
 
     start = time.time()
     # x, y = pr.MainLoader()
     end = time.time()
-    print("MainLoader Time: {}".format(end - start))
-    df = pd.read_csv("{}/car_model/generalization/4data/dataNN/all.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/4data/nn_DATA/rel.csv".format(str_home))
+    print(len(df))
+    df = df.sample(frac=1).reset_index(drop=True)
+    print(len(df))
     df = pr.only_max_value(df)
     matrix_df = df.to_numpy()
 
 
     print(len(list(df)))
 
-    # x,y = make_classification(n_samples=1000000,n_features=16,n_informative=8,n_classes=2)
-    # x = x[number:number * 2]
-    # y = y[number:number * 2]
     test_loader=None
     DataLoder = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
-    #train_loader = DataSet.make_DataSet(DataLoder.data,DataLoder.targets,3)
-    train_loader, test_loader = DataLoder.split_test_train(0.000001)
+    train_loader, _ = DataLoder.split_test_train(0.0000001)
 
-    # train_loader = FastTensorDataLoader(torch.tensor(x[:-100]).float(),torch.tensor(y[:-100]).float(),batch_size=4)
-    # test_loader  = FastTensorDataLoader(torch.tensor(x[-100:]).float(), torch.tensor(y[-100:]).float(), batch_size=4)
-    # df = pd.read_csv("/home/eranhe/car_model/generalization/first_stateV2.csv",sep='\t',index_col=0)
-    # df= df.as_matrix()
-    # first_state_loader = DataLoder.make_dataLoader(df[:,:-27],df[:,-27:])
-    #print(len(train_loader))
+    df = pd.read_csv("{}/car_model/generalization/4data/nn_DATA/rel.csv".format(str_home))
+    df = pr.only_max_value(df)
+    matrix_df = df.to_numpy()
+    DataLoder = DataSet(matrix_df[:, :-27], matrix_df[:, -27:])
+    _, test_loader = DataLoder.split_test_train(0.5)
+
+
+
+    print("len - train_loader:",len(train_loader))
 
     main(matrix_df.shape[-1] - 27, train_loader, test_loader)

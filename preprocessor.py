@@ -189,7 +189,7 @@ class QTable(object):
 
         self.df_raw = pd.read_csv(csv_table, sep=';')
         self.map_df = pd.read_csv(csv_map, sep=';', names=names)
-        self.df_raw=self.df_raw[1000000:]
+        #self.df_raw=self.df_raw[]
         self.merge_dfs()
         self.make_features_df()
 
@@ -304,7 +304,7 @@ class QTable(object):
 
     def save_data(self, name_file):
         df = pd.DataFrame(self.matrix_f)
-        df.to_csv("{}/car_model/generalization/{}.csv".format(home, name_file),index=False)
+        df.to_csv("{}/car_model/generalization/4data/{}.csv".format(home, name_file),index=False)
 
 
 class RegressionFeature(object):
@@ -398,7 +398,7 @@ def MainLoader():
     # Q_csv = "{}/Q.csv".format(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)
     p_csv = "{}/p.csv".format(dir_data)
-    map_csv = "{}/map.csv".format(dir_data)  # map.csv
+    map_csv = "{}/Last_States.csv".format(dir_data)  # map.csv
     con_csv = "{}/con.csv".format(dir_data)
 
     loader = Loader(dir_data)
@@ -412,7 +412,7 @@ def MainLoader():
     x, y = q.get_data_set(all_together=True)
     print()
     # print((Counter(y)))
-    file_name = "all_" + str(Q_csv).split('/')[-1].split(".")[0]
+    file_name = "litt"
     q.save_data(file_name)
 
     # x=x[:10000]
@@ -426,5 +426,5 @@ def MainLoader():
 
 
 if __name__ == "__main__":
-    only_max_value(pd.read_csv("/home/ERANHER/car_model/generalization/all.csv",index_col=0))
+    #only_max_value(pd.read_csv("/home/ERANHER/car_model/generalization/all.csv",index_col=0))
     MainLoader()
