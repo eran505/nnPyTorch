@@ -5,6 +5,7 @@ import numpy as np
 import csv,math
 from preprocessor import Loader, RegressionFeature
 from socket import gethostname
+from random import randrange
 
 
 min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -2.0, -2.0, -1.0, 131.0, 131.0, 0.0, -1.0, -1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0])
@@ -109,6 +110,8 @@ class AgentD(object):
         self.cur_state = None
         self.reset()
         self.trans = Transformer(data_path)
+        self.ctr=0
+        self.action_array=[1]
 
     def load_nn(self, path_to_model):
         self.nn = nnpy.LR(25)
@@ -132,16 +135,20 @@ class AgentD(object):
         exit()
         return np.argmax(v)
 
-    def get_move_all(self, pos_A):
+    def get_move_all(self, pos_A,rep):
         f = self.get_F_D(pos_A)
         f = np.hstack((f.flatten())).ravel()
         f = f.astype('f')
         # print((f))
         expected_reward_y = self.nn(torch.tensor(norm(f)).unsqueeze(0).float()) #.double()
+
         arg_max_action = np.argmax(expected_reward_y.detach().numpy())
-        # print("A{} D{}".format(pos_A.flatten(),self.cur_state.flatten()))
-        # print("{}   argmax={} ".format(expected_reward_y.tolist(), arg_max_action))
-        # print('-'*10)
+        if self.ctr==0 :
+            arg_max_action=self.action_array[0]
+        self.ctr+=1
+        print("A{} D{}".format(pos_A.flatten(),self.cur_state.flatten()))
+        print("{}   argmax={} ".format(expected_reward_y.tolist(), arg_max_action))
+        print('-'*10)
         # exit()
         return arg_max_action
 
@@ -152,7 +159,7 @@ class AgentD(object):
 
 
     def next_move(self, pos_A,num_repeated_action):
-        action_a_id = self.get_move_all(pos_A)
+        action_a_id = self.get_move_all(pos_A,num_repeated_action)
 
         for _ in range(num_repeated_action):
             self.apply_action(action_a_id)
@@ -261,10 +268,10 @@ if __name__ == "__main__":
 
     home = expanduser("~")
 
-    data_path = "{}/car_model/generalization/5data".format(home)
+    data_path = "{}/car_model/generalization/7data".format(home)
     nn_path = "{}/car_model/nn".format(home)
 
-    for i in range(0,26):
+    for i in range(4,5):
         print("NN[{}]".format(i))
         g = Game(data_path, nn_path, i)
         g.main_loop(300)

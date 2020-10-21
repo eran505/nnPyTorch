@@ -56,19 +56,18 @@ class LR(nn.Module):
         self.classifier = nn.Sequential(
 
             self.make_linear(dim, hidden, a, b),
-            nn.PReLU(),
+            nn.ReLU(),
             # nn.BatchNorm1d(hidden),  # applying batch norm
-            # self.make_linear(hidden, hidden, a, b),
+            self.make_linear(hidden, hidden, a, b),
             # #nn.BatchNorm1d(hidden),
-            # nn.Tanh(),
+            nn.ReLU(),
             self.make_linear(hidden, sec_hidden, a, b),
             # #nn.BatchNorm1d(sec_hidden),  # applying batch norm
-            nn.PReLU(),
+            nn.ReLU(),
             # self.make_linear(sec_hidden, sec_hidden, a, b),
             # nn.Tanh(),
-             #nn.BatchNorm1d(sec_hidden),  # applying batch norm
+            #nn.BatchNorm1d(sec_hidden),  # applying batch norm
             self.make_linear(sec_hidden, out, a, b)
-            ,nn.LogSoftmax()
         )
 
     def forward(self, x):
@@ -357,13 +356,13 @@ def main(in_dim, train_dataset, test_dataset=None):
     lrmodel = LR(in_dim).double()
     lrmodel = lrmodel.to(device)
 
-    loss = nn.NLLLoss
-    loss = nn.functional.kl_div
-    loss= nn.KLDivLoss()
+    #loss = nn.NLLLoss
+    #loss = nn.functional.kl_div
+    #loss= nn.KLDivLoss()
     #loss = XSigmoidLoss()
-    #loss=F.smooth_l1_loss
+    loss=F.mse_loss
     # SGD/Adam
-    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0955)
+    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0955,momentum=0.5)
 
     my_nn = NeuralNetwork(loss_func=loss,
                           optimizer_object=optimizer,
@@ -414,7 +413,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 32
+batch_size = 64
 
 # 756253:756251 index
 
@@ -445,7 +444,7 @@ if __name__ == "__main__":
     DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])
     train_loader, _ = DataLoder.split_test_train(0.0000001)
 
-    df = pd.read_csv("{}/car_model/generalization/5data/all.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/7data/all.csv".format(str_home))
     df = pr.only_max_value(df)
     matrix_df = df.to_numpy()
     DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])

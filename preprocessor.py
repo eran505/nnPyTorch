@@ -219,7 +219,7 @@ class QTable(object):
     def add_ctr_col(self,csv_last_states):
         ctr_df = self.get_count_state(csv_last_states)
         df_raw = pd.merge(self.df_raw, ctr_df, how='left', on=['id'])
-        df_raw['ctr'].fillna(1,inplace=True)
+        df_raw['ctr'].fillna(0.1,inplace=True)
         return df_raw
     def get_count_state(self,csv_last):
         colz = ["S" + str(i) for i in range(1, 13)]
@@ -410,9 +410,9 @@ if home.__contains__('lab2'):
 
 
 def MainLoader():
-    SEED = 2000
+    SEED = 20000
     np.random.seed(SEED)
-    dir_data = "{}/car_model/generalization/6data".format(home)
+    dir_data = "{}/car_model/generalization/7data".format(home)
     print(dir_data)
     # Q_csv = "{}/Q.csv".format(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)
