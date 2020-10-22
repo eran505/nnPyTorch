@@ -285,7 +285,7 @@ if __name__ == "__main__":
     data_path = "{}/car_model/generalization/9data".format(home)
     nn_path = "{}/car_model/nn".format(home)
     debug_print=False
-    for i in range(0,10):
+    for i in range(0,27):
         print("NN[{}]".format(i))
         g = Game(data_path, nn_path, debug_print,i)
         g.main_loop(200)
