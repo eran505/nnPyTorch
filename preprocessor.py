@@ -218,7 +218,10 @@ class QTable(object):
 
     def add_ctr_col(self,csv_last_states):
         ctr_df = self.get_count_state(csv_last_states)
+        print(sorted(ctr_df['ctr'].values))
         df_raw = pd.merge(self.df_raw, ctr_df, how='left', on=['id'])
+
+        df_raw['ctr'] = df_raw.loc[df_raw['ctr'] < 10000, 'ctr'] = 0
         df_raw['ctr'].fillna(0.1,inplace=True)
         return df_raw
     def get_count_state(self,csv_last):
@@ -385,19 +388,22 @@ class RegressionFeature(object):
 
 
 def only_max_value(df):
-    return df
+
     l_col = list(df)
-    l_col_v = l_col[-27:]
+    l_col_v = l_col[-28:-1]
     print(l_col_v)
-    df['max'] = df.iloc[:, -27:].max(axis=1)
-    df['arg_max'] = df.iloc[:, -27:].idxmax(axis=1)
+    df['max'] = df.iloc[:, -28:-1].max(axis=1)
+    df['arg_max'] = df.iloc[:, -28:-1].idxmax(axis=1)
 
     for i in l_col_v:
-        df.loc[(df['max'] > df[i]) & (df[i] > 0), i] = -100
+        df.loc[(df['max'] > df[i]) , i] = -1000
+    # for i in l_col_v:
+    #     df.loc[(df['max'] == df[i]) & (i > df['arg_max']), i] = -100
     for i in l_col_v:
-        df.loc[(df['max'] == df[i]) & (i > df['arg_max']), i] = -100
+        df.loc[(df['max'] == df[i]) & (df[i]>0) , i] = 1000
     for i in l_col_v:
-        df.loc[(df['max'] == df[i]) & (i == df['arg_max']), i] = 1000
+        df.loc[(df['max'] == df[i]) & (df[i] < 0), i] = -1000
+
     del df['max']
     del df['arg_max']
     return df
@@ -412,7 +418,7 @@ if home.__contains__('lab2'):
 def MainLoader():
     SEED = 20000
     np.random.seed(SEED)
-    dir_data = "{}/car_model/generalization/7data".format(home)
+    dir_data = "{}/car_model/generalization/9data".format(home)
     print(dir_data)
     # Q_csv = "{}/Q.csv".format(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)

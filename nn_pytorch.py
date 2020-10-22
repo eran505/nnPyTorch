@@ -65,8 +65,8 @@ class LR(nn.Module):
             # #nn.BatchNorm1d(sec_hidden),  # applying batch norm
             nn.ReLU(),
             # self.make_linear(sec_hidden, sec_hidden, a, b),
-            # nn.Tanh(),
-            #nn.BatchNorm1d(sec_hidden),  # applying batch norm
+            # nn.ReLU(),
+            nn.BatchNorm1d(sec_hidden),  # applying batch norm
             self.make_linear(sec_hidden, out, a, b)
         )
 
@@ -94,7 +94,7 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=3, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=4, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = None
@@ -108,8 +108,37 @@ class NeuralNetwork(object):
             str_home = "/home/lab2/eranher"
         self.home = str_home
 
+
+    def learn_Q_value(self,x,y):
+        # Sets model to TRAIN mode
+        losses=np.zeros(len(y))
+        for i in y:
+            self.ctr += 1
+
+            x_i = x.to(device)
+            y_i = y.to(device)
+
+            yhat = self.nn_model(x_i)
+
+
+            self.optimizer.zero_grad()
+
+            loss = self.loss_function(yhat,y_i)
+
+            loss.backward()
+
+            self.optimizer.step()
+
+            losses[i]=loss.item()
+        # Returns the loss
+        return np.average(losses)
+
+
+
     def train_step(self, x, y):
         # Sets model to TRAIN mode
+        x = x.to(device)
+        y = y.to(device)
         self.ctr += 1
         # Makes predictions
         # print("--Step--")
@@ -123,7 +152,7 @@ class NeuralNetwork(object):
         self.optimizer.zero_grad()
         # Computes loss
         #y = nn.Softmax(y)
-        loss = self.loss_function(yhat,y )#)reduction="sum")  # .detach().float())
+        loss = self.loss_function(yhat,y)
 
         #print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
         # Computes gradients
@@ -152,8 +181,7 @@ class NeuralNetwork(object):
 
                 # x_train_tensor, y_train_tensor = next(training_loader_iter)
                 data_loader_time.append(time.process_time() - t)
-                x_batch = x_train_tensor.to(device)
-                y_batch = y_train_tensor.to(device)
+
                 # print(Counter(y_batch.tolist()))
                 # print("x_batch={} \t y_batch={}".format(x_batch.requires_grad,y_batch.requires_grad))
 
@@ -161,14 +189,14 @@ class NeuralNetwork(object):
                 t = time.process_time()
                 losser=[]
 
-                loss = self.train_step(x_batch,y_batch)
+                loss = self.train_step(x_train_tensor,y_train_tensor)
 
                 l_time.append(time.process_time() - t)
 
                 self.losses_train.append([loss, epoch])
-                if ctr % 10000 == 0:
-                    test_loader_iter = iter(validtion_datatest)
-                    self.eval_nn(test_loader_iter)
+                # if ctr % 10000 == 0:
+                #     test_loader_iter = iter(validtion_datatest)
+                #     self.eval_nn(test_loader_iter)
 
                 # decay the learning rate
                 loss_tmp.append(loss)
@@ -224,7 +252,7 @@ class DataSet(object):
         self.debug_d = None
         self.data = self.norm_without_negative(self.data)
         print(len(self.targets))
-        self.targets = self.min_max_zero_to_one(self.targets)
+        self.targets = self.scale_negtive_one_to_one(self.targets)
         print(len(self.targets))
         print("done")
         if len(W)==0:
@@ -430,21 +458,21 @@ if __name__ == "__main__":
     start = time.time()
     # x, y = pr.MainLoader()
     end = time.time()
-    df = pd.read_csv("{}/car_model/generalization/5data/all.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/9data/all.csv".format(str_home))
     print(len(df))
     #df = df.sample(frac=1).reset_index(drop=True)
     print(len(df))
-    #df = pr.only_max_value(df)
+    df = pr.only_max_value(df)
+
+    #df.to_csv("{}/tmp.csv".format(str_home))
     matrix_df = df.to_numpy()
 
-
-    print(len(list(df)))
 
     test_loader=None
     DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])
     train_loader, _ = DataLoder.split_test_train(0.0000001)
 
-    df = pd.read_csv("{}/car_model/generalization/7data/all.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/8data/all.csv".format(str_home))
     df = pr.only_max_value(df)
     matrix_df = df.to_numpy()
     DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])
