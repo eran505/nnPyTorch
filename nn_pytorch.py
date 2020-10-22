@@ -472,7 +472,7 @@ if __name__ == "__main__":
     DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])
     train_loader, _ = DataLoder.split_test_train(0.0000001)
 
-    df = pd.read_csv("{}/car_model/generalization/8data/all.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/9data/all.csv".format(str_home))
     df = pr.only_max_value(df)
     matrix_df = df.to_numpy()
     DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])
