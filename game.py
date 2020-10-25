@@ -6,13 +6,15 @@ import csv,math
 from preprocessor import Loader, RegressionFeature
 from socket import gethostname
 from random import randrange
-
-
+import policies
+min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 12.0, 17.0, 0.0, -1.0, -1.0, -1.0, 9.0, 2.0, 0.0, 1.0, 0.0, 0.0])
+ptp_ = np.array([17.0, 12.0, 3.0, 29.0, 29.0, 3.0, 17.0, 17.0, 25.0, 3.0, 2.0, 2.0, 2.0, 17.0, 12.0, 3.0, 2.0, 2.0, 2.0, 17.0, 25.0, 3.0, 13.0, 10.0, 3.0])
 #min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -2.0, -2.0, -1.0, 131.0, 131.0, 0.0, -1.0, -1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0])
 #ptp_ = np.array([168.0, 168.0, 3.0, 299.0, 299.0, 3.0, 167.0, 260.0, 269.0, 3.0, 4.0, 4.0, 2.0, 168.0, 168.0, 3.0, 2.0, 2.0, 2.0, 260.0, 269.0, 3.0, 129.0, 139.0, 3.0])
-min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 5.0, 5.0, 0.0, -1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-ptp_ = np.array([24.0, 24.0, 3.0, 29.0, 29.0, 3.0, 25.0, 25.0, 27.0, 3.0, 2.0, 2.0, 2.0, 24.0, 24.0, 3.0, 2.0, 2.0, 2.0, 25.0, 27.0, 3.0, 21.0, 22.0, 3.0])
-
+# min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 5.0, 5.0, 0.0, -1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+# ptp_ = np.array([24.0, 24.0, 3.0, 29.0, 29.0, 3.0, 25.0, 25.0, 27.0, 3.0, 2.0, 2.0, 2.0, 24.0, 24.0, 3.0, 2.0, 2.0, 2.0, 25.0, 27.0, 3.0, 21.0, 22.0, 3.0])
+#min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 83.0, 91.0, 0.0, -1.0, -1.0, -1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+#ptp_ = np.array([216.0, 208.0, 3.0, 299.0, 299.0, 3.0, 219.0, 259.0, 269.0, 3.0, 2.0, 2.0, 2.0, 216.0, 208.0, 3.0, 2.0, 2.0, 2.0, 259.0, 269.0, 3.0, 177.0, 179.0, 3.0])
 def norm(f):
     f_norm = (f - min_) / ptp_
 
@@ -27,10 +29,11 @@ class schedulerAction(object):
         max_diff = max(diff)
         if max_diff==0:
             return 1
-        b = math.ceil(math.log2(max_diff))
+        b = int(math.log2(max_diff))+1
 
         b= max(b-3,0)
         action_number = pow(2,b)
+
         return action_number
 
 
@@ -65,6 +68,7 @@ class AgentA(object):
         self.path_indexes = np.arange(start=0, stop=len(self.w_paths), step=1)
         self.path_number = -1
         self.step_t = -1
+
 
     def get_all_paths(self, csv_all_paths):
         self.read_file(csv_all_paths)
@@ -114,6 +118,7 @@ class AgentD(object):
         self.ctr=0
         self.action_array=[1]
         self.debug_print=debug_print
+        #self.real_Q=policies.Qpolicy(data_path)
     def load_nn(self, path_to_model):
         self.nn = nnpy.LR(25)
         self.nn.load_state_dict(torch.load(path_to_model,map_location=device))
@@ -140,7 +145,7 @@ class AgentD(object):
         f = self.get_F_D(pos_A)
         f = np.hstack((f.flatten())).ravel()
         f = f.astype('f')
-        # print((f))
+       # print("F:->",(f))
         expected_reward_y = self.nn(torch.tensor(norm(f)).unsqueeze(0).float()) #.double()
 
         arg_max_action = np.argmax(expected_reward_y.detach().numpy())
@@ -149,7 +154,7 @@ class AgentD(object):
         self.ctr+=1
         if self.debug_print:
             print("A{} D{}".format(pos_A.flatten(),self.cur_state.flatten()))
-            print("{}   argmax={} ".format(expected_reward_y.tolist(), arg_max_action))
+            print("{}   \nargmax={} ".format(expected_reward_y.tolist(), arg_max_action))
             print('-'*10)
         # exit()
         return arg_max_action
@@ -159,10 +164,19 @@ class AgentD(object):
         a = np.expand_dims(a,axis=0)
         return self.trans.get_F(a)
 
+    def next_real_move(self,A_state,num_repeated_action):
+        entry = np.append(A_state,self.cur_state)
+        print("entry: ",entry)
+        az= self.real_Q.get_actions_value(entry)
+        arg_max = np.argmax(az)
+        print("[action] {}".format(arg_max))
+        self.apply_SEQ_action(num_repeated_action,arg_max)
 
     def next_move(self, pos_A,num_repeated_action):
         action_a_id = self.get_move_all(pos_A,num_repeated_action)
+        self.apply_SEQ_action(num_repeated_action,action_a_id)
 
+    def apply_SEQ_action(self,num_repeated_action,action_a_id):
         for _ in range(num_repeated_action):
             self.apply_action(action_a_id)
 
@@ -190,6 +204,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class Game(object):
 
     def __init__(self, dir_data, dir_nn, debug_print=False,num=11):
+        self.Traj=[]
+        self.folder=dir_data
+        self.save_data=False
         self.home = expanduser("~")
         self.pow2diffs=[np.array([pow(2,3+x),pow(2,3+x),4]) for x in range(12)]
         self.grid_size = None
@@ -212,7 +229,20 @@ class Game(object):
         self.golas=d['P_G']
         self.d_setting=d
 
+        if self.save_data:
+            self.Traj.append("size({}, {}, {}, )".format(self.grid_size[0],
+                                                         self.grid_size[1],self.grid_size[2]))
+            for item_g in self.golas:
+                str_goal="goal"
+                str_goal+=("({}, {}, {}, )".format(item_g[0],
+                                                             item_g[1], item_g[2]))
+                str_goal+="_"
+            self.Traj.append(str_goal[:-1])
 
+    def save(self):
+        if self.save_data:
+            self.Traj.append("A@({}, {}, {}, )".format(self.A.cur_state[0,0], self.A.cur_state[0,1], self.A.cur_state[0,2]))
+            self.Traj.append("D@({}, {}, {}, )".format(int(self.D.cur_state[0,0]), int(self.D.cur_state[0,1]), int(self.D.cur_state[0,2])))
 
     def construct(self, dir_data, dir_nn,debug_print, num):
         self.A = AgentA("{}/p.csv".format(dir_data))
@@ -227,8 +257,10 @@ class Game(object):
             self.D.reset()
             while True:
                 if self.mini_game_end():
+                    self.Traj.append("END")
                     if self.debug_print:
                         print("END")
+
                     break
                 num_actions = schedulerAction.get_move(np.abs(self.A.cur_state[0,:]-self.D.cur_state[0,:]))
                 self.inset_to_debug_dict(num_actions)
@@ -236,14 +268,17 @@ class Game(object):
                 if self.debug_print:
                     self.print_state(num_actions)
 
-                self.D.next_move(self.A.cur_state,num_actions)
+                #self.D.next_real_move(self.A.cur_state,num_actions)
+                self.D.next_move(self.A.cur_state, num_actions)
                 self.A.next_move(num_actions)
+
+                self.save()
 
             if self.debug_print:
                 self.print_state(num_actions)
 
         self.print_info()
-
+        self.flush()
     def mini_game_end(self):
         if self.if_A_at_goal(self.A.cur_state[0, :]):
             self.info[0] += 1
@@ -276,19 +311,28 @@ class Game(object):
     def print_state(self,num_actions):
         print("{}|{} [A]:{}".format(str(self.A), str(self.D),num_actions))
 
+    def flush(self):
+        if self.save_data is False:
+            return
+        with open("{}/t.csv".format(self.folder), 'w') as myfile:
+            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL,delimiter='\n')
+            wr.writerow(self.Traj)
+
 
 if __name__ == "__main__":
     l = []
-
+    # schedulerAction.get_move(np.array([8,0,0]))
+    # exit()
     home = expanduser("~")
 
-    data_path = "{}/car_model/generalization/9data".format(home)
+    data_path = "{}/car_model/generalization/4data".format(home)
     nn_path = "{}/car_model/nn".format(home)
     debug_print=False
-    for i in range(0,27):
+
+    for i in range(61,62):
         print("NN[{}]".format(i))
         g = Game(data_path, nn_path, debug_print,i)
-        g.main_loop(200)
+        g.main_loop(1000)
         l.append(g.info[2])
         print("collisions: {}".format(g.collision_arr))
     x = np.argmax(np.array(l))

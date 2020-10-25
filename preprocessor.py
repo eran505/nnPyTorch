@@ -146,8 +146,8 @@ class AttackerPaths(object):
 
 class QTable(object):
 
-    def __init__(self, csv_table, csv_map, attcker_p, dico_game_setting,csv_last):
-        self.add_ctr=True
+    def __init__(self, csv_table, csv_map, attcker_p, dico_game_setting, csv_last):
+        self.add_ctr = True
         self.bins = 2
         self.ctr = 0
         self.regressor = RegressionFeature(attcker_p, dico_game_setting)
@@ -157,7 +157,7 @@ class QTable(object):
         self.df_raw = None
         self.map_df = None
         self.state_vector = None
-        self.loader(csv_table, csv_map,csv_last)
+        self.loader(csv_table, csv_map, csv_last)
 
     def make_target_bins_nominal(self, bin=4):
         if bin == 0:
@@ -183,14 +183,14 @@ class QTable(object):
         #     print("{}-->{}".format(item_i,y_new[i]))
         #     assert(bin_map[y_item.index(item_i)]==y_new[i])
 
-    def loader(self, csv_table, csv_map,csv_last_states):
+    def loader(self, csv_table, csv_map, csv_last_states):
 
         names = ["S" + str(i) for i in range(1, 13)]
         names.insert(0, "id")
 
         self.df_raw = pd.read_csv(csv_table, sep=';')
         self.map_df = pd.read_csv(csv_map, sep=';', names=names)
-        #self.df_raw=self.df_raw[]
+        # self.df_raw=self.df_raw[]
         self.merge_dfs(csv_last_states)
         self.make_features_df()
 
@@ -198,11 +198,11 @@ class QTable(object):
         data = np.append(array_state_F, self.matrix_f[:, 12:], axis=1)
         df_tmp = pd.DataFrame(data)
 
-        #self.make_matrix_flat_V2(df_tmp)
+        # self.make_matrix_flat_V2(df_tmp)
 
         self.matrix_f = np.array(data)
 
-    def merge_dfs(self,csv_last_states):
+    def merge_dfs(self, csv_last_states):
         print(list(self.df_raw))
         print("self.df_raw:", len(self.df_raw))
         print("map_df:", len(self.map_df))
@@ -216,21 +216,23 @@ class QTable(object):
         print(len(self.df_raw))
         print()
 
-    def add_ctr_col(self,csv_last_states):
+    def add_ctr_col(self, csv_last_states):
         ctr_df = self.get_count_state(csv_last_states)
-        print(sorted(ctr_df['ctr'].values))
+        # print(sorted(ctr_df['ctr'].values))
         df_raw = pd.merge(self.df_raw, ctr_df, how='left', on=['id'])
 
-        df_raw['ctr'] = df_raw.loc[df_raw['ctr'] < 10000, 'ctr'] = 0
-        df_raw['ctr'].fillna(0.1,inplace=True)
+        df_raw['ctr'] = np.where(df_raw['ctr'] > 0, df_raw['ctr'], 0)
+        df_raw['ctr'].fillna(0, inplace=True)
+        # print(Counter(df_raw['ctr'].values))
         return df_raw
-    def get_count_state(self,csv_last):
+
+    def get_count_state(self, csv_last):
         colz = ["S" + str(i) for i in range(1, 13)]
         colz.insert(0, "id")
         colz.append("ctr")
-        df_last_states = pd.read_csv(csv_last,names=colz,sep=';')
+        df_last_states = pd.read_csv(csv_last, names=colz, sep=';')
         df_last_states['id'] = df_last_states['id'].astype('uint64')
-        return df_last_states[["id","ctr"]]
+        return df_last_states[["id", "ctr"]]
 
     def make_features_df(self):
         # self.make_target_bins_nominal()
@@ -326,7 +328,7 @@ class QTable(object):
 
     def save_data(self, name_file):
         df = pd.DataFrame(self.matrix_f)
-        df.to_csv("{}".format(name_file),index=False)
+        df.to_csv("{}".format(name_file), index=False)
 
 
 class RegressionFeature(object):
@@ -388,7 +390,6 @@ class RegressionFeature(object):
 
 
 def only_max_value(df):
-
     l_col = list(df)
     l_col_v = l_col[-28:-1]
     print(l_col_v)
@@ -396,18 +397,17 @@ def only_max_value(df):
     df['arg_max'] = df.iloc[:, -28:-1].idxmax(axis=1)
 
     for i in l_col_v:
-        df.loc[(df['max'] > df[i]) , i] = -1000
+        df.loc[(df['max'] > df[i]), i] = 0  # postive but not the max
+    for i in l_col_v:
+        df.loc[(df[i] < 0), i] = 0  # negative
     # for i in l_col_v:
-    #     df.loc[(df['max'] == df[i]) & (i > df['arg_max']), i] = -100
+    #     df.loc[(df['max'] == df[i]) & (i != df['arg_max']), i] = 0  # max but not the first one
     for i in l_col_v:
-        df.loc[(df['max'] == df[i]) & (df[i]>0) , i] = 1000
-    for i in l_col_v:
-        df.loc[(df['max'] == df[i]) & (df[i] < 0), i] = -1000
+        df.loc[(df['max'] == df[i]), i] = 1  # max and the first one
 
     del df['max']
     del df['arg_max']
     return df
-
 
 
 home = expanduser("~")
@@ -418,7 +418,7 @@ if home.__contains__('lab2'):
 def MainLoader():
     SEED = 20000
     np.random.seed(SEED)
-    dir_data = "{}/car_model/generalization/9data".format(home)
+    dir_data = "{}/car_model/generalization/6data".format(home)
     print(dir_data)
     # Q_csv = "{}/Q.csv".format(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)
@@ -434,7 +434,7 @@ def MainLoader():
     attacker_paths = loader.get_path_object()
     print(dico_info_game)
 
-    q = QTable(Q_csv, map_csv, attacker_paths, dico_info_game,csv_last_states)
+    q = QTable(Q_csv, map_csv, attacker_paths, dico_info_game, csv_last_states)
     x, y = q.get_data_set(all_together=True)
     print()
     # print((Counter(y)))
@@ -451,5 +451,5 @@ def MainLoader():
 
 
 if __name__ == "__main__":
-    #only_max_value(pd.read_csv("/home/ERANHER/car_model/generalization/all.csv",index_col=0))
+    # only_max_value(pd.read_csv("/home/ERANHER/car_model/generalization/all.csv",index_col=0))
     MainLoader()

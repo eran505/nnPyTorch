@@ -66,13 +66,14 @@ class LR(nn.Module):
             nn.ReLU(),
             # self.make_linear(sec_hidden, sec_hidden, a, b),
             # nn.ReLU(),
-            nn.BatchNorm1d(sec_hidden),  # applying batch norm
+            #nn.BatchNorm1d(sec_hidden),  # applying batch norm
             self.make_linear(sec_hidden, out, a, b)
         )
 
     def forward(self, x):
         x = self.classifier(x)
-        return x.squeeze()
+        return x
+        #return x.squeeze()
 
     def get_weights(self):
         return self.linear1.weight, self.linear2.weight
@@ -94,7 +95,7 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=4, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=70, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = None
@@ -111,19 +112,25 @@ class NeuralNetwork(object):
 
     def learn_Q_value(self,x,y):
         # Sets model to TRAIN mode
-        losses=np.zeros(len(y))
-        for i in y:
+        losses=np.zeros(y.shape[1])
+        for i in range(y.shape[1]):
             self.ctr += 1
+            action_tensor = torch.empty(y.shape[0],1).fill_(i)
 
-            x_i = x.to(device)
-            y_i = y.to(device)
+            new_y = y[:,i]
 
-            yhat = self.nn_model(x_i)
+            new_x = torch.cat([x, action_tensor], dim=1)
+
+            new_x = new_x.to(device)
+            new_y = new_y.to(device)
+
+            yhat = self.nn_model(new_x)
 
 
             self.optimizer.zero_grad()
-
-            loss = self.loss_function(yhat,y_i)
+            #print(yhat)
+            #print(new_y)
+            loss = self.loss_function(yhat,new_y)
 
             loss.backward()
 
@@ -131,7 +138,7 @@ class NeuralNetwork(object):
 
             losses[i]=loss.item()
         # Returns the loss
-        return np.average(losses)
+        return np.max(losses)
 
 
 
@@ -151,10 +158,10 @@ class NeuralNetwork(object):
 
         self.optimizer.zero_grad()
         # Computes loss
-        #y = nn.Softmax(y)
+        #print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
+
         loss = self.loss_function(yhat,y)
 
-        #print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
         # Computes gradients
         loss.backward()
         # Updates parameters and zeroes gradients
@@ -175,7 +182,8 @@ class NeuralNetwork(object):
             training_loader_iter = iter(train_dataset)
             ctr=0
             for x_train_tensor, y_train_tensor in training_loader_iter:
-
+                #print(x_train_tensor[:,0])
+                #print("--"*10)
                 self.nn_model.train()
                 t = time.process_time()
 
@@ -188,7 +196,7 @@ class NeuralNetwork(object):
                 # for auto computing the auto grad
                 t = time.process_time()
                 losser=[]
-
+                #loss = self.learn_Q_value(x_train_tensor,y_train_tensor)
                 loss = self.train_step(x_train_tensor,y_train_tensor)
 
                 l_time.append(time.process_time() - t)
@@ -209,12 +217,15 @@ class NeuralNetwork(object):
                     loss_tmp.clear()
                     # print(100 * "-")
                     # print(list(self.nn_model.parameters()))
+                self.log_to_files()
+                torch.save(self.nn_model.state_dict(), "{}/car_model/nn/nn{}.pt".format(self.home, epoch + int(ctr/1000)))
+
                 ctr = ctr + 1
 
 
-            self.scheduler.step()
             self.log_to_files()
             torch.save(self.nn_model.state_dict(), "{}/car_model/nn/nn{}.pt".format(self.home, epoch))
+            self.scheduler.step()
 
     def eval_nn(self, validtion_datatest):
         self.losses_test=[]
@@ -350,12 +361,12 @@ class DataSet(object):
 
     @staticmethod
     def make_DataSet(X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None
-                     , pin_memo=False,over_sample=True):
+                     , pin_memo=False,over_sample=False):
         sampler=None
         sampler = WeightedRandomSampler(
             weights=samples_weights,
             num_samples=len(samples_weights),
-            replacement=True)
+            replacement=False)
         print("-----------batch size = {}".format(size_batch))
         if device.type != 'cpu':
             pin_memo = True
@@ -373,24 +384,25 @@ class DataSet(object):
 
 
 
-def main(in_dim, train_dataset, test_dataset=None):
+def main(in_dim, train_dataset, test_dataset=None,positive_class_pr=None):
     print(device)
     SEED = 2809
     torch.manual_seed(SEED)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 30
+    num_iterations = 1000
     lrmodel = LR(in_dim).double()
     lrmodel = lrmodel.to(device)
 
     #loss = nn.NLLLoss
     #loss = nn.functional.kl_div
     #loss= nn.KLDivLoss()
-    #loss = XSigmoidLoss()
-    loss=F.mse_loss
+    loss = XSigmoidLoss()
+    loss=F.l1_loss
+    loss=nn.BCEWithLogitsLoss(pos_weight=torch.from_numpy(positive_class_pr))
     # SGD/Adam
-    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0955,momentum=0.5)
+    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0555,momentum=0.5)
 
     my_nn = NeuralNetwork(loss_func=loss,
                           optimizer_object=optimizer,
@@ -441,7 +453,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 64
+batch_size = 1
 
 # 756253:756251 index
 
@@ -458,28 +470,49 @@ if __name__ == "__main__":
     start = time.time()
     # x, y = pr.MainLoader()
     end = time.time()
-    df = pd.read_csv("{}/car_model/generalization/9data/all.csv".format(str_home))
-    print(len(df))
-    #df = df.sample(frac=1).reset_index(drop=True)
-    print(len(df))
+    df = pd.read_csv("{}/car_model/generalization/6data/all.csv".format(str_home))
+    # add index
+    #df.insert(0, 'idz', range(1, len(df) + 1))
+
+    colz = list(df)
+    #print(Counter(df[colz[-1]]))
+    df = df.loc[df[colz[-1]] > 500]
+
     df = pr.only_max_value(df)
+
+    z = df[colz[-2]].value_counts()
+    false_count =  len(df[colz[-28:-1]])/df[colz[-28:-1]].sum()
+    positive_class_pr = false_count.values
+
+    print(np.sum(z.values))
+
+    print(len(df))
+
+    df.to_csv("{}/car_model/generalization/6data/cut.csv".format(str_home))
 
     #df.to_csv("{}/tmp.csv".format(str_home))
     matrix_df = df.to_numpy()
-
+    print(matrix_df.shape)
 
     test_loader=None
     DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])
     train_loader, _ = DataLoder.split_test_train(0.0000001)
 
-    df = pd.read_csv("{}/car_model/generalization/9data/all.csv".format(str_home))
+
+
+
+
+
+    df = pd.read_csv("{}/car_model/generalization/6data/all.csv".format(str_home))
+    # add index
+    #df.insert(0, 'idz', range(1, len(df) + 1))
+
     df = pr.only_max_value(df)
     matrix_df = df.to_numpy()
     DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])
     _, test_loader = DataLoder.split_test_train(0.1)
 
 
-
     print("len - train_loader:",len(train_loader))
 
-    main(matrix_df.shape[-1] - 28, train_loader, test_loader)
+    main(matrix_df.shape[-1] - 28, train_loader, test_loader,positive_class_pr)
