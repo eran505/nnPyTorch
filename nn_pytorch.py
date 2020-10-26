@@ -49,7 +49,7 @@ def normalize_d(d, target=1.0):
 
 
 class LR(nn.Module):
-    def __init__(self, dim, out=27, hidden=300, sec_hidden=300, a=-1.0, b=1.0):
+    def __init__(self, dim, out=27, hidden=400, sec_hidden=400, a=-1.0, b=1.0):
         super(LR, self).__init__()
         # intialize parameters
 
@@ -391,7 +391,7 @@ def main(in_dim, train_dataset, test_dataset=None,positive_class_pr=None):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 1000
+    num_iterations = 500
     lrmodel = LR(in_dim).double()
     lrmodel = lrmodel.to(device)
 
@@ -402,13 +402,13 @@ def main(in_dim, train_dataset, test_dataset=None,positive_class_pr=None):
     loss=F.l1_loss
     loss=nn.BCEWithLogitsLoss()#pos_weight=torch.from_numpy(positive_class_pr))
     # SGD/Adam
-    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0855,momentum=0.5)
+    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0955)
 
     my_nn = NeuralNetwork(loss_func=loss,
                           optimizer_object=optimizer,
                           model=lrmodel)
 
-    # hlp.get_the_best_lr(lrmodel,loss,train_dataset)
+    #hlp.get_the_best_lr(lrmodel,loss,train_dataset)
     # exit()
     my_nn.fit_model(num_iterations, train_dataset, test_dataset)
 
@@ -453,7 +453,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 16
+batch_size = 1
 
 # 756253:756251 index
 
@@ -465,19 +465,20 @@ if __name__ == "__main__":
     if str_home.__contains__('lab2'):
         str_home = "/home/lab2/eranher"
 
-    #test_main("{}/car_model/nn/nn15.pt".format(str_home))
+    folder = "11data"
+
 
     start = time.time()
     # x, y = pr.MainLoader()
     end = time.time()
-    df = pd.read_csv("{}/car_model/generalization/9data/all.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/{}/all.csv".format(str_home,folder))
     # add index
     #df.insert(0, 'idz', range(1, len(df) + 1))
 
     colz = list(df)
     #print(sorted(df[colz[-1]]))
     #exit()
-    df = df.loc[df[colz[-1]] > 10]
+    df = df.loc[df[colz[-1]] > 0]
 
     df = pr.only_max_value(df)
 
@@ -489,7 +490,7 @@ if __name__ == "__main__":
 
     print(len(df))
 
-    df.to_csv("{}/car_model/generalization/9data/cut.csv".format(str_home))
+    df.to_csv("{}/car_model/generalization/{}/cut.csv".format(str_home,folder))
 
     #df.to_csv("{}/tmp.csv".format(str_home))
     matrix_df = df.to_numpy()
@@ -504,7 +505,7 @@ if __name__ == "__main__":
 
 
 
-    df = pd.read_csv("{}/car_model/generalization/9data/all.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/{}/all.csv".format(str_home,folder))
     # add index
     #df.insert(0, 'idz', range(1, len(df) + 1))
 

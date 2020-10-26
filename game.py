@@ -9,8 +9,8 @@ from preprocessor import Loader, RegressionFeature
 from socket import gethostname
 from random import randrange
 import policies
-min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 12.0, 17.0, 0.0, -1.0, -1.0, -1.0, 9.0, 2.0, 0.0, 1.0, 0.0, 0.0])
-ptp_ = np.array([17.0, 12.0, 3.0, 29.0, 29.0, 3.0, 17.0, 17.0, 25.0, 3.0, 2.0, 2.0, 2.0, 17.0, 12.0, 3.0, 2.0, 2.0, 2.0, 17.0, 25.0, 3.0, 13.0, 10.0, 3.0])
+min_ = np.array([4.0, 11.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0, 0.0, 33.0, 18.0, 0.0, -1.0, -1.0, -1.0, 5.0, 22.0, 0.0, 0.0, 8.0, 0.0])
+ptp_ = np.array([23.0, 31.0, 2.0, 49.0, 48.0, 2.0, 31.0, 51.0, 35.0, 1.0, 3.0, 3.0, 1.0, 23.0, 31.0, 2.0, 2.0, 2.0, 2.0, 51.0, 35.0, 1.0, 23.0, 31.0, 2.0])
 #min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -2.0, -2.0, -1.0, 131.0, 131.0, 0.0, -1.0, -1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0])
 #ptp_ = np.array([168.0, 168.0, 3.0, 299.0, 299.0, 3.0, 167.0, 260.0, 269.0, 3.0, 4.0, 4.0, 2.0, 168.0, 168.0, 3.0, 2.0, 2.0, 2.0, 260.0, 269.0, 3.0, 129.0, 139.0, 3.0])
 # min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 5.0, 5.0, 0.0, -1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
@@ -64,6 +64,7 @@ class Transformer(object):
 class AgentA(object):
 
     def __init__(self, csv_path):
+        self.ctr_round=0
         self.all_paths = []
         self.w_paths = []
         self.get_all_paths(csv_path)
@@ -98,6 +99,8 @@ class AgentA(object):
 
     def reset(self):
         self.path_number = np.random.choice(self.path_indexes, 1, False)[0]#, p=self.w_paths)[0]
+        self.ctr_round+=1
+        self.path_number=self.ctr_round%len(self.path_indexes)
         self.step_t = 0
         self.cur_state = self.all_paths[self.path_number][self.step_t, :]
 
@@ -331,18 +334,18 @@ if __name__ == "__main__":
     # exit()
     home = expanduser("~")
 
-    data_path = "{}/car_model/generalization/9data".format(home)
+    data_path = "{}/car_model/generalization/12data".format(home)
     nn_path = "{}/car_model/nn".format(home)
     path_to_save = data_path+"/coll.png"
     debug_print=False
-
-    for i in range(0,150):
+    loop_number = 30
+    for i in range(0,204):
         print("NN[{}]".format(i))
         g = Game(data_path, nn_path, debug_print,i)
-        g.main_loop(100)
+        g.main_loop(loop_number)
         l.append(g.info[2])
         print("collisions: {}".format(g.collision_arr))
     x = np.argmax(np.array(l))
-    l = map(lambda x:x/100 , l)
+    l = map(lambda x:x/loop_number , l)
     plot_loss(l,path_to_save)
 
