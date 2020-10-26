@@ -325,14 +325,14 @@ if __name__ == "__main__":
     # exit()
     home = expanduser("~")
 
-    data_path = "{}/car_model/generalization/4data".format(home)
+    data_path = "{}/car_model/generalization/8data".format(home)
     nn_path = "{}/car_model/nn".format(home)
     debug_print=False
 
-    for i in range(61,62):
+    for i in range(0,61):
         print("NN[{}]".format(i))
         g = Game(data_path, nn_path, debug_print,i)
-        g.main_loop(1000)
+        g.main_loop(20)
         l.append(g.info[2])
         print("collisions: {}".format(g.collision_arr))
     x = np.argmax(np.array(l))

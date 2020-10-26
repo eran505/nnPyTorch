@@ -402,7 +402,7 @@ def main(in_dim, train_dataset, test_dataset=None,positive_class_pr=None):
     loss=F.l1_loss
     loss=nn.BCEWithLogitsLoss()#pos_weight=torch.from_numpy(positive_class_pr))
     # SGD/Adam
-    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0555,momentum=0.5)
+    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0855,momentum=0.5)
 
     my_nn = NeuralNetwork(loss_func=loss,
                           optimizer_object=optimizer,
@@ -453,7 +453,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 2
+batch_size = 32
 
 # 756253:756251 index
 
@@ -475,8 +475,9 @@ if __name__ == "__main__":
     #df.insert(0, 'idz', range(1, len(df) + 1))
 
     colz = list(df)
-    #print(Counter(df[colz[-1]]))
-    df = df.loc[df[colz[-1]] > 500]
+    #print(sorted(df[colz[-1]]))
+    #exit()
+    df = df.loc[df[colz[-1]] > 1000]
 
     df = pr.only_max_value(df)
 
