@@ -453,7 +453,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 32
+batch_size = 16
 
 # 756253:756251 index
 
@@ -470,14 +470,14 @@ if __name__ == "__main__":
     start = time.time()
     # x, y = pr.MainLoader()
     end = time.time()
-    df = pd.read_csv("{}/car_model/generalization/8data/all.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/9data/all.csv".format(str_home))
     # add index
     #df.insert(0, 'idz', range(1, len(df) + 1))
 
     colz = list(df)
     #print(sorted(df[colz[-1]]))
     #exit()
-    df = df.loc[df[colz[-1]] > 1000]
+    df = df.loc[df[colz[-1]] > 1]
 
     df = pr.only_max_value(df)
 
@@ -489,7 +489,7 @@ if __name__ == "__main__":
 
     print(len(df))
 
-    df.to_csv("{}/car_model/generalization/8data/cut.csv".format(str_home))
+    df.to_csv("{}/car_model/generalization/9data/cut.csv".format(str_home))
 
     #df.to_csv("{}/tmp.csv".format(str_home))
     matrix_df = df.to_numpy()
@@ -504,7 +504,7 @@ if __name__ == "__main__":
 
 
 
-    df = pd.read_csv("{}/car_model/generalization/6data/all.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/9data/all.csv".format(str_home))
     # add index
     #df.insert(0, 'idz', range(1, len(df) + 1))
 

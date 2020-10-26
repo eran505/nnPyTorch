@@ -3,6 +3,8 @@ import nn_pytorch as nnpy
 import torch
 import numpy as np
 import csv,math
+import pandas as pd
+import matplotlib.pyplot as plt
 from preprocessor import Loader, RegressionFeature
 from socket import gethostname
 from random import randrange
@@ -318,22 +320,29 @@ class Game(object):
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL,delimiter='\n')
             wr.writerow(self.Traj)
 
-
+def plot_loss(array,dist):
+    df = pd.DataFrame(array,columns=["coll"])
+    df["coll"].plot( kind='line')
+    plt.savefig('{}'.format(dist))  # save the figure to file
+    plt.show()
 if __name__ == "__main__":
     l = []
     # schedulerAction.get_move(np.array([8,0,0]))
     # exit()
     home = expanduser("~")
 
-    data_path = "{}/car_model/generalization/8data".format(home)
+    data_path = "{}/car_model/generalization/9data".format(home)
     nn_path = "{}/car_model/nn".format(home)
+    path_to_save = data_path+"/coll.png"
     debug_print=False
 
-    for i in range(0,61):
+    for i in range(0,150):
         print("NN[{}]".format(i))
         g = Game(data_path, nn_path, debug_print,i)
-        g.main_loop(20)
+        g.main_loop(100)
         l.append(g.info[2])
         print("collisions: {}".format(g.collision_arr))
     x = np.argmax(np.array(l))
+    l = map(lambda x:x/100 , l)
+    plot_loss(l,path_to_save)
 
