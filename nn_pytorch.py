@@ -95,7 +95,7 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=70, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=200, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = None
@@ -361,7 +361,7 @@ class DataSet(object):
 
     @staticmethod
     def make_DataSet(X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None
-                     , pin_memo=False,over_sample=False):
+                     , pin_memo=False,over_sample=True):
         sampler=None
         sampler = WeightedRandomSampler(
             weights=samples_weights,
@@ -477,7 +477,7 @@ if __name__ == "__main__":
     colz = list(df)
     #print(sorted(df[colz[-1]]))
     #exit()
-    df = df.loc[df[colz[-1]] > 1]
+    df = df.loc[df[colz[-1]] > 10]
 
     df = pr.only_max_value(df)
 
