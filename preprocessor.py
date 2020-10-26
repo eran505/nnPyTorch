@@ -418,7 +418,7 @@ if home.__contains__('lab2'):
 def MainLoader():
     SEED = 20000
     np.random.seed(SEED)
-    dir_data = "{}/car_model/generalization/6data".format(home)
+    dir_data = "{}/car_model/generalization/8data".format(home)
     print(dir_data)
     # Q_csv = "{}/Q.csv".format(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)

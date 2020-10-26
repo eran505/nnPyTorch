@@ -400,7 +400,7 @@ def main(in_dim, train_dataset, test_dataset=None,positive_class_pr=None):
     #loss= nn.KLDivLoss()
     loss = XSigmoidLoss()
     loss=F.l1_loss
-    loss=nn.BCEWithLogitsLoss(pos_weight=torch.from_numpy(positive_class_pr))
+    loss=nn.BCEWithLogitsLoss()#pos_weight=torch.from_numpy(positive_class_pr))
     # SGD/Adam
     optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0555,momentum=0.5)
 
@@ -453,7 +453,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 1
+batch_size = 2
 
 # 756253:756251 index
 
@@ -470,7 +470,7 @@ if __name__ == "__main__":
     start = time.time()
     # x, y = pr.MainLoader()
     end = time.time()
-    df = pd.read_csv("{}/car_model/generalization/6data/all.csv".format(str_home))
+    df = pd.read_csv("{}/car_model/generalization/8data/all.csv".format(str_home))
     # add index
     #df.insert(0, 'idz', range(1, len(df) + 1))
 
@@ -488,7 +488,7 @@ if __name__ == "__main__":
 
     print(len(df))
 
-    df.to_csv("{}/car_model/generalization/6data/cut.csv".format(str_home))
+    df.to_csv("{}/car_model/generalization/8data/cut.csv".format(str_home))
 
     #df.to_csv("{}/tmp.csv".format(str_home))
     matrix_df = df.to_numpy()
