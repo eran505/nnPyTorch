@@ -217,8 +217,8 @@ class NeuralNetwork(object):
                     loss_tmp.clear()
                     # print(100 * "-")
                     # print(list(self.nn_model.parameters()))
-                self.log_to_files()
-                torch.save(self.nn_model.state_dict(), "{}/car_model/nn/nn{}.pt".format(self.home, epoch + int(ctr/1000)))
+                #self.log_to_files()
+                #torch.save(self.nn_model.state_dict(), "{}/car_model/nn/nn{}.pt".format(self.home, epoch + int(ctr/1000)))
 
                 ctr = ctr + 1
 
@@ -453,7 +453,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 1
+batch_size = 2
 
 # 756253:756251 index
 
@@ -465,7 +465,7 @@ if __name__ == "__main__":
     if str_home.__contains__('lab2'):
         str_home = "/home/lab2/eranher"
 
-    folder = "12data"
+    folder = "14data"
 
 
     start = time.time()

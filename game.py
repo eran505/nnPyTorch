@@ -335,11 +335,11 @@ if __name__ == "__main__":
     home = expanduser("~")
 
     data_path = "{}/car_model/generalization/data".format(home)
-    nn_path = "{}/car_model/generalization/12data/nn".format(home)
+    nn_path = "{}/car_model/nn".format(home)
     path_to_save = data_path+"/coll.png"
     debug_print=False
     loop_number = 30
-    for i in range(165,190):
+    for i in range(0,280):
         print("NN[{}]".format(i))
         g = Game(data_path, nn_path, debug_print,i)
         g.main_loop(loop_number)

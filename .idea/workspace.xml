@@ -121,28 +121,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="my_losses" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="nnPyTorch" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/my_losses.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="nn_pytorch" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="nnPyTorch" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -231,22 +209,41 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="vizo" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="nnPyTorch" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/visualization" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/visualization/vizo.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.nn_pytorch" />
       <item itemvalue="Python.plotRTDP" />
       <item itemvalue="Python.game" />
       <item itemvalue="Python.helper" />
-      <item itemvalue="Python.my_losses" />
       <item itemvalue="Python.policies" />
       <item itemvalue="Python.preprocessor" />
+      <item itemvalue="Python.vizo" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.helper" />
-        <item itemvalue="Python.game" />
         <item itemvalue="Python.preprocessor" />
+        <item itemvalue="Python.vizo" />
+        <item itemvalue="Python.game" />
+        <item itemvalue="Python.helper" />
         <item itemvalue="Python.policies" />
-        <item itemvalue="Python.my_losses" />
       </list>
     </recent_temporary>
   </component>
@@ -287,7 +284,7 @@
       <workItem from="1603578827910" duration="7345000" />
       <workItem from="1603617296629" duration="1977000" />
       <workItem from="1603620241034" duration="16811000" />
-      <workItem from="1603702585464" duration="26798000" />
+      <workItem from="1603702585464" duration="35641000" />
     </task>
     <servers />
   </component>
@@ -363,57 +360,57 @@
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state x="65" y="24" key="FileDocumentManager.FileCacheConflict/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1600080019381" />
-    <state width="1137" height="282" key="GridCell.Tab.0.bottom" timestamp="1603791041222">
+    <state width="1136" height="240" key="GridCell.Tab.0.bottom" timestamp="1603803155833">
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.bottom/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
-    <state width="1137" height="282" key="GridCell.Tab.0.bottom/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603791041222" />
+    <state width="1136" height="240" key="GridCell.Tab.0.bottom/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603803155833" />
     <state width="1221" height="319" key="GridCell.Tab.0.bottom/61.27.1539.873@61.27.1539.873" timestamp="1602603399219" />
     <state width="2088" height="390" key="GridCell.Tab.0.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1603662849384" />
-    <state width="1137" height="282" key="GridCell.Tab.0.center" timestamp="1603791041222">
+    <state width="1136" height="240" key="GridCell.Tab.0.center" timestamp="1603803155832">
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.center/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
-    <state width="1137" height="282" key="GridCell.Tab.0.center/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603791041222" />
+    <state width="1136" height="240" key="GridCell.Tab.0.center/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603803155832" />
     <state width="1221" height="319" key="GridCell.Tab.0.center/61.27.1539.873@61.27.1539.873" timestamp="1602603399219" />
     <state width="2088" height="390" key="GridCell.Tab.0.center/61.27.2499.1413@61.27.2499.1413" timestamp="1603662849384" />
-    <state width="1137" height="282" key="GridCell.Tab.0.left" timestamp="1603791041221">
+    <state width="1136" height="240" key="GridCell.Tab.0.left" timestamp="1603803155832">
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.left/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
-    <state width="1137" height="282" key="GridCell.Tab.0.left/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603791041221" />
+    <state width="1136" height="240" key="GridCell.Tab.0.left/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603803155832" />
     <state width="1221" height="319" key="GridCell.Tab.0.left/61.27.1539.873@61.27.1539.873" timestamp="1602603399219" />
     <state width="2088" height="390" key="GridCell.Tab.0.left/61.27.2499.1413@61.27.2499.1413" timestamp="1603662849383" />
-    <state width="1137" height="282" key="GridCell.Tab.0.right" timestamp="1603791041222">
+    <state width="1136" height="240" key="GridCell.Tab.0.right" timestamp="1603803155833">
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.right/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
-    <state width="1137" height="282" key="GridCell.Tab.0.right/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603791041222" />
+    <state width="1136" height="240" key="GridCell.Tab.0.right/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603803155833" />
     <state width="1221" height="319" key="GridCell.Tab.0.right/61.27.1539.873@61.27.1539.873" timestamp="1602603399219" />
     <state width="2088" height="390" key="GridCell.Tab.0.right/61.27.2499.1413@61.27.2499.1413" timestamp="1603662849384" />
-    <state width="1183" height="433" key="GridCell.Tab.1.bottom" timestamp="1603786428502">
+    <state width="1181" height="433" key="GridCell.Tab.1.bottom" timestamp="1603799668310">
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.bottom/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
-    <state width="1183" height="433" key="GridCell.Tab.1.bottom/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603786428502" />
+    <state width="1181" height="433" key="GridCell.Tab.1.bottom/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603799668310" />
     <state width="1042" height="476" key="GridCell.Tab.1.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1603637208965" />
-    <state width="1183" height="433" key="GridCell.Tab.1.center" timestamp="1603786428502">
+    <state width="1181" height="433" key="GridCell.Tab.1.center" timestamp="1603799668310">
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.center/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
-    <state width="1183" height="433" key="GridCell.Tab.1.center/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603786428502" />
+    <state width="1181" height="433" key="GridCell.Tab.1.center/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603799668310" />
     <state width="1042" height="476" key="GridCell.Tab.1.center/61.27.2499.1413@61.27.2499.1413" timestamp="1603637208965" />
-    <state width="1183" height="433" key="GridCell.Tab.1.left" timestamp="1603786428502">
+    <state width="1181" height="433" key="GridCell.Tab.1.left" timestamp="1603799668310">
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.left/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
-    <state width="1183" height="433" key="GridCell.Tab.1.left/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603786428502" />
+    <state width="1181" height="433" key="GridCell.Tab.1.left/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603799668310" />
     <state width="1042" height="476" key="GridCell.Tab.1.left/61.27.2499.1413@61.27.2499.1413" timestamp="1603637208965" />
-    <state width="1183" height="433" key="GridCell.Tab.1.right" timestamp="1603786428502">
+    <state width="1181" height="433" key="GridCell.Tab.1.right" timestamp="1603799668310">
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.right/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
-    <state width="1183" height="433" key="GridCell.Tab.1.right/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603786428502" />
+    <state width="1181" height="433" key="GridCell.Tab.1.right/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603799668310" />
     <state width="1042" height="476" key="GridCell.Tab.1.right/61.27.2499.1413@61.27.2499.1413" timestamp="1603637208965" />
     <state x="579" y="285" key="IDE.errors.dialog" timestamp="1603705325841">
       <screen x="65" y="24" width="1855" height="1056" />
@@ -511,29 +508,30 @@
           <option name="timeStamp" value="310" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/nn_pytorch.py</url>
-          <line>507</line>
-          <option name="timeStamp" value="316" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/nn_pytorch.py</url>
-          <line>490</line>
-          <option name="timeStamp" value="318" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/game.py</url>
           <line>101</line>
           <option name="timeStamp" value="321" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/visualization/vizo.py</url>
+          <line>35</line>
+          <option name="timeStamp" value="326" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/visualization/vizo.py</url>
+          <line>15</line>
+          <option name="timeStamp" value="327" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/nnPyTorch$game.coverage" NAME="game Coverage Results" MODIFIED="1603784814984" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/nnPyTorch$game.coverage" NAME="game Coverage Results" MODIFIED="1603792178135" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/nnPyTorch$plotRTDP.coverage" NAME="plotRTDP Coverage Results" MODIFIED="1603085973722" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/nnPyTorch$preprocessor.coverage" NAME="preprocessor Coverage Results" MODIFIED="1603729879214" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/nnPyTorch$vizo.coverage" NAME="vizo Coverage Results" MODIFIED="1603799635139" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/visualization" />
     <SUITE FILE_PATH="coverage/nnPyTorch$helper.coverage" NAME="helper Coverage Results" MODIFIED="1603790306459" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/nnPyTorch$preprocessor.coverage" NAME="preprocessor Coverage Results" MODIFIED="1603803079590" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/nnPyTorch$policies.coverage" NAME="policies Coverage Results" MODIFIED="1603097985553" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/nnPyTorch$nn_pytorch.coverage" NAME="nn_pytorch Coverage Results" MODIFIED="1603791041205" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/nnPyTorch$nn_pytorch.coverage" NAME="nn_pytorch Coverage Results" MODIFIED="1603803155825" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
