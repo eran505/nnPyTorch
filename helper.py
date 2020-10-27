@@ -8,7 +8,7 @@ import scipy.stats as st
 from torch_lr_finder import LRFinder
 from torch import nn
 from torch import optim
-
+import csv
 
 
 def log_file(list_items,to_path,column_names):
@@ -69,48 +69,87 @@ def get_the_best_lr(my_model,my_criterion,trainloader,device='cpu'):
     lr_finder.range_test(trainloader, end_lr=10, num_iter=100)
     lr_finder.plot()  # to inspect the loss-learning rate graph
     lr_finder.reset()  # to reset the model and optimizer to their initial state
+#
+# def lr_exp():
+#     model = nn.Linear(2, 1)
+#     optimizer = optim.SGD(model.parameters(), lr=0.5)
+#     lr_scheduler_1 = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=20, eta_min=0.001)
+#     lr_scheduler_2 = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer,20)
+#     warmup_scheduler = warmup.UntunedLinearWarmup(optimizer)
+#     warmup_scheduler.last_step = -1  # initialize the step counter
+#
+#     lrs = []
+#
+#     for i in range(100):
+#         optimizer.step()
+#         if i <= lr_scheduler_1.T_max:
+#             lr_scheduler_1.step()
+#         else:
+#             lr_scheduler_2.step()
+#         lrs.append(
+#             optimizer.param_groups[0]["lr"]
+#         )
+#         warmup_scheduler.dampen()
+#
+#     plt.plot(lrs)
+#     plt.show()
 
-def lr_exp():
-    model = nn.Linear(2, 1)
-    optimizer = optim.SGD(model.parameters(), lr=0.5)
-    lr_scheduler_1 = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=20, eta_min=0.001)
-    lr_scheduler_2 = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer,20)
-    warmup_scheduler = warmup.UntunedLinearWarmup(optimizer)
-    warmup_scheduler.last_step = -1  # initialize the step counter
+# def other():
+    # model = nn.Linear(2, 1)
+    # optimizer = optim.AdamW(model.parameters(), lr=0.001, betas=(0.9, 0.999), weight_decay=0.01)
+    # num_steps = 100
+    # lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5,eta_min=0.00001,last_epoch=-1)
+    # warmup_scheduler = warmup.UntunedLinearWarmup(optimizer)
+    # lrs = []
+    # for epoch in range(1, 100 + 1):
+    #     optimizer.step()
+    #     lr_scheduler.step()
+    #     warmup_scheduler.dampen()
+    #     lrs.append(optimizer.param_groups[0]["lr"])
+    # plt.plot(lrs)
+    # plt.show()
 
-    lrs = []
+def process_path(path_str):
+    arr = [eval(x[1:-2]) for x in path_str if len(x) > 5]
+    return arr
+def load__p(p_path):
+    l=[]
+    with open(p_path, "r") as f:
+        reader = csv.reader(f, delimiter=";")
+        for i, line in enumerate(reader):
+            if len(line) < 1:
+                continue
+            d = {'p': float(str(line[0]).split(':')[-1]), 'traj': process_path(line[1:])}
+            l.append(d)
+    return l
 
-    for i in range(100):
-        optimizer.step()
-        if i <= lr_scheduler_1.T_max:
-            lr_scheduler_1.step()
-        else:
-            lr_scheduler_2.step()
-        lrs.append(
-            optimizer.param_groups[0]["lr"]
-        )
-        warmup_scheduler.dampen()
+def diff_pz(p1,p2):
+    l1 = load__p(p1)
+    l2 = load__p(p2)
 
-    plt.plot(lrs)
-    plt.show()
+    print(l1)
+    ctr=0
+    ctr_not=0
+    for item in l1:
+        for pos in item["traj"]:
+            bol=False
+            for item_other in l2:
+                if bol:
+                    break
+                for pos_other in item_other["traj"][10:-2]:
+                    if pos[0]==pos_other[0]:
+                        ctr+=1
+                        bol=True
+                        break
 
-def other():
-    model = nn.Linear(2, 1)
-    optimizer = optim.AdamW(model.parameters(), lr=0.001, betas=(0.9, 0.999), weight_decay=0.01)
-    num_steps = 100
-    lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5,eta_min=0.00001,last_epoch=-1)
-    warmup_scheduler = warmup.UntunedLinearWarmup(optimizer)
-    lrs = []
-    for epoch in range(1, 100 + 1):
-        optimizer.step()
-        lr_scheduler.step()
-        warmup_scheduler.dampen()
-        lrs.append(optimizer.param_groups[0]["lr"])
-    plt.plot(lrs)
-    plt.show()
-if __name__ == "__main__":
-    other()
+            if bol is False:
+                ctr_not+=1
+
+    print("yes: {}   not:{}   sum: {}".format(ctr/(ctr+ctr_not),ctr_not/(ctr+ctr_not),ctr+ctr_not))
     exit()
+
+if __name__ == "__main__":
+    diff_pz("/home/ERANHER/car_model/generalization/data/p.csv","/home/ERANHER/car_model/generalization/12data/p.csv")
     value_statistic()
     plot_loss("/home/ERANHER/car_model/nn/loss_train.csv")
     pass

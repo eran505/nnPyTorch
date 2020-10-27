@@ -49,7 +49,7 @@ def normalize_d(d, target=1.0):
 
 
 class LR(nn.Module):
-    def __init__(self, dim, out=27, hidden=400, sec_hidden=400, a=-1.0, b=1.0):
+    def __init__(self, dim, out=27, hidden=300, sec_hidden=300, a=-1.0, b=1.0):
         super(LR, self).__init__()
         # intialize parameters
 
@@ -57,16 +57,16 @@ class LR(nn.Module):
 
             self.make_linear(dim, hidden, a, b),
             nn.ReLU(),
-            # nn.BatchNorm1d(hidden),  # applying batch norm
+            #nn.BatchNorm1d(hidden),  # applying batch norm
+
             self.make_linear(hidden, hidden, a, b),
-            # #nn.BatchNorm1d(hidden),
             nn.ReLU(),
+            #nn.BatchNorm1d(hidden),  # applying batch norm
+
             self.make_linear(hidden, sec_hidden, a, b),
-            # #nn.BatchNorm1d(sec_hidden),  # applying batch norm
-            nn.ReLU(),
-            # self.make_linear(sec_hidden, sec_hidden, a, b),
-            # nn.ReLU(),
             #nn.BatchNorm1d(sec_hidden),  # applying batch norm
+            nn.ReLU(),
+
             self.make_linear(sec_hidden, out, a, b)
         )
 
@@ -361,12 +361,12 @@ class DataSet(object):
 
     @staticmethod
     def make_DataSet(X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None
-                     , pin_memo=False,over_sample=True):
+                     , pin_memo=False,over_sample=False):
         sampler=None
         sampler = WeightedRandomSampler(
             weights=samples_weights,
             num_samples=len(samples_weights),
-            replacement=False)
+            replacement=True)
         print("-----------batch size = {}".format(size_batch))
         if device.type != 'cpu':
             pin_memo = True
@@ -465,7 +465,7 @@ if __name__ == "__main__":
     if str_home.__contains__('lab2'):
         str_home = "/home/lab2/eranher"
 
-    folder = "11data"
+    folder = "12data"
 
 
     start = time.time()

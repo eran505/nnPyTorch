@@ -222,7 +222,7 @@ class QTable(object):
         df_raw = pd.merge(self.df_raw, ctr_df, how='left', on=['id'])
 
         df_raw['ctr'] = np.where(df_raw['ctr'] > 0, df_raw['ctr'], 0)
-        df_raw['ctr'].fillna(0, inplace=True)
+        df_raw['ctr'].fillna(0.5, inplace=True)
         # print(Counter(df_raw['ctr'].values))
         return df_raw
 
@@ -418,7 +418,7 @@ if home.__contains__('lab2'):
 def MainLoader():
     SEED = 20000
     np.random.seed(SEED)
-    dir_data = "{}/car_model/generalization/11data".format(home)
+    dir_data = "{}/car_model/generalization/12data".format(home)
     print(dir_data)
     # Q_csv = "{}/Q.csv".format(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)
