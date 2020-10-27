@@ -9,14 +9,13 @@ from preprocessor import Loader, RegressionFeature
 from socket import gethostname
 from random import randrange
 import policies
-min_ = np.array([4.0, 11.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0, 0.0, 33.0, 18.0, 0.0, -1.0, -1.0, -1.0, 5.0, 22.0, 0.0, 0.0, 8.0, 0.0])
-ptp_ = np.array([23.0, 31.0, 2.0, 49.0, 48.0, 2.0, 31.0, 51.0, 35.0, 1.0, 3.0, 3.0, 1.0, 23.0, 31.0, 2.0, 2.0, 2.0, 2.0, 51.0, 35.0, 1.0, 23.0, 31.0, 2.0])
-#min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -2.0, -2.0, -1.0, 131.0, 131.0, 0.0, -1.0, -1.0, -1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+min_ = np.array([8.0, 9.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -1.0, -2.0, -1.0, 22.0, 6.0, 0.0, -1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 4.0, 0.0, 7.0, 0.0, 0.0, 7.0, 4.0, 0.0])
+ptp_ = np.array([31.0, 45.0, 3.0, 50.0, 25.0, 3.0, 34.0, 59.0, 50.0, 3.0, 3.0, 4.0, 2.0, 31.0, 45.0, 3.0, 2.0, 2.0, 2.0, 59.0, 26.0, 3.0, 59.0, 50.0, 3.0, 31.0, 26.0, 3.0, 31.0, 45.0, 3.0])
 #ptp_ = np.array([168.0, 168.0, 3.0, 299.0, 299.0, 3.0, 167.0, 260.0, 269.0, 3.0, 4.0, 4.0, 2.0, 168.0, 168.0, 3.0, 2.0, 2.0, 2.0, 260.0, 269.0, 3.0, 129.0, 139.0, 3.0])
 # min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 5.0, 5.0, 0.0, -1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 # ptp_ = np.array([24.0, 24.0, 3.0, 29.0, 29.0, 3.0, 25.0, 25.0, 27.0, 3.0, 2.0, 2.0, 2.0, 24.0, 24.0, 3.0, 2.0, 2.0, 2.0, 25.0, 27.0, 3.0, 21.0, 22.0, 3.0])
-#min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 83.0, 91.0, 0.0, -1.0, -1.0, -1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
-#ptp_ = np.array([216.0, 208.0, 3.0, 299.0, 299.0, 3.0, 219.0, 259.0, 269.0, 3.0, 2.0, 2.0, 2.0, 216.0, 208.0, 3.0, 2.0, 2.0, 2.0, 259.0, 269.0, 3.0, 177.0, 179.0, 3.0])
+#min_ = np.array([4.0, 11.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0, 0.0, 33.0, 18.0, 0.0, -1.0, -1.0, -1.0, 5.0, 22.0, 0.0, 0.0, 8.0, 0.0])
+#ptp_ = np.array([23.0, 31.0, 2.0, 49.0, 48.0, 2.0, 31.0, 51.0, 35.0, 1.0, 3.0, 3.0, 1.0, 23.0, 31.0, 2.0, 2.0, 2.0, 2.0, 51.0, 35.0, 1.0, 23.0, 31.0, 2.0])
 def norm(f):
     f_norm = (f - min_) / ptp_
 
@@ -125,7 +124,7 @@ class AgentD(object):
         self.debug_print=debug_print
         #self.real_Q=policies.Qpolicy(data_path)
     def load_nn(self, path_to_model):
-        self.nn = nnpy.LR(25)
+        self.nn = nnpy.LR(len(ptp_))
         self.nn.load_state_dict(torch.load(path_to_model,map_location=device))
         #self.nn = self.nn.double()
         self.nn.eval()
@@ -328,18 +327,19 @@ def plot_loss(array,dist):
     df["coll"].plot( kind='line')
     plt.savefig('{}'.format(dist))  # save the figure to file
     plt.show()
+
 if __name__ == "__main__":
     l = []
     # schedulerAction.get_move(np.array([8,0,0]))
     # exit()
     home = expanduser("~")
 
-    data_path = "{}/car_model/generalization/data".format(home)
+    data_path = "{}/car_model/generalization/14data/test".format(home)
     nn_path = "{}/car_model/nn".format(home)
     path_to_save = data_path+"/coll.png"
     debug_print=False
-    loop_number = 30
-    for i in range(0,280):
+    loop_number = 40
+    for i in range(200,310):
         print("NN[{}]".format(i))
         g = Game(data_path, nn_path, debug_print,i)
         g.main_loop(loop_number)

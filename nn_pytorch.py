@@ -19,7 +19,7 @@ from collections import Counter
 from sklearn.datasets import make_regression, make_classification
 from my_losses import XTanhLoss, LogCoshLoss, XSigmoidLoss
 from fast_data_loader import FastTensorDataLoader
-
+import matplotlib.pyplot as plt
 
 # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # print(device)
@@ -49,19 +49,19 @@ def normalize_d(d, target=1.0):
 
 
 class LR(nn.Module):
-    def __init__(self, dim, out=27, hidden=300, sec_hidden=300, a=-1.0, b=1.0):
+    def __init__(self, dim, out=27, hidden=400, sec_hidden=400, a=-1.0, b=1.0):
         super(LR, self).__init__()
         # intialize parameters
 
         self.classifier = nn.Sequential(
 
             self.make_linear(dim, hidden, a, b),
-            nn.ReLU(),
             #nn.BatchNorm1d(hidden),  # applying batch norm
+            nn.ReLU(),
 
             self.make_linear(hidden, hidden, a, b),
-            nn.ReLU(),
             #nn.BatchNorm1d(hidden),  # applying batch norm
+            nn.ReLU(),
 
             self.make_linear(hidden, sec_hidden, a, b),
             #nn.BatchNorm1d(sec_hidden),  # applying batch norm
@@ -95,7 +95,7 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=200, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=250, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = None
@@ -269,7 +269,10 @@ class DataSet(object):
         if len(W)==0:
             self.imbalanced_data_set_weight()
         else:
-            self.weights = normalize(self.weights[:,np.newaxis], axis=0).ravel()
+            #self.weights = self.min_max_zero_to_one(self.weights)
+            print()
+            #print(Counter(self.weights))
+            #exit(0)
 
 
     def __getitem__(self, index):
@@ -362,11 +365,11 @@ class DataSet(object):
     @staticmethod
     def make_DataSet(X_data, y_data, size_batch=1, is_shuffle=False, samples_weights=None
                      , pin_memo=False,over_sample=False):
-        sampler=None
+        print(Counter(samples_weights))
         sampler = WeightedRandomSampler(
             weights=samples_weights,
             num_samples=len(samples_weights),
-            replacement=True)
+            replacement=False)
         print("-----------batch size = {}".format(size_batch))
         if device.type != 'cpu':
             pin_memo = True
@@ -391,7 +394,7 @@ def main(in_dim, train_dataset, test_dataset=None,positive_class_pr=None):
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 500
+    num_iterations = 550
     lrmodel = LR(in_dim).double()
     lrmodel = lrmodel.to(device)
 
@@ -453,7 +456,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 2
+batch_size = 1
 
 # 756253:756251 index
 
@@ -479,9 +482,7 @@ if __name__ == "__main__":
     #print(sorted(df[colz[-1]]))
     #exit()
     df = df.loc[df[colz[-1]] > 0]
-
     df = pr.only_max_value(df)
-
     z = df[colz[-2]].value_counts()
     false_count =  len(df[colz[-28:-1]])/df[colz[-28:-1]].sum()
     positive_class_pr = false_count.values
@@ -492,16 +493,15 @@ if __name__ == "__main__":
 
     df.to_csv("{}/car_model/generalization/{}/cut.csv".format(str_home,folder))
 
-    #df.to_csv("{}/tmp.csv".format(str_home))
+    # ax = df[df.columns[-3]].hist()
+    # plt.show()
+
     matrix_df = df.to_numpy()
     print(matrix_df.shape)
 
     test_loader=None
     DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1],matrix_df[:,-1])
     train_loader, _ = DataLoder.split_test_train(0.0000001)
-
-
-
 
 
 
