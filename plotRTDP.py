@@ -139,7 +139,6 @@ def coundEndPoint(dir_path, filter_key='_8'):
         if str(item).split('/')[-1].__contains__(filter_key) is False:
             continue
 
-
 def trajectory_read(p_path):
     df = pd.read_csv(p_path, names=['tran'])
     print(list(p_path))

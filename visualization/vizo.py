@@ -15,7 +15,7 @@ def get_cmap(n, name='hsv'):
 
 def main_f():
     cmap = get_cmap(15)
-    l = hlp.load__p("{}/car_model/debug/1000000_p.csv".format(expanduser("~")))
+    l = hlp.load__p("{}/car_model/debug/22569_p.csv".format(expanduser("~")))
 
     print(l)
     matrix = []
