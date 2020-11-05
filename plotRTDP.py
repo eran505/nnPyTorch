@@ -206,6 +206,9 @@ def one_path_ana(path_p):
     df = pd.DataFrame(l)
     df["P_episodes"]=df["P_episodes"].fillna(0)
     df["SUM_episodes"] = df['episodes'] + df['P_episodes']
+    if "States" in list(df):
+        df["SUM_Inconsistent"] = df['Inconsistent'] + df['P_Inconsistent']
+        df["SUM_States"] = df['States'] + df['P_States']
     df.to_csv("{}/{}.csv".format(father, name))
     return df
 
