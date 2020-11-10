@@ -207,6 +207,8 @@ def one_path_ana(path_p):
     df["P_episodes"]=df["P_episodes"].fillna(0)
     df["SUM_episodes"] = df['episodes'] + df['P_episodes']
     if "States" in list(df):
+        df["P_Inconsistent"] = df["P_Inconsistent"].fillna(0)
+        df["P_States"] = df["P_States"].fillna(0)
         df["SUM_Inconsistent"] = df['Inconsistent'] + df['P_Inconsistent']
         df["SUM_States"] = df['States'] + df['P_States']
     df.to_csv("{}/{}.csv".format(father, name))
@@ -300,7 +302,9 @@ def get_data_from_exp(path_to_df):
 
 if __name__ == "__main__":
     print("hello world")
-    one_path_ana("/home/eranhe/car_model/out")
+    p="/home/eranhe/car_model/out"
+    #p="/home/eranhe/Desktop/new_exp/data3"
+    one_path_ana(p)
     exit()
     one_path_ana("/home/ise/car_model/out/eranh")
     one_vs_all(0)
