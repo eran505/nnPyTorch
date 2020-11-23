@@ -153,18 +153,21 @@ def trajectory_read(p_path):
 def read_multi_csvs(p):
     big_l = []
     l_csv = []
+    sep=','
     with open(p, 'r') as f:
         for line in f:
             line = str(line).replace(" ", "").replace('\n', '').replace('""', '')
             if len(line) < 1:
                 continue
             d = {}
-            if (str(line).startswith("\"e")):
+            if (str(line).startswith("\"e")) or (str(line).startswith("e")) :
                 big_l.append(l_csv)
                 l_csv = []
-                cols = str(line).split(';')
+                if str(line).__contains__(";"):
+                    sep=';'
+                cols = str(line).split(sep)
                 continue
-            line_arr = str(line).split(";")
+            line_arr = str(line).split(sep)
             for i, col in enumerate(cols):
                 d[col] = float(line_arr[i])
             l_csv.append(d)
@@ -188,6 +191,8 @@ def one_path_ana(path_p):
     for item_csv_p in res:
         d = {}
         print(item_csv_p)
+        if str(item_csv_p).split('/')[-1].split('.')[0]=="1594133815_u6_L10_Eval":
+            print()
         d["seed_number"] = str(item_csv_p).split("/")[-1].split("_")[0]
         d["u_id"] = str(item_csv_p).split("/")[-1].split("_")[1]
         d["learn_mode"] = str(item_csv_p).split("/")[-1].split("_")[2]
@@ -204,9 +209,10 @@ def one_path_ana(path_p):
         del d["df_l"]
         l.append(d)
     df = pd.DataFrame(l)
-    df["P_episodes"]=df["P_episodes"].fillna(0)
-    df["SUM_episodes"] = df['episodes'] + df['P_episodes']
-    if "States" in list(df):
+    if "P_episodes" in list(df):
+        df["P_episodes"]=df["P_episodes"].fillna(0)
+        df["SUM_episodes"] = df['episodes'] + df['P_episodes']
+    if "P_States" in list(df):
         df["P_Inconsistent"] = df["P_Inconsistent"].fillna(0)
         df["P_States"] = df["P_States"].fillna(0)
         df["SUM_Inconsistent"] = df['Inconsistent'] + df['P_Inconsistent']

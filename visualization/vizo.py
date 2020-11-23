@@ -15,7 +15,7 @@ def get_cmap(n, name='hsv'):
 
 def main_f():
     cmap = get_cmap(15)
-    l = hlp.load__p("{}/car_model/debug/19696_p.csv".format(expanduser("~")))
+    l = hlp.load__p("{}/car_model/debug/31489_p.csv".format(expanduser("~")))
 
     print(l)
     matrix = []
@@ -44,6 +44,7 @@ def main_f():
 
     plt.savefig("{}/car_model/tmp.png".format(expanduser("~")))
     plt.show()
+
 
 if __name__ == "__main__":
    main_f()
