@@ -4,6 +4,7 @@ import os,time
 import matplotlib.pyplot as plt
 from os.path import expanduser
 from itertools import groupby
+import numpy as np
 from random import shuffle
 
 def get_all_df_sort_by_size(p_path="/home/eranhe/car_model/debug"):
@@ -162,32 +163,40 @@ def sort_files_by_seed(res_list):
     return d
 
 def convergence_plots(dir_path_p):
+    figs_path = pt.mkdir_system("{}/car_model".format(expanduser("~")),'figs',False)
     res = pt.walk_rec(dir_path_p, [], "Eval.csv")
     d_files_seed = sort_files_by_seed(res)
     l = list(d_files_seed.values())
     shuffle(l)
     for item in l:
         print(item)
+        if len(item) < 1:
+            continue
+        num_paths = str(item[0]).split('/')[-1].split('_')[1]
+        seed = str(item[0]).split('/')[-1].split('_')[0]
         for csv_path_file in item:
             l_df = read_multi_csvs(csv_path_file)
             start_from=[]
             if len(l_df)>1:
                 size = len(l_df)
-                for df_i in l_df:
+                for df_i in l_df[:-1]:
                     start_from.append(df_i['"Collision"'])
                 df_subs = pd.concat(start_from)
                 name = str(csv_path_file).split('/')[-1].split('_')[2]
-                if name == "L1":
-                    continue
-                plt.plot(df_subs.values, label=name,ls=':')
+                y_arr = np.arange(0, len(df_subs), 1)
+                plt.plot(y_arr,df_subs.values, label=name,ls=':')
+                y_arr = np.arange(len(df_subs),len(df_subs)+len(l_df[-1]['"Collision"'].values),1)
+                plt.plot(y_arr,l_df[-1]['"Collision"'].values,label=name+"_F",ls='--')
             else:
                 name = str(csv_path_file).split('/')[-1].split('_')[2]
+
                 plt.plot(l_df[0]['"Collision"'].values, label=name)
 
 
         plt.legend()
+        plt.savefig("{}/{}.png".format(figs_path,"{}_{}".format(seed,num_paths)))
         plt.show()
-        return
+        #return
 
 def read_multi_csvs(p):
     big_l = []
@@ -353,12 +362,13 @@ def get_data_from_exp(path_to_df):
 
 
 if __name__ == "__main__":
-    p="/home/eranhe/car_model/out"
+
+    p="/home/ERANHER/car_model/out"
     convergence_plots(p)
     exit(0)
+    one_path_ana(p)
     print("hello world")
     #p="/home/eranhe/Desktop/new_exp/data3"
-    one_path_ana(p)
     exit()
     one_path_ana("/home/ise/car_model/out/eranh")
     one_vs_all(0)
