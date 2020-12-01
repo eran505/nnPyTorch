@@ -6,7 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import helper as hlp
 from sys import exit
+from random import shuffle
 from os.path import expanduser
+import os_util as pt
 
 def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
@@ -15,7 +17,15 @@ def get_cmap(n, name='hsv'):
 
 def main_f():
     cmap = get_cmap(15)
-    l = hlp.load__p("{}/car_model/debug/31489_p.csv".format(expanduser("~")))
+    res = pt.walk_rec("{}/car_model/debug".format(expanduser("~")),[],".csv")
+    shuffle(res)
+    index = 0
+    # for i,x in enumerate(res):
+    #     if str(res).split('/')[-1] == '31158_p.csv':
+    #         index=i
+    #         break
+    print(res[index])
+    l = hlp.load__p(res[index])
 
     print(l)
     matrix = []

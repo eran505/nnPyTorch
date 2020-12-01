@@ -54,7 +54,7 @@
     <property name="last_opened_file_path" value="$USER_HOME$/car_model/generalization/14data/test" />
     <property name="settings.editor.selected.configurable" value="Jupyter Settings" />
   </component>
-  <component name="RunManager" selected="Python.plotRTDP">
+  <component name="RunManager" selected="Python.vizo">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="nnPyTorch" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -298,6 +298,18 @@
       <workItem from="1605809156521" duration="3718000" />
       <workItem from="1606032601927" duration="1113000" />
       <workItem from="1606041961393" duration="12166000" />
+      <workItem from="1606158428296" duration="3962000" />
+      <workItem from="1606238641986" duration="11000" />
+      <workItem from="1606250245256" duration="1231000" />
+      <workItem from="1606338141613" duration="16718000" />
+      <workItem from="1606573259877" duration="753000" />
+      <workItem from="1606583880591" duration="644000" />
+      <workItem from="1606638448374" duration="3617000" />
+      <workItem from="1606653857979" duration="8032000" />
+      <workItem from="1606753819480" duration="1571000" />
+      <workItem from="1606758971121" duration="4675000" />
+      <workItem from="1606770854782" duration="275000" />
+      <workItem from="1606809297297" duration="792000" />
     </task>
     <servers />
   </component>
@@ -354,11 +366,11 @@
     </state>
     <state x="822" y="263" key="#xdebugger.evaluate/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1600179661702" />
     <state x="1081" y="347" key="#xdebugger.evaluate/61.27.2499.1413@61.27.2499.1413" timestamp="1603558594264" />
-    <state width="2185" height="678" key="DebuggerActiveHint" timestamp="1603636764377">
+    <state width="2185" height="678" key="DebuggerActiveHint" timestamp="1606404090222">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1527" height="506" key="DebuggerActiveHint/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603113506897" />
-    <state width="2185" height="678" key="DebuggerActiveHint/61.27.2499.1413@61.27.2499.1413" timestamp="1603636764377" />
+    <state width="2185" height="678" key="DebuggerActiveHint/61.27.2499.1413@61.27.2499.1413" timestamp="1606404090222" />
     <state x="161" y="125" width="2299" height="1215" key="DiffContextDialog" timestamp="1602060230633">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
@@ -373,58 +385,62 @@
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state x="65" y="24" key="FileDocumentManager.FileCacheConflict/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1600080019381" />
-    <state width="1677" height="469" key="GridCell.Tab.0.bottom" timestamp="1606149459258">
-      <screen x="61" y="27" width="2499" height="1413" />
+    <state width="731" height="250" key="GridCell.Tab.0.bottom" timestamp="1606810079447">
+      <screen x="61" y="27" width="1539" height="873" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.bottom/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
     <state width="1022" height="346" key="GridCell.Tab.0.bottom/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603814881171" />
-    <state width="1029" height="71" key="GridCell.Tab.0.bottom/61.27.1539.873@61.27.1539.873" timestamp="1604991631738" />
-    <state width="1677" height="469" key="GridCell.Tab.0.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1606149459258" />
-    <state width="1677" height="469" key="GridCell.Tab.0.center" timestamp="1606149459258">
-      <screen x="61" y="27" width="2499" height="1413" />
+    <state width="731" height="250" key="GridCell.Tab.0.bottom/61.27.1539.873@61.27.1539.873" timestamp="1606810079447" />
+    <state width="945" height="488" key="GridCell.Tab.0.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1606770494150" />
+    <state width="731" height="250" key="GridCell.Tab.0.center" timestamp="1606810079447">
+      <screen x="61" y="27" width="1539" height="873" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.center/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
     <state width="1022" height="346" key="GridCell.Tab.0.center/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603814881171" />
-    <state width="1029" height="71" key="GridCell.Tab.0.center/61.27.1539.873@61.27.1539.873" timestamp="1604991631738" />
-    <state width="1677" height="469" key="GridCell.Tab.0.center/61.27.2499.1413@61.27.2499.1413" timestamp="1606149459258" />
-    <state width="1677" height="469" key="GridCell.Tab.0.left" timestamp="1606149459258">
-      <screen x="61" y="27" width="2499" height="1413" />
+    <state width="731" height="250" key="GridCell.Tab.0.center/61.27.1539.873@61.27.1539.873" timestamp="1606810079447" />
+    <state width="945" height="488" key="GridCell.Tab.0.center/61.27.2499.1413@61.27.2499.1413" timestamp="1606770494149" />
+    <state width="731" height="250" key="GridCell.Tab.0.left" timestamp="1606810079447">
+      <screen x="61" y="27" width="1539" height="873" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.left/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
     <state width="1022" height="346" key="GridCell.Tab.0.left/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603814881171" />
-    <state width="1029" height="71" key="GridCell.Tab.0.left/61.27.1539.873@61.27.1539.873" timestamp="1604991631737" />
-    <state width="1677" height="469" key="GridCell.Tab.0.left/61.27.2499.1413@61.27.2499.1413" timestamp="1606149459258" />
-    <state width="1677" height="469" key="GridCell.Tab.0.right" timestamp="1606149459258">
-      <screen x="61" y="27" width="2499" height="1413" />
+    <state width="731" height="250" key="GridCell.Tab.0.left/61.27.1539.873@61.27.1539.873" timestamp="1606810079447" />
+    <state width="945" height="488" key="GridCell.Tab.0.left/61.27.2499.1413@61.27.2499.1413" timestamp="1606770494149" />
+    <state width="731" height="250" key="GridCell.Tab.0.right" timestamp="1606810079447">
+      <screen x="61" y="27" width="1539" height="873" />
     </state>
     <state width="1897" height="266" key="GridCell.Tab.0.right/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599059979716" />
     <state width="1022" height="346" key="GridCell.Tab.0.right/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603814881171" />
-    <state width="1029" height="71" key="GridCell.Tab.0.right/61.27.1539.873@61.27.1539.873" timestamp="1604991631738" />
-    <state width="1677" height="469" key="GridCell.Tab.0.right/61.27.2499.1413@61.27.2499.1413" timestamp="1606149459258" />
-    <state width="1202" height="266" key="GridCell.Tab.1.bottom" timestamp="1605893909960">
-      <screen x="61" y="27" width="2499" height="1413" />
+    <state width="731" height="250" key="GridCell.Tab.0.right/61.27.1539.873@61.27.1539.873" timestamp="1606810079447" />
+    <state width="945" height="488" key="GridCell.Tab.0.right/61.27.2499.1413@61.27.2499.1413" timestamp="1606770494150" />
+    <state width="731" height="250" key="GridCell.Tab.1.bottom" timestamp="1606810080688">
+      <screen x="61" y="27" width="1539" height="873" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.bottom/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
     <state width="1178" height="433" key="GridCell.Tab.1.bottom/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603810685794" />
-    <state width="1202" height="266" key="GridCell.Tab.1.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1605893909960" />
-    <state width="1202" height="266" key="GridCell.Tab.1.center" timestamp="1605893909960">
-      <screen x="61" y="27" width="2499" height="1413" />
+    <state width="731" height="250" key="GridCell.Tab.1.bottom/61.27.1539.873@61.27.1539.873" timestamp="1606810080688" />
+    <state width="1202" height="454" key="GridCell.Tab.1.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1606770494146" />
+    <state width="731" height="250" key="GridCell.Tab.1.center" timestamp="1606810080688">
+      <screen x="61" y="27" width="1539" height="873" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.center/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
     <state width="1178" height="433" key="GridCell.Tab.1.center/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603810685794" />
-    <state width="1202" height="266" key="GridCell.Tab.1.center/61.27.2499.1413@61.27.2499.1413" timestamp="1605893909960" />
-    <state width="1202" height="266" key="GridCell.Tab.1.left" timestamp="1605893909959">
-      <screen x="61" y="27" width="2499" height="1413" />
+    <state width="731" height="250" key="GridCell.Tab.1.center/61.27.1539.873@61.27.1539.873" timestamp="1606810080688" />
+    <state width="1202" height="454" key="GridCell.Tab.1.center/61.27.2499.1413@61.27.2499.1413" timestamp="1606770494146" />
+    <state width="731" height="250" key="GridCell.Tab.1.left" timestamp="1606810080687">
+      <screen x="61" y="27" width="1539" height="873" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.left/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
     <state width="1178" height="433" key="GridCell.Tab.1.left/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603810685794" />
-    <state width="1202" height="266" key="GridCell.Tab.1.left/61.27.2499.1413@61.27.2499.1413" timestamp="1605893909959" />
-    <state width="1202" height="266" key="GridCell.Tab.1.right" timestamp="1605893909960">
-      <screen x="61" y="27" width="2499" height="1413" />
+    <state width="731" height="250" key="GridCell.Tab.1.left/61.27.1539.873@61.27.1539.873" timestamp="1606810080687" />
+    <state width="1202" height="454" key="GridCell.Tab.1.left/61.27.2499.1413@61.27.2499.1413" timestamp="1606770494146" />
+    <state width="731" height="250" key="GridCell.Tab.1.right" timestamp="1606810080688">
+      <screen x="61" y="27" width="1539" height="873" />
     </state>
     <state width="1897" height="354" key="GridCell.Tab.1.right/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599051120063" />
     <state width="1178" height="433" key="GridCell.Tab.1.right/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603810685794" />
-    <state width="1202" height="266" key="GridCell.Tab.1.right/61.27.2499.1413@61.27.2499.1413" timestamp="1605893909960" />
+    <state width="731" height="250" key="GridCell.Tab.1.right/61.27.1539.873@61.27.1539.873" timestamp="1606810080688" />
+    <state width="1202" height="454" key="GridCell.Tab.1.right/61.27.2499.1413@61.27.2499.1413" timestamp="1606770494146" />
     <state x="579" y="285" key="IDE.errors.dialog" timestamp="1603705325841">
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
@@ -435,11 +451,11 @@
     <state x="449" y="174" key="SettingsEditor/0.1080.1920.1080/61.0.1859.1080@61.0.1859.1080" timestamp="1599045911298" />
     <state x="452" y="194" key="SettingsEditor/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1600938888927" />
     <state x="582" y="254" width="1360" height="737" key="SettingsEditor/61.27.2499.1413@61.27.2499.1413" timestamp="1603549235150" />
-    <state width="1251" height="726" key="XDebugger.FullValuePopup" timestamp="1604476442009">
+    <state width="1251" height="726" key="XDebugger.FullValuePopup" timestamp="1606761201140">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="928" height="542" key="XDebugger.FullValuePopup/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1603810114491" />
-    <state width="1251" height="726" key="XDebugger.FullValuePopup/61.27.2499.1413@61.27.2499.1413" timestamp="1604476442009" />
+    <state width="1251" height="726" key="XDebugger.FullValuePopup/61.27.2499.1413@61.27.2499.1413" timestamp="1606761201140" />
     <state x="1104" y="351" width="381" height="473" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1605807109154">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
@@ -468,24 +484,14 @@
       <screen x="65" y="24" width="1855" height="1056" />
     </state>
     <state x="861" y="433" key="publish.login/1920.0.1920.1080/65.24.1855.1056@65.24.1855.1056" timestamp="1602489849890" />
-    <state x="973" y="347" width="672" height="678" key="search.everywhere.popup" timestamp="1602446087319">
+    <state x="973" y="347" width="672" height="678" key="search.everywhere.popup" timestamp="1606161729103">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
-    <state x="973" y="347" width="672" height="678" key="search.everywhere.popup/61.27.2499.1413@61.27.2499.1413" timestamp="1602446087319" />
+    <state x="973" y="347" width="672" height="678" key="search.everywhere.popup/61.27.2499.1413@61.27.2499.1413" timestamp="1606161729103" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/plotRTDP.py</url>
-          <line>108</line>
-          <option name="timeStamp" value="85" />
-        </line-breakpoint>
-        <line-breakpoint suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/plotRTDP.py</url>
-          <line>116</line>
-          <option name="timeStamp" value="86" />
-        </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$USER_HOME$/anaconda3/lib/python3.7/site-packages/torch/utils/data/sampler.py</url>
           <line>166</line>
@@ -548,8 +554,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/plotRTDP.py</url>
-          <line>194</line>
-          <option name="timeStamp" value="339" />
+          <line>223</line>
+          <option name="timeStamp" value="338" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/plotRTDP.py</url>
+          <line>178</line>
+          <option name="timeStamp" value="343" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/visualization/vizo.py</url>
+          <line>20</line>
+          <option name="timeStamp" value="344" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -560,7 +576,7 @@
     <SUITE FILE_PATH="coverage/nnPyTorch$preprocessor.coverage" NAME="preprocessor Coverage Results" MODIFIED="1603636063329" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/nnPyTorch$game.coverage" NAME="game Coverage Results" MODIFIED="1603641739608" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/nnPyTorch$nn_pytorch.coverage" NAME="nn_pytorch Coverage Results" MODIFIED="1603662849379" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/nnPyTorch$vizo.coverage" NAME="vizo Coverage Results" MODIFIED="1605809579837" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/visualization" />
-    <SUITE FILE_PATH="coverage/nnPyTorch$plotRTDP.coverage" NAME="plotRTDP Coverage Results" MODIFIED="1606129352328" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/nnPyTorch$plotRTDP.coverage" NAME="plotRTDP Coverage Results" MODIFIED="1606810031099" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/nnPyTorch$vizo.coverage" NAME="vizo Coverage Results" MODIFIED="1606810079053" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/visualization" />
   </component>
 </project>

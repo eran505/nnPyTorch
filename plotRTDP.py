@@ -1,10 +1,10 @@
 import os_util as pt
 import pandas as pd
-import os
+import os,time
 import matplotlib.pyplot as plt
 from os.path import expanduser
 from itertools import groupby
-
+from random import shuffle
 
 def get_all_df_sort_by_size(p_path="/home/eranhe/car_model/debug"):
     res = pt.walk_rec(p_path, [], ".csv")
@@ -149,6 +149,45 @@ def trajectory_read(p_path):
     res = [list(g) for k, g in groupby(array, lambda x: x != "END") if k]
     return res
 
+def sort_files_by_seed(res_list):
+    d={}
+    for item in res_list:
+        ky = str(item).split("/")[-1].split("_")[0]
+        ky2 = str(item).split("/")[-1].split("_")[1]
+        ky = ky.join(ky2)
+        if ky not in d:
+            d[ky]=[item]
+        else:
+            d[ky].append(item)
+    return d
+
+def convergence_plots(dir_path_p):
+    res = pt.walk_rec(dir_path_p, [], "Eval.csv")
+    d_files_seed = sort_files_by_seed(res)
+    l = list(d_files_seed.values())
+    shuffle(l)
+    for item in l:
+        print(item)
+        for csv_path_file in item:
+            l_df = read_multi_csvs(csv_path_file)
+            start_from=[]
+            if len(l_df)>1:
+                size = len(l_df)
+                for df_i in l_df:
+                    start_from.append(df_i['"Collision"'])
+                df_subs = pd.concat(start_from)
+                name = str(csv_path_file).split('/')[-1].split('_')[2]
+                if name == "L1":
+                    continue
+                plt.plot(df_subs.values, label=name,ls=':')
+            else:
+                name = str(csv_path_file).split('/')[-1].split('_')[2]
+                plt.plot(l_df[0]['"Collision"'].values, label=name)
+
+
+        plt.legend()
+        plt.show()
+        return
 
 def read_multi_csvs(p):
     big_l = []
@@ -191,8 +230,6 @@ def one_path_ana(path_p):
     for item_csv_p in res:
         d = {}
         print(item_csv_p)
-        if str(item_csv_p).split('/')[-1].split('.')[0]=="1594133815_u6_L10_Eval":
-            print()
         d["seed_number"] = str(item_csv_p).split("/")[-1].split("_")[0]
         d["u_id"] = str(item_csv_p).split("/")[-1].split("_")[1]
         d["learn_mode"] = str(item_csv_p).split("/")[-1].split("_")[2]
@@ -201,8 +238,10 @@ def one_path_ana(path_p):
         d["shaffle"] = str(name).split("s_")[-1][0]
         df_pre = mean_multi_dfs(d["df_l"][:-1])
         last_row = d["df_l"][-1].tail(1).mean(axis=0).to_dict()
+        d["t0_coll"] = d["df_l"][-1]['"Collision"'][0]
         for ky in last_row:
             d["{}".format(ky).replace('\"', '')] = last_row[ky]
+        d["to_Collision"] =0
         d['path_size'] = len(d["df_l"]) - 1
         for ky in df_pre:
             d["{}_{}".format("P", ky).replace('\"', '')] = df_pre[ky]
@@ -229,7 +268,11 @@ def mean_multi_dfs(l_df, tail_row=1):
         means_arr.append(mean)
     df_all = pd.DataFrame(means_arr)
     df_mean = df_all.sum(axis=0)
-    return df_mean.to_dict()
+    results_d = df_mean.to_dict()
+
+    #tail_df = df["Collision"].head(tail_row)
+    #results_d["init_coll"] = df["Collision"].mean(axis=0)
+    return results_d
 
 
 def one_path(path_p="/home/eranhe/car_model/out"):
@@ -300,6 +343,9 @@ def play_data(df_all_path, df_one_path):
     df.to_csv("{}/df.csv".format(father))
 
 
+
+
+
 def get_data_from_exp(path_to_df):
     all_df = pd.read_csv(path_to_df, index_col=0)
 
@@ -307,8 +353,10 @@ def get_data_from_exp(path_to_df):
 
 
 if __name__ == "__main__":
-    print("hello world")
     p="/home/eranhe/car_model/out"
+    convergence_plots(p)
+    exit(0)
+    print("hello world")
     #p="/home/eranhe/Desktop/new_exp/data3"
     one_path_ana(p)
     exit()
