@@ -162,6 +162,54 @@ def sort_files_by_seed(res_list):
             d[ky].append(item)
     return d
 
+def sort_files_by_u_id(p_out):
+    res_list = pt.walk_rec(p_out,[],'Eval.csv') #23121_u4_L99_Eval.csv
+    d={}
+    for item in res_list:
+        seed = str(item).split("/")[-1].split("_")[0]
+        u_id = str(item).split("/")[-1].split("_")[1]
+        l_id = str(item).split("/")[-1].split("_")[2]
+        ky = u_id
+        if ky not in d:
+            d[ky]=[item]
+        else:
+            d[ky].append(item)
+    l = list(d.values())
+    agg_by_mean_all_csv(l[4])
+
+def agg_by_mean_all_csv(list_csvs):
+    l_coll = []
+    d={}
+    for item in list_csvs:
+        learn_id = str(item).split("/")[-1].split("_")[2]
+
+        l_df = read_multi_csvs(item)
+        for df_i in l_df[:-1]:
+            df_i['"Collision"'] = df_i['"Collision"'] / len(l_df)
+        df = pd.concat(l_df)
+        #print(list(df))
+        #l_coll.append(df['"Collision"'].values)
+        if learn_id not in d:
+            d[learn_id]=[]
+        d[learn_id].append(df['"Collision"'].values)
+
+    for ky in d:
+        l_coll=d[ky]
+        b = np.full([len(l_coll), len(max(l_coll, key=lambda x: len(x)))], max(l_coll, key=lambda x: len(x)))
+        for i, j in enumerate(l_coll):
+            b[i][0:len(j)] = j
+        print("mean ",ky)
+
+        plt.plot(b.mean(axis=0)[:10000], label="{}".format(ky), ls='-.')
+
+    plt.legend()
+    plt.show()
+    print("end")
+    exit(0)
+
+def plot_coll(np_arry,name):
+    plt.plot(np_arry, label=name,ls=':')
+
 def convergence_plots(dir_path_p):
     figs_path = pt.mkdir_system("{}/car_model".format(expanduser("~")),'figs',False)
     res = pt.walk_rec(dir_path_p, [], "Eval.csv")
@@ -353,7 +401,8 @@ def play_data(df_all_path, df_one_path):
 
 
 
-
+def main_agg_files(p_path):
+    pass
 
 def get_data_from_exp(path_to_df):
     all_df = pd.read_csv(path_to_df, index_col=0)
@@ -364,9 +413,10 @@ def get_data_from_exp(path_to_df):
 if __name__ == "__main__":
 
     p="/home/ERANHER/car_model/out"
+    sort_files_by_u_id(p)
+    one_path_ana(p)
     convergence_plots(p)
     exit(0)
-    one_path_ana(p)
     print("hello world")
     #p="/home/eranhe/Desktop/new_exp/data3"
     exit()
@@ -383,3 +433,5 @@ if __name__ == "__main__":
     get_the_last_row(p_path)
     # merge_all_policy_eval()
     # res = merge_all_policy_eval(p)
+
+
