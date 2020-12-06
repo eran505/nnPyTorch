@@ -32,6 +32,7 @@ def path_score(path_to_csv_file):
             if item in d:
                 d[item]+=1
             else:
+
                 d[item]=1
     ones = 0
     big_one=0
@@ -40,12 +41,12 @@ def path_score(path_to_csv_file):
             ones+=1
         else:
             big_one+=1
-    print("{}/{} = {}".format(ones,big_one,ones/big_one))
+    print("uniq - {}:{} -> {}".format(ones,big_one,ones/(big_one+ones)))
 
 def main_f():
     cmap = get_cmap(15)
-    p="car_model/small/out/info/debug"
-    pp='car_model/debug'
+
+    p='car_model/debug'
     res = pt.walk_rec("{}/{}".format(expanduser("~"),p),[],".csv")
     shuffle(res)
     index = 0

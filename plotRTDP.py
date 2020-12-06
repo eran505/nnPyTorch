@@ -215,10 +215,11 @@ def agg_by_mean_all_csv(list_csvs,ky_uid):
                 b[i][len(j):] = max(j)
 
 
-        plt.plot(b.mean(axis=0)[:2500], label="{}".format(name_dico[ky]), ls='--',c=color_dico[ky])
+        plt.plot(b.mean(axis=0)[:20000], label="{}".format(name_dico[ky]), ls='--',c=color_dico[ky])
     print(ky_uid,"<----")
     plt.legend()
     plt.show()
+    plt.savefig("{}/car_model/{}_fig.png".format(expanduser("~"),ky_uid))
     print("end")
     #exit(0)
 
@@ -430,8 +431,8 @@ if __name__ == "__main__":
 
     p="{}/car_model/out".format(expanduser('~'))
     sort_files_by_u_id(p)
+    #one_path_ana(p)
     exit()
-    one_path_ana(p)
     convergence_plots(p)
     exit(0)
     print("hello world")
