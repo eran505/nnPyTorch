@@ -15,11 +15,41 @@ def get_cmap(n, name='hsv'):
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
 
+def path_score(path_to_csv_file):
+    l = hlp.load__p(path_to_csv_file)
+    l_all = []
+    acc=0
+    for item in  l:
+        l_all.append(np.array(item['traj']))
+        acc+=float(item['p'])
+        if acc>=1:
+            break
+    d={}
+    for i,list_f1 in enumerate(l_all):
+        for item in list_f1:
+            item = item.flatten()
+            item = tuple(item)
+            if item in d:
+                d[item]+=1
+            else:
+                d[item]=1
+    ones = 0
+    big_one=0
+    for item in d.values():
+        if item == 1:
+            ones+=1
+        else:
+            big_one+=1
+    print("{}/{} = {}".format(ones,big_one,ones/big_one))
+
 def main_f():
     cmap = get_cmap(15)
-    res = pt.walk_rec("{}/car_model/debug".format(expanduser("~")),[],".csv")
+    p="car_model/small/out/info/debug"
+    pp='car_model/debug'
+    res = pt.walk_rec("{}/{}".format(expanduser("~"),p),[],".csv")
     shuffle(res)
     index = 0
+    path_score(res[index])
     # for i,x in enumerate(res):
     #     if str(res).split('/')[-1] == '31158_p.csv':
     #         index=i

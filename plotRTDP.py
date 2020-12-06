@@ -175,17 +175,25 @@ def sort_files_by_u_id(p_out):
         else:
             d[ky].append(item)
     l = list(d.values())
-    agg_by_mean_all_csv(l[4])
+    for ky_uid in d:
+        agg_by_mean_all_csv(d[ky_uid],ky_uid)
 
-def agg_by_mean_all_csv(list_csvs):
+def agg_by_mean_all_csv(list_csvs,ky_uid):
+    name_dico={"L99":'All',"L0":"Single","L77":'Goals'}
+    color_dico={"L99":'b',"L0":"g","L77":'y'}
     l_coll = []
     d={}
     for item in list_csvs:
+        #print(item)
         learn_id = str(item).split("/")[-1].split("_")[2]
 
         l_df = read_multi_csvs(item)
+
+        if l_df[-1]['"Collision"'].iloc[-1]!=1.0:
+            continue
+
         for df_i in l_df[:-1]:
-            df_i['"Collision"'] = df_i['"Collision"'] / len(l_df)
+            df_i['"Collision"'] = df_i['"Collision"'] / (len(l_df)-1)
         df = pd.concat(l_df)
         #print(list(df))
         #l_coll.append(df['"Collision"'].values)
@@ -194,18 +202,25 @@ def agg_by_mean_all_csv(list_csvs):
         d[learn_id].append(df['"Collision"'].values)
 
     for ky in d:
+        if ky == "L2" or ky=="L1":
+            continue
         l_coll=d[ky]
-        b = np.full([len(l_coll), len(max(l_coll, key=lambda x: len(x)))], max(l_coll, key=lambda x: len(x)))
+        max_line = 0
+
+
+        b = np.full([len(l_coll), len(max(l_coll, key=lambda x: len(x)))], 0)
         for i, j in enumerate(l_coll):
             b[i][0:len(j)] = j
-        print("mean ",ky)
+            if len(j)<b.shape[1]:
+                b[i][len(j):] = max(j)
 
-        plt.plot(b.mean(axis=0)[:10000], label="{}".format(ky), ls='-.')
 
+        plt.plot(b.mean(axis=0)[:2500], label="{}".format(name_dico[ky]), ls='--',c=color_dico[ky])
+    print(ky_uid,"<----")
     plt.legend()
     plt.show()
     print("end")
-    exit(0)
+    #exit(0)
 
 def plot_coll(np_arry,name):
     plt.plot(np_arry, label=name,ls=':')
@@ -229,6 +244,7 @@ def convergence_plots(dir_path_p):
                 size = len(l_df)
                 for df_i in l_df[:-1]:
                     start_from.append(df_i['"Collision"'])
+                    df_i['"Collision"'] = df_i['"Collision"']/(size-1)
                 df_subs = pd.concat(start_from)
                 name = str(csv_path_file).split('/')[-1].split('_')[2]
                 y_arr = np.arange(0, len(df_subs), 1)
@@ -412,8 +428,9 @@ def get_data_from_exp(path_to_df):
 
 if __name__ == "__main__":
 
-    p="/home/ERANHER/car_model/out"
+    p="{}/car_model/out".format(expanduser('~'))
     sort_files_by_u_id(p)
+    exit()
     one_path_ana(p)
     convergence_plots(p)
     exit(0)
