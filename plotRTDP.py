@@ -189,8 +189,8 @@ def agg_by_mean_all_csv(list_csvs,ky_uid):
 
         l_df = read_multi_csvs(item)
 
-        if l_df[-1]['"Collision"'].iloc[-1]!=1.0:
-            continue
+        # if l_df[-1]['"Collision"'].iloc[-1]!=1.0:
+        #     continue
 
         for df_i in l_df[:-1]:
             df_i['"Collision"'] = df_i['"Collision"'] / (len(l_df)-1)
@@ -202,20 +202,21 @@ def agg_by_mean_all_csv(list_csvs,ky_uid):
         d[learn_id].append(df['"Collision"'].values)
 
     for ky in d:
-        if ky == "L2" or ky=="L1":
+        if ky == "L2" or ky=="L1" or ky=="L3":
             continue
         l_coll=d[ky]
         max_line = 0
 
 
-        b = np.full([len(l_coll), len(max(l_coll, key=lambda x: len(x)))], 0)
-        for i, j in enumerate(l_coll):
-            b[i][0:len(j)] = j
-            if len(j)<b.shape[1]:
-                b[i][len(j):] = max(j)
+        b = np.full([len(l_coll), len(max(l_coll, key=lambda x: len(x)))], 0,dtype=float)
+        for i, j_arr in enumerate(l_coll):
+            b[i,:len(j_arr)] = j_arr
+            if len(j_arr)<b.shape[1]:
+                b[i,len(j_arr):] = max(j_arr)
+        #b[b<1]=0
 
 
-        plt.plot(b.mean(axis=0)[:20000], label="{}".format(name_dico[ky]), ls='--',c=color_dico[ky])
+        plt.plot(b.mean(axis=0)[:], label="{}".format(name_dico[ky]), ls='--',c=color_dico[ky])
     print(ky_uid,"<----")
     plt.legend()
     plt.show()
@@ -430,8 +431,8 @@ def get_data_from_exp(path_to_df):
 if __name__ == "__main__":
 
     p="{}/car_model/out".format(expanduser('~'))
-    sort_files_by_u_id(p)
     #one_path_ana(p)
+    sort_files_by_u_id(p)
     exit()
     convergence_plots(p)
     exit(0)
