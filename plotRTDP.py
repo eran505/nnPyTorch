@@ -162,7 +162,7 @@ def sort_files_by_seed(res_list):
             d[ky].append(item)
     return d
 
-def sort_files_by_u_id(p_out):
+def sort_files_by_u_id(p_out,thershold=0):
     res_list = pt.walk_rec(p_out,[],'Eval.csv') #23121_u4_L99_Eval.csv
     d={}
     for item in res_list:
@@ -176,9 +176,9 @@ def sort_files_by_u_id(p_out):
             d[ky].append(item)
     l = list(d.values())
     for ky_uid in d:
-        agg_by_mean_all_csv(d[ky_uid],ky_uid)
+        agg_by_mean_all_csv(d[ky_uid],ky_uid,thershold)
 
-def agg_by_mean_all_csv(list_csvs,ky_uid):
+def agg_by_mean_all_csv(list_csvs,ky_uid,thershold):
     name_dico={"L99":'All',"L0":"Single","L77":'Goals'}
     color_dico={"L99":'b',"L0":"g","L77":'y'}
     l_coll = []
@@ -213,16 +213,16 @@ def agg_by_mean_all_csv(list_csvs,ky_uid):
             b[i,:len(j_arr)] = j_arr
             if len(j_arr)<b.shape[1]:
                 b[i,len(j_arr):] = max(j_arr)
-        #b[b<1]=0
+        b[b<thershold]=0
 
 
         plt.plot(b.mean(axis=0)[:], label="{}".format(name_dico[ky]), ls='--',c=color_dico[ky])
     print(ky_uid,"<----")
     plt.legend()
+    save_dir = pt.mkdir_system("{}/car_model/figs".format(expanduser('~')),str(list_csvs[0]).split('/')[-2],False)
+    plt.savefig("{}/u{}_th={}_fig.png".format(save_dir,ky_uid,thershold))
     plt.show()
-    plt.savefig("{}/car_model/{}_fig.png".format(expanduser("~"),ky_uid))
     print("end")
-    #exit(0)
 
 def plot_coll(np_arry,name):
     plt.plot(np_arry, label=name,ls=':')
@@ -431,8 +431,9 @@ def get_data_from_exp(path_to_df):
 if __name__ == "__main__":
 
     p="{}/car_model/out".format(expanduser('~'))
-    #one_path_ana(p)
-    sort_files_by_u_id(p)
+    #res = pt.walk_rec("{}/car_model".format(expanduser('~')),[],"out",file_t=False,lv=-1)
+    sort_files_by_u_id(p,1)
+    sort_files_by_u_id(p,0)
     exit()
     convergence_plots(p)
     exit(0)
