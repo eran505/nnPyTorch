@@ -60,7 +60,7 @@ class Loader(object):
         return d_result
 
     def load_game_setting(self, csv_p):
-        df = pd.read_csv(csv_p)
+        df = pd.read_csv(csv_p,)
         self.d_conf = df.to_dict()
 
     def get_path_object(self):
@@ -185,14 +185,17 @@ class QTable(object):
 
     def loader(self, csv_table, csv_map, csv_last_states):
 
-        names = ["S" + str(i) for i in range(1, 13)]
+        names = ["S" + str(i) for i in range(0, 12)]
         names.insert(0, "id")
+        names.extend(['B1','B2'])
+
 
         self.df_raw = pd.read_csv(csv_table, sep=';')
         self.map_df = pd.read_csv(csv_map, sep=';', names=names)
         # self.df_raw=self.df_raw[]
         self.merge_dfs(csv_last_states)
         self.make_features_df()
+
 
         array_state_F = self.make_new_state_F(self.matrix_f[:, :12])
         data = np.append(array_state_F, self.matrix_f[:, 12:], axis=1)
@@ -207,7 +210,7 @@ class QTable(object):
         print("self.df_raw:", len(self.df_raw))
         print("map_df:", len(self.map_df))
         self.map_df['id'] = self.map_df['id'].astype('uint64')
-        self.df_raw = pd.merge(self.map_df, self.df_raw, how='inner', on=['id'])
+        self.df_raw = pd.merge(self.map_df, self.df_raw, how='left', on=['id'])
 
         if self.add_ctr:
             self.df_raw = self.add_ctr_col(csv_last_states)
@@ -218,11 +221,15 @@ class QTable(object):
 
     def add_ctr_col(self, csv_last_states):
         ctr_df = self.get_count_state(csv_last_states)
-        # print(sorted(ctr_df['ctr'].values))
+        # print(sorted(ctr_df['ctr'].values)
+#        print(ctr_df.dtypes)
+#        print(self.df_raw.dtypes)
         df_raw = pd.merge(self.df_raw, ctr_df, how='left', on=['id'])
+#        print(np.sort(df_raw['ctr'][~np.isnan(df_raw['ctr'].values)]))
 
         df_raw['ctr'] = np.where(df_raw['ctr'] > 0, df_raw['ctr'], 0)
         df_raw['ctr'].fillna(0, inplace=True)
+        print(np.sort(df_raw['ctr'][~np.isnan(df_raw['ctr'].values)]))
         # print(Counter(df_raw['ctr'].values))
         return df_raw
 
@@ -236,7 +243,10 @@ class QTable(object):
 
     def make_features_df(self):
         # self.make_target_bins_nominal()
-        self.matrix_f = np.asmatrix(self.df_raw[list(self.df_raw)[1:]].values)
+        cols = list(self.df_raw)[1:]
+        if not_time:
+            cols = [x for x in cols if not str(x).__contains__('B') ]
+        self.matrix_f = np.asmatrix(self.df_raw[cols].values)
         self.df_raw = None
 
     def make_matrix_flat_V2(self, df):
@@ -355,9 +365,10 @@ class RegressionFeature(object):
         # print("ad_dist.shape:",ad_dist.shape)
         # print("a.shape:",a.shape)
         # print("d.shape:",d.shape)
+        multi = np.power(np_state,2)
         # print("np_state.shape:",np_state.shape)
         # print("goals_dist.shape:",goals_dist.shape)
-        x = np.concatenate([wall_dist, ad_dist, a, np_state, goals_dist], axis=1)
+        x = np.concatenate([np_state,multi,wall_dist, ad_dist, a, goals_dist], axis=1)
         # df = pd.DataFrame(x)
         # df.to_csv(p_name_file,index=False)
         return x
@@ -389,19 +400,23 @@ class RegressionFeature(object):
         self.d.update(tmp)
 
 
-def only_max_value(df):
+def only_max_value(df,first=False):
     l_col = list(df)
     l_col_v = l_col[-28:-1]
     print(l_col_v)
     df['max'] = df.iloc[:, -28:-1].max(axis=1)
-    df['arg_max'] = df.iloc[:, -28:-1].idxmax(axis=1)
+    df['arg_max'] = df.iloc[:, -28:-2].idxmax(axis=1)
+
+    # del row that have max value of zero or less
+    df = df[df['max'] > 0]
 
     for i in l_col_v:
         df.loc[(df['max'] > df[i]), i] = 0  # postive but not the max
     for i in l_col_v:
         df.loc[(df[i] < 0), i] = 0  # negative
-    # for i in l_col_v:
-    #     df.loc[(df['max'] == df[i]) & (i != df['arg_max']), i] = 0  # max but not the first one
+    if first:
+        for i in l_col_v:
+            df.loc[(i != df['arg_max']), i] = 0  # max but not the first one
     for i in l_col_v:
         df.loc[(df['max'] == df[i]), i] = 1  # max and the first one
 
@@ -414,11 +429,16 @@ home = expanduser("~")
 if home.__contains__('lab2'):
     home = "/home/lab2/eranher"
 
+not_time = True
 
 def MainLoader():
+    home = expanduser('~')
     SEED = 20000
     np.random.seed(SEED)
-    dir_data = "{}/car_model/generalization/14data".format(home)
+    #dir_data = "{}/car_model/generalization/14data".format(home)
+    dir="new/exp_400/1"
+    dir="new/small/30_p"
+    dir_data = "{}/car_model/generalization/".format(home)+dir
     print(dir_data)
     # Q_csv = "{}/Q.csv".format(dir_data)
     Q_csv = "{}/Q.csv".format(dir_data)

@@ -49,14 +49,14 @@ def normalize_d(d, target=1.0):
 
 
 class LR(nn.Module):
-    def __init__(self, dim, out=27, hidden=400, sec_hidden=400, a=-1.0, b=1.0):
+    def __init__(self, dim, out=27, hidden=300, sec_hidden=300, a=-1.0, b=1.0):
         super(LR, self).__init__()
         # intialize parameters
 
         self.classifier = nn.Sequential(
 
             self.make_linear(dim, hidden, a, b),
-            # nn.BatchNorm1d(hidden),  # applying batch norm
+            #nn.BatchNorm1d(hidden),  # applying batch norm
             nn.ReLU(),
 
             self.make_linear(hidden, hidden, a, b),
@@ -65,9 +65,10 @@ class LR(nn.Module):
 
             self.make_linear(hidden, sec_hidden, a, b),
             # nn.BatchNorm1d(sec_hidden),  # applying batch norm
-            nn.ReLU(),
+            nn.ReLU(), #ReLU
 
             self.make_linear(sec_hidden, out, a, b)
+            #,nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -84,7 +85,7 @@ class LR(nn.Module):
 
     def make_linear(self, in_input, out_output, a_w, b_w):
         layer = torch.nn.Linear(in_input, out_output)
-        # torch.nn.init.uniform_(layer.weight, a=a_w, b=b_w)
+        #torch.nn.init.uniform_(layer.weight, a=a_w, b=b_w)
         # torch.nn.init.uniform_(layer.bias, a=a_w, b=b_w)
         return layer
 
@@ -95,7 +96,7 @@ class NeuralNetwork(object):
         self.loss_function = loss_func
         self.nn_model = model
         self.optimizer = optimizer_object
-        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=250, gamma=0.1)
+        self.scheduler = optim.lr_scheduler.StepLR(optimizer_object, step_size=100, gamma=0.1)
         self.losses_train = []
         self.losses_test = []
         self.home = None
@@ -154,7 +155,7 @@ class NeuralNetwork(object):
 
         self.optimizer.zero_grad()
         # Computes loss
-        # print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
+        #print("y={0} \nyhat={1}\n".format(y.tolist(),yhat.tolist()))
 
         loss = self.loss_function(yhat, y)
 
@@ -204,7 +205,7 @@ class NeuralNetwork(object):
 
                 # decay the learning rate
                 loss_tmp.append(loss)
-                if ctr % 100 == 0:
+                if ctr % 1000 == 0:
                     print('Training loss: {2} Iter-{3} Epoch-{0} lr: {1}  Avg-Time:{4} DataLoader(time):{5} '.format(
                         epoch, self.optimizer.param_groups[0]['lr'], np.mean(loss_tmp), ctr / sampels_size_batch,
                         np.mean(l_time), np.mean(data_loader_time)))
@@ -259,6 +260,7 @@ class DataSet(object):
         self.weights = W
         self.debug_d = None
         self.data = self.norm_without_negative(self.data)
+        self.data = np.nan_to_num(self.data) # for nan -> 0
         print(len(self.targets))
         self.targets = self.scale_negtive_one_to_one(self.targets)
         print(len(self.targets))
@@ -340,6 +342,8 @@ class DataSet(object):
         print("####" * 50)
         min_arr = table_data.min(0)
         ptp_arr = table_data.ptp(0)
+        np.array(min_arr).tofile("{}/min.csv".format(folder_dir),sep=',')
+        np.array(ptp_arr).tofile("{}/ptp.csv".format(folder_dir),sep=',')
         print(list(min_arr))
         print(list(ptp_arr))
 
@@ -380,14 +384,14 @@ class DataSet(object):
             return DataLoader(my_dataset, shuffle=is_shuffle, batch_size=size_batch, num_workers=0)
 
 
-def main(in_dim, train_dataset, test_dataset=None, positive_class_pr=None):
+def main(in_dim, train_dataset, test_dataset=None):
     print(device)
     SEED = 2809
     torch.manual_seed(SEED)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(SEED)
     ## hyperparams
-    num_iterations = 550
+    num_iterations = 900
     lrmodel = LR(in_dim).double()
     lrmodel = lrmodel.to(device)
 
@@ -395,10 +399,12 @@ def main(in_dim, train_dataset, test_dataset=None, positive_class_pr=None):
     # loss = nn.functional.kl_div
     # loss= nn.KLDivLoss()
     # loss = XSigmoidLoss()
-    # loss=F.l1_loss
+    # loss=F.
+
     loss = nn.BCEWithLogitsLoss()  # pos_weight=torch.from_numpy(positive_class_pr))
+    #loss = nn.CrossEntropyLoss()
     # SGD/Adam
-    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0955)
+    optimizer = torch.optim.SGD(lrmodel.parameters(), lr=0.0955,momentum=0.9) #0.0955
 
     my_nn = NeuralNetwork(loss_func=loss,
                           optimizer_object=optimizer,
@@ -449,9 +455,11 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 1
+batch_size = 8
 
 # 756253:756251 index
+
+folder_dir=None
 
 
 if __name__ == "__main__":
@@ -460,16 +468,24 @@ if __name__ == "__main__":
     if str_home.__contains__('lab2'):
         str_home = "/home/lab2/eranher"
 
-    folder = "14data"
-
-    df = pd.read_csv("{}/car_model/generalization/{}/all.csv".format(str_home, folder))
+    data_file = "all.csv"
+    folder='new/exp_400/1'
+    folder="new/small/600"
+    folder_dir = "{}/car_model/generalization/{}".format(str_home,folder)
+    p_path_data = "{}/{}".format(folder_dir, data_file)
+    df = pd.read_csv(p_path_data)
 
     colz = list(df)
 
     # take only the relevant
+    #print(len(df))
     df = df.loc[df[colz[-1]] > 0]
+    #print(len(df))
+    #exit()
     # make multi one hot encoding
-    df = pr.only_max_value(df)
+    s = len(df)
+    df = pr.only_max_value(df,first=True)
+    print(len(df),":",s)
     z = df[colz[-2]].value_counts()
     false_count = len(df[colz[-28:-1]]) / df[colz[-28:-1]].sum()
     positive_class_pr = false_count.values
@@ -500,4 +516,4 @@ if __name__ == "__main__":
 
     print("len - train_loader:", len(train_loader))
 
-    main(matrix_df.shape[-1] - 28, train_loader, test_loader, positive_class_pr)
+    main(matrix_df.shape[-1] - 28, train_loader, test_loader)
