@@ -49,7 +49,7 @@ def normalize_d(d, target=1.0):
 
 
 class LR(nn.Module):
-    def __init__(self, dim, out=27, hidden=300, sec_hidden=300, a=-1.0, b=1.0):
+    def __init__(self, dim, out=27, hidden=400, sec_hidden=400, a=-1.0, b=1.0):
         super(LR, self).__init__()
         # intialize parameters
 
@@ -205,7 +205,7 @@ class NeuralNetwork(object):
 
                 # decay the learning rate
                 loss_tmp.append(loss)
-                if ctr % 1000 == 0:
+                if ctr % 10000 == 0:
                     print('Training loss: {2} Iter-{3} Epoch-{0} lr: {1}  Avg-Time:{4} DataLoader(time):{5} '.format(
                         epoch, self.optimizer.param_groups[0]['lr'], np.mean(loss_tmp), ctr / sampels_size_batch,
                         np.mean(l_time), np.mean(data_loader_time)))
@@ -214,6 +214,7 @@ class NeuralNetwork(object):
                     loss_tmp.clear()
                     # print(100 * "-")
                     # print(list(self.nn_model.parameters()))
+                    self.eval_nn(validtion_datatest)
                 # self.log_to_files()
                 # torch.save(self.nn_model.state_dict(), "{}/car_model/nn/nn{}.pt".format(self.home, epoch + int(ctr/1000)))
 
@@ -455,7 +456,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 8
+batch_size = 16
 
 # 756253:756251 index
 
@@ -484,7 +485,7 @@ if __name__ == "__main__":
     #exit()
     # make multi one hot encoding
     s = len(df)
-    df = pr.only_max_value(df,first=True)
+    df = pr.only_max_value(df,first=False)
     print(len(df),":",s)
     z = df[colz[-2]].value_counts()
     false_count = len(df[colz[-28:-1]]) / df[colz[-28:-1]].sum()
@@ -503,7 +504,7 @@ if __name__ == "__main__":
     print(matrix_df.shape)
 
     DataLoder = DataSet(matrix_df[:, :-28], matrix_df[:, -28:-1], matrix_df[:, -1])
-    train_loader, test_loader = DataLoder.split_test_train(0.0000001)
+    train_loader, test_loader = DataLoder.split_test_train(0.13)
 
     # df = pd.read_csv("{}/car_model/generalization/{}/all.csv".format(str_home,folder))
     # add index
@@ -515,5 +516,6 @@ if __name__ == "__main__":
     # _, test_loader = DataLoder.split_test_train(0.1)
 
     print("len - train_loader:", len(train_loader))
+    print("len - test:", len(test_loader))
 
     main(matrix_df.shape[-1] - 28, train_loader, test_loader)

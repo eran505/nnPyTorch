@@ -159,8 +159,22 @@ class AgentD(object):
     def get_action_xgb(self, pos_A, rep):
         f = self.get_features(pos_A, rep)
         f = np.reshape(f,(1,len(f)))
+
         res = self.nn.predict(f)
         return res[0]
+
+    def get_action_xgb_reg(self, pos_A, rep):
+        action_list=[]
+        f = self.get_features(pos_A, rep)
+        f = np.reshape(f,(1,len(f)))
+        a = np.zeros((1,f.shape[-1]+1))
+        a[0,:-1]=f[0,:]
+        for i in range(27):
+            a[0,-1] = i
+            res = self.nn.predict(a)
+            action_list.append(res[0])
+        action_a  = np.argmax(np.array(action_list))
+        return action_a
 
     def get_move_all(self, pos_A, rep):
         f = self.get_features(pos_A, rep)
@@ -368,7 +382,7 @@ if __name__ == "__main__":
     # exit()
     home = expanduser("~")
 
-    data_folder = "{}/car_model/generalization/new/small/test".format(home)
+    data_folder = "{}/car_model/generalization/new/100/t".format(home)
     if pytoch:
         min_ = np.genfromtxt('{}/min.csv'.format(data_folder), delimiter=',')
         ptp_ = np.genfromtxt('{}/ptp.csv'.format(data_folder), delimiter=',')
@@ -383,7 +397,7 @@ if __name__ == "__main__":
 
     path_to_save = test_dir + "/coll.png"
     debug_print = False
-    loop_number = 60
+    loop_number = 7
     for item_model in res:
         model_name = str(item_model).split('/')[-1].split('.')[0]
         print("[{}]".format(model_name))

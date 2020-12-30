@@ -8,6 +8,12 @@ import hashlib
 import time
 import pandas as pd
 import array
+import sklearn.pipeline
+import sklearn.preprocessing
+from sklearn.kernel_approximation import RBFSampler
+
+from sklearn.preprocessing import StandardScaler
+
 
 
 def process_path(path_str):
@@ -231,6 +237,7 @@ class QTable(object):
         df_raw['ctr'].fillna(0, inplace=True)
         print(np.sort(df_raw['ctr'][~np.isnan(df_raw['ctr'].values)]))
         # print(Counter(df_raw['ctr'].values))
+        df_raw = df_raw[df_raw['ctr']>0]
         return df_raw
 
     def get_count_state(self, csv_last):
@@ -350,6 +357,59 @@ class RegressionFeature(object):
         self.distance_man = lambda vec_1, vec_2: np.absolute(vec_1 - vec_2)
         self.distance_function = self.distance_man
         self.d = {}
+        self.featurizer=None
+        self.scaler=None
+        self.add_RBF_feathers()
+
+    def add_RBF_feathers(self):
+        x = self.game_info_dict["X"]
+        y = self.game_info_dict["Y"]
+        z = self.game_info_dict["Z"]
+        num_of_sample = 100000
+        action_indx = int(num_of_sample)
+        arr_x = np.random.choice(x, num_of_sample * 2)
+        arr_y = np.random.choice(y, num_of_sample * 2)
+        arr_z = np.random.choice(z, num_of_sample * 2)
+        s_A = np.random.choice([-2, -1, 0, 1, 2], int(num_of_sample * 3))
+        s_D = np.random.choice([-1, 0, 1], int(num_of_sample * 3))
+
+        m = np.empty((num_of_sample, 12))
+        m[:, 0] = arr_x[:num_of_sample]
+        m[:, 1] = arr_y[:num_of_sample]
+        m[:, 2] = arr_z[:num_of_sample]
+
+        m[:, 3] = s_A[:num_of_sample]
+        m[:, 4] = s_A[num_of_sample:num_of_sample * 2]
+        m[:, 5] = s_A[num_of_sample * 2:]
+
+        m[:, 6] = arr_x[num_of_sample:]
+        m[:, 7] = arr_y[num_of_sample:]
+        m[:, 8] = arr_z[num_of_sample:]
+
+        m[:, 9] = s_D[:num_of_sample]
+        m[:, 10] = s_D[num_of_sample:num_of_sample * 2]
+        m[:, 11] = s_D[num_of_sample * 2:]
+
+        scaler = StandardScaler()
+        scaler.fit(m)
+
+        # Used to convert a state to a featurizes represenation.
+        # We use RBF kernels with different variances to cover different parts of the space
+        featurizer = sklearn.pipeline.FeatureUnion([
+            ("rbf1", RBFSampler(gamma=5.0, n_components=3)),
+            ("rbf2", RBFSampler(gamma=2.0, n_components=3)),
+            ("rbf3", RBFSampler(gamma=1.0, n_components=3)),
+            ("rbf4", RBFSampler(gamma=0.5, n_components=3))
+        ])
+
+        featurizer.fit(scaler.transform(m))
+        self.featurizer = featurizer
+        self.scaler = scaler
+
+    def process_state(self,states):
+        scaled = self.scaler.transform(states)
+        featurized = self.featurizer.transform(scaled)
+        return featurized
 
     def get_F(self, np_state):
         np_arrA = self.goal_F(np_state[:, 0:3])
@@ -365,10 +425,11 @@ class RegressionFeature(object):
         # print("ad_dist.shape:",ad_dist.shape)
         # print("a.shape:",a.shape)
         # print("d.shape:",d.shape)
-        multi = np.power(np_state,2)
+        # multi = np.power(np_state,2)
+        rbf_f = self.process_state(np_state)
         # print("np_state.shape:",np_state.shape)
         # print("goals_dist.shape:",goals_dist.shape)
-        x = np.concatenate([np_state,multi,wall_dist, ad_dist, a, goals_dist], axis=1)
+        x = np.concatenate([np_state,rbf_f,wall_dist, ad_dist, a, goals_dist], axis=1)
         # df = pd.DataFrame(x)
         # df.to_csv(p_name_file,index=False)
         return x
@@ -432,12 +493,13 @@ if home.__contains__('lab2'):
 not_time = True
 
 def MainLoader():
+
     home = expanduser('~')
     SEED = 20000
     np.random.seed(SEED)
     #dir_data = "{}/car_model/generalization/14data".format(home)
-    dir="new/exp_400/1"
     dir="new/small/30_p"
+    dir="new/small/600"
     dir_data = "{}/car_model/generalization/".format(home)+dir
     print(dir_data)
     # Q_csv = "{}/Q.csv".format(dir_data)
