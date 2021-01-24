@@ -7,12 +7,13 @@ import csv, math
 import pandas as pd
 import matplotlib.pyplot as plt
 from preprocessor import Loader, RegressionFeature
+import RL.DQN as dqn
 from socket import gethostname
 from random import randrange
 import policies
 import xgboost as xgb
 import joblib
-
+import numba
 
 # ptp_ = np.array([168.0, 168.0, 3.0, 299.0, 299.0, 3.0, 167.0, 260.0, 269.0, 3.0, 4.0, 4.0, 2.0, 168.0, 168.0, 3.0, 2.0, 2.0, 2.0, 260.0, 269.0, 3.0, 129.0, 139.0, 3.0])
 # min_ = np.array([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 5.0, 5.0, 0.0, -1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
@@ -20,7 +21,7 @@ import joblib
 # min_ = np.array([4.0, 11.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0, 0.0, 33.0, 18.0, 0.0, -1.0, -1.0, -1.0, 5.0, 22.0, 0.0, 0.0, 8.0, 0.0])
 # ptp_ = np.array([23.0, 31.0, 2.0, 49.0, 48.0, 2.0, 31.0, 51.0, 35.0, 1.0, 3.0, 3.0, 1.0, 23.0, 31.0, 2.0, 2.0, 2.0, 2.0, 51.0, 35.0, 1.0, 23.0, 31.0, 2.0])
 def norm(f):
-    f_norm = (f - min_) / ptp_
+    f_norm = f / abs_[:12]
     f_norm = np.nan_to_num(f_norm)
     return f_norm
 
@@ -125,7 +126,8 @@ class AgentD(object):
 
     def load_nn(self, path_to_model):
         if pytoch:
-            self.nn = nnpy.LR(len(ptp_))
+            self.nn = nnpy.LR(len(abs_))
+            self.nn = dqn.DQN(12,27)
             self.nn.load_state_dict(torch.load(path_to_model, map_location=device))
             # self.nn = self.nn.double()
             self.nn.eval()
@@ -197,7 +199,7 @@ class AgentD(object):
     def get_F_D(self, posA, rep):
         a = np.array([posA.flatten(), self.cur_state.flatten()]).flatten()
         a = np.expand_dims(a, axis=0)
-        a = self.trans.get_F(a)
+        #a = self.trans.get_F(a)
         if with_time:
             a = np.append(a, np.array([self.time_t, rep]).flatten())
         return a
@@ -211,16 +213,20 @@ class AgentD(object):
         self.apply_SEQ_action(num_repeated_action, arg_max)
 
     def next_move(self, pos_A, num_repeated_action):
+
         if pytoch:
             action_a_id = self.get_move_all(pos_A, num_repeated_action)
         else:
-            action_a_id = self.get_action_xgb(pos_A, num_repeated_action)
+            pass
+            #action_a_id = self.get_action_xgb(pos_A, num_repeated_action)
+        #self.apply_SEQ_action(num_repeated_action, action_a_id)
         self.apply_SEQ_action(num_repeated_action, action_a_id)
         self.time_t += 1
 
     def apply_SEQ_action(self, num_repeated_action, action_a_id):
         for _ in range(num_repeated_action):
             self.apply_action(action_a_id)
+
 
     def apply_action(self, action_id):
         action_a = self.actions[action_id]
@@ -230,6 +236,8 @@ class AgentD(object):
         new_speed[new_speed < -self.max_speed] = -self.max_speed
         self.cur_state[0, :] = new_speed + self.cur_state[0, :]
         self.cur_state[1, :] = new_speed
+
+
 
     def make_action_list(self):
         l = []
@@ -374,18 +382,22 @@ def plot_loss(array, dist):
 
 
 with_time = False
-pytoch = False
-
+pytoch = True
 if __name__ == "__main__":
+    from time import time
+    import cProfile
+    import re
+
     l = []
     # schedulerAction.get_move(np.array([8,0,0]))
     # exit()
     home = expanduser("~")
 
-    data_folder = "{}/car_model/generalization/new/100/t".format(home)
+    data_folder = "{}/car_model/generalization/new/exp_400/12".format(home)
+    data_folder="/home/eranhe/car_model/debug"
     if pytoch:
-        min_ = np.genfromtxt('{}/min.csv'.format(data_folder), delimiter=',')
-        ptp_ = np.genfromtxt('{}/ptp.csv'.format(data_folder), delimiter=',')
+        abs_ = np.genfromtxt('{}/max_norm.csv'.format(data_folder), delimiter=',')
+        #ptp_ = np.genfromtxt('{}/ptp.csv'.format(data_folder), delimiter=',')
 
     test_dir = pt.mkdir_system(data_folder, "test", True)
     if pytoch:
@@ -397,7 +409,8 @@ if __name__ == "__main__":
 
     path_to_save = test_dir + "/coll.png"
     debug_print = False
-    loop_number = 7
+    loop_number = 10
+    s = time()
     for item_model in res:
         model_name = str(item_model).split('/')[-1].split('.')[0]
         print("[{}]".format(model_name))
@@ -405,6 +418,8 @@ if __name__ == "__main__":
         g.main_loop(loop_number)
         l.append(g.info[2])
         print("collisions: {}".format(g.collision_arr))
+
+    print("Time: ",time()-s)
     x = np.argmax(np.array(l))
     l = map(lambda x: x / loop_number, l)
     plot_loss(l, path_to_save)

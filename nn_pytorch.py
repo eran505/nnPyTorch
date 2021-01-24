@@ -68,7 +68,6 @@ class LR(nn.Module):
             nn.ReLU(), #ReLU
 
             self.make_linear(sec_hidden, out, a, b)
-            #,nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -456,7 +455,7 @@ def test_main(path_to_model):
     exit()
 
 
-batch_size = 16
+batch_size = 2
 
 # 756253:756251 index
 
@@ -470,9 +469,9 @@ if __name__ == "__main__":
         str_home = "/home/lab2/eranher"
 
     data_file = "all.csv"
-    folder='new/exp_400/1'
-    folder="new/small/600"
-    folder_dir = "{}/car_model/generalization/{}".format(str_home,folder)
+    folder='new/1'
+    #folder="new/small/600"
+    folder_dir = "{}/car_model/generalization/new/4".format(str_home,folder)
     p_path_data = "{}/{}".format(folder_dir, data_file)
     df = pd.read_csv(p_path_data)
 
@@ -480,12 +479,12 @@ if __name__ == "__main__":
 
     # take only the relevant
     #print(len(df))
-    df = df.loc[df[colz[-1]] > 0]
+    df = df.loc[df[colz[-1]] >= 1]
     #print(len(df))
     #exit()
     # make multi one hot encoding
     s = len(df)
-    df = pr.only_max_value(df,first=False)
+    df = pr.only_max_value(df,first=True)
     print(len(df),":",s)
     z = df[colz[-2]].value_counts()
     false_count = len(df[colz[-28:-1]]) / df[colz[-28:-1]].sum()
@@ -495,7 +494,7 @@ if __name__ == "__main__":
 
     print(len(df))
 
-    df.to_csv("{}/car_model/generalization/{}/cut.csv".format(str_home, folder))
+    #df.to_csv("{}/car_model/generalization/{}/cut.csv".format(str_home, folder))
 
     # ax = df[df.columns[-3]].hist()
     # plt.show()

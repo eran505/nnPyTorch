@@ -66,7 +66,7 @@ class Loader(object):
         return d_result
 
     def load_game_setting(self, csv_p):
-        df = pd.read_csv(csv_p,)
+        df = pd.read_csv(csv_p)
         self.d_conf = df.to_dict()
 
     def get_path_object(self):
@@ -237,7 +237,10 @@ class QTable(object):
         df_raw['ctr'].fillna(0, inplace=True)
         print(np.sort(df_raw['ctr'][~np.isnan(df_raw['ctr'].values)]))
         # print(Counter(df_raw['ctr'].values))
-        df_raw = df_raw[df_raw['ctr']>0]
+        if cut:
+            df_raw = df_raw[df_raw['ctr']>0]
+        else:
+            df_raw['ctr'] = np.where(df_raw['ctr'] > 0, df_raw['ctr'], 0.1)
         return df_raw
 
     def get_count_state(self, csv_last):
@@ -426,10 +429,12 @@ class RegressionFeature(object):
         # print("a.shape:",a.shape)
         # print("d.shape:",d.shape)
         # multi = np.power(np_state,2)
-        rbf_f = self.process_state(np_state)
+        if rbf:
+            rbf_f = self.process_state(np_state)
+            return np.concatenate([np_state, rbf_f, wall_dist, ad_dist, a, goals_dist], axis=1)
         # print("np_state.shape:",np_state.shape)
         # print("goals_dist.shape:",goals_dist.shape)
-        x = np.concatenate([np_state,rbf_f,wall_dist, ad_dist, a, goals_dist], axis=1)
+        x = np.concatenate([np_state,wall_dist, ad_dist, a, goals_dist], axis=1)
         # df = pd.DataFrame(x)
         # df.to_csv(p_name_file,index=False)
         return x
@@ -490,7 +495,12 @@ home = expanduser("~")
 if home.__contains__('lab2'):
     home = "/home/lab2/eranher"
 
+
+
+# param
 not_time = True
+cut=False
+rbf=False
 
 def MainLoader():
 
@@ -499,7 +509,7 @@ def MainLoader():
     np.random.seed(SEED)
     #dir_data = "{}/car_model/generalization/14data".format(home)
     dir="new/small/30_p"
-    dir="new/small/600"
+    dir="new/4"
     dir_data = "{}/car_model/generalization/".format(home)+dir
     print(dir_data)
     # Q_csv = "{}/Q.csv".format(dir_data)

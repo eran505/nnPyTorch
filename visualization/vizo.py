@@ -41,13 +41,14 @@ def path_score(path_to_csv_file):
             ones+=1
         else:
             big_one+=1
-    print("uniq - {}:{} -> {}".format(ones,big_one,ones/(big_one+ones)))
+    #print("uniq - {}:{} -> {}".format(ones,big_one,ones/(big_one+ones)))
 
 def main_f():
     cmap = get_cmap(15)
 
-    p='car_model/debug'
-    res = pt.walk_rec("{}/{}".format(expanduser("~"),p),[],".csv")
+    p='car_model/h/debug'
+    res = pt.walk_rec("{}/{}".format(expanduser("~"),p),[],"p.csv")
+    res = [x for x in res if str(x).split('/')[-1].__contains__("map") is False]
     shuffle(res)
     index = 0
     path_score(res[index])
