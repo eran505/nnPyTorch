@@ -46,7 +46,7 @@ def path_score(path_to_csv_file):
 def main_f():
     cmap = get_cmap(15)
 
-    p='car_model/h/debug'
+    p='car_model/debug'
     res = pt.walk_rec("{}/{}".format(expanduser("~"),p),[],"p.csv")
     res = [x for x in res if str(x).split('/')[-1].__contains__("map") is False]
     shuffle(res)

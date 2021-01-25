@@ -14,8 +14,8 @@ SEED = 20205
 np.random.seed(SEED)
 torch.manual_seed(SEED)
 
-train_env = Game_Sim("/home/ERANHER/car_model/h/debug")
-test_env =  Game_Sim("/home/ERANHER/car_model/h/debug")
+train_env = Game_Sim("/home/ERANHER/car_model/h/debug_10")
+test_env =  Game_Sim("/home/ERANHER/car_model/h/debug_test")
 rbf = RBF()
 #self.rbf.featurize_state(observation)
 
@@ -116,16 +116,7 @@ def train(env, policy, optimizer, discount_factor, ppo_steps, ppo_clip):
 
         action_prob = F.softmax(action_pred, dim=-1)
 
-
-
-
         dist = distributions.Categorical(action_prob)
-
-        #print("dist:{}\taction_p:{} action_pred:{}".format(dist,action_prob,action_pred))
-        # for param,names in zip(policy.actor.parameters(),policy.actor.named_parameters()):
-        #     print(names)
-        #     print(param.data)
-        #     print("-"*100)
 
         action = dist.sample()
 
@@ -152,6 +143,8 @@ def train(env, policy, optimizer, discount_factor, ppo_steps, ppo_clip):
 
     policy_loss, value_loss = update_policy(policy, states, actions, log_prob_actions, advantages, returns, optimizer,
                                             ppo_steps, ppo_clip)
+
+    print(actions.numpy().flatten())
 
     return policy_loss, value_loss, episode_reward
 
@@ -261,10 +254,10 @@ def evaluate(env, policy):
     return episode_reward
 
 
-MAX_EPISODES = 1_000
+MAX_EPISODES = 1_0000
 DISCOUNT_FACTOR = 1.0
-N_TRIALS = 1
-REWARD_THRESHOLD = 2
+N_TRIALS = 10
+REWARD_THRESHOLD = 1
 PRINT_EVERY = 10
 PPO_STEPS = 5
 PPO_CLIP = 0.2

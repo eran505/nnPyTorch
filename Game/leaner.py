@@ -53,7 +53,7 @@ class RBF(object):
 
     def init_rbf(self):
         observation_examples = np.array(get_random_samples(10000))
-        self.scaler = preprocessing.StandardScaler()
+        self.scaler = preprocessing.MaxAbsScaler()
         self.scaler.fit(observation_examples)
         self.featurizer = pipeline.FeatureUnion([
             ("rbf1", RBFSampler(gamma=5.0, n_components=self.num_of_c)),
