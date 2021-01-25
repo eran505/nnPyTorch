@@ -14,30 +14,42 @@ SEED = 20205
 np.random.seed(SEED)
 torch.manual_seed(SEED)
 
-train_env = Game_Sim("/home/eranhe/car_model/h/debug")
-test_env =  Game_Sim("/home/eranhe/car_model/h/debug_t")
+train_env = Game_Sim("/home/ERANHER/car_model/h/debug")
+test_env =  Game_Sim("/home/ERANHER/car_model/h/debug")
 rbf = RBF()
 #self.rbf.featurize_state(observation)
 
 class MLP(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, dropout=0.1):
         super().__init__()
-
-        self.net = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.Dropout(dropout),
-            nn.PReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.Dropout(dropout),
-            nn.PReLU(),
-            nn.Linear(hidden_dim, output_dim)
-        )
+        self.f1 = nn.Linear(input_dim, hidden_dim)
+        self.f2 =  nn.Linear(hidden_dim, hidden_dim)
+        self.f3 = nn.Linear(hidden_dim, output_dim)
+        self.drop1 = nn.Dropout(0.1)
+        self.drop2 = nn.Dropout(0.1)
+        self.p_relu = nn.PReLU()
+        # self.net = nn.Sequential(
+        #     nn.Linear(input_dim, hidden_dim),
+        #     nn.Dropout(dropout),
+        #     nn.PReLU(),
+        #     nn.Linear(hidden_dim, hidden_dim),
+        #     nn.Dropout(dropout),
+        #     nn.PReLU(),
+        #     nn.Linear(hidden_dim, output_dim)
+        # )
 
     def forward(self, x):
         #print("input==="*10)
         #print(x)
+        x = self.f1(x)
+        x = self.drop1(x)
+        x = self.p_relu(x)
+        x = self.f2(x)
+        x = self.drop2(x)
+        x = self.p_relu(x)
+        x = self.f3(x)
 
-        x = self.net(x)
+        #x = self.net(x)
         #print("out==="*10)
         #print(x)
         return x
@@ -60,7 +72,7 @@ class ActorCritic(nn.Module):
 
 INPUT_DIM = 40
 HIDDEN_DIM = 128
-OUTPUT_DIM = 5
+OUTPUT_DIM = 7
 
 actor = MLP(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM)
 critic = MLP(INPUT_DIM, HIDDEN_DIM, 1)
@@ -77,7 +89,6 @@ def init_weights(m):
 
 policy.apply(init_weights)
 LEARNING_RATE = 0.0005
-#LEARNING_RATE = 0.005
 
 optimizer = optim.Adam(policy.parameters(), lr = LEARNING_RATE)
 
@@ -105,9 +116,16 @@ def train(env, policy, optimizer, discount_factor, ppo_steps, ppo_clip):
 
         action_prob = F.softmax(action_pred, dim=-1)
 
+
+
+
         dist = distributions.Categorical(action_prob)
 
         #print("dist:{}\taction_p:{} action_pred:{}".format(dist,action_prob,action_pred))
+        # for param,names in zip(policy.actor.parameters(),policy.actor.named_parameters()):
+        #     print(names)
+        #     print(param.data)
+        #     print("-"*100)
 
         action = dist.sample()
 
@@ -148,7 +166,10 @@ def calculate_returns(rewards, discount_factor, normalize=True):
 
     returns = torch.tensor(returns)
 
-    if normalize and len(rewards)>1:
+    if len(rewards)==1:
+        return returns.squeeze(-1)
+
+    if normalize:
         returns = (returns - returns.mean()) / returns.std()
 
 
@@ -158,7 +179,7 @@ def calculate_returns(rewards, discount_factor, normalize=True):
 def calculate_advantages(returns, values, normalize=True):
     advantages = returns - values
 
-    if normalize:
+    if normalize and len(advantages)>1:
         advantages = (advantages - advantages.mean()) / advantages.std()
 
     return advantages
@@ -174,12 +195,15 @@ def update_policy(policy, states, actions, log_prob_actions, advantages, returns
     advantages = advantages.detach()
     returns = returns.detach()
 
+
     for _ in range(ppo_steps):
         # get new log prob of actions for all input states
         action_pred, value_pred = policy(states)
         value_pred = value_pred.squeeze(-1)
         action_prob = F.softmax(action_pred, dim=-1)
         dist = distributions.Categorical(action_prob)
+
+
 
         # new log prob using old actions
         new_log_prob_actions = dist.log_prob(actions)
@@ -193,10 +217,11 @@ def update_policy(policy, states, actions, log_prob_actions, advantages, returns
         policy_loss = - torch.min(policy_loss_1, policy_loss_2).mean()
 
         value_pred = value_pred.squeeze()
-        #print(value_pred)
+
         value_loss = F.smooth_l1_loss(returns, value_pred).mean()
-        #print("policy_loss:",policy_loss)
-        #print("value_loss:",value_loss)
+        # print("policy_loss:",policy_loss)
+        # print("value_loss:",value_loss)
+
         optimizer.zero_grad()
 
         policy_loss.backward()

@@ -6,7 +6,7 @@ import csv
 from os import path
 from copy import deepcopy
 
-
+np.random.seed(1234)
 
 
 class Transformer(object):
@@ -46,17 +46,17 @@ class schedulerAction(object):
 
 
 def get_action_dict():
-    d={0:np.array([0,1,0]),
-       1:np.array([1,0,0]),
-       2:np.array([0,-1,0]),
-       3:np.array([-1,0,0]),
+    d={2:np.array([0,1,0]),
+       3:np.array([1,0,0]),
+       0:np.array([0,-1,0]),
+       1:np.array([-1,0,0]),
        4:np.array([0,0,0]),
        5: np.array([0, 0, -1]),
        6: np.array([0, 0, 1])
        }
     return d
 
-def get_random_samples(num,csv_path_dir="/home/eranhe/car_model/debug"):
+def get_random_samples(num,csv_path_dir="/home/ERANHER/car_model/h/debug"):
     l=[]
     g=Game_Sim(csv_path_dir)
     for index_i in range(num):
