@@ -1,4 +1,3 @@
-
 from mpl_toolkits import mplot3d
 
 #matplotlib inline
@@ -9,6 +8,58 @@ from sys import exit
 from random import shuffle
 from os.path import expanduser
 import os_util as pt
+import networkx as nx
+from networkx.drawing.nx_pydot import graphviz_layout
+
+def func23():
+    path_to_file = "{}/{}".format(expanduser("~"),"/car_model/debug/p.csv")
+    results = hlp.load__p(path_to_file)
+    d={}
+    for item in results:
+        print(item)
+        path = item["traj"]
+        w = item["p"]
+        for idx in range(len(path)-1):
+            ky = (path[idx][0],idx)
+            v = (path[idx+1][0],idx+1)
+            if ky not in d:
+                d[ky]= [v]
+            else:
+                d[ky].append(v)
+    print(d)
+    for item in d.keys():
+        d[item]=list(set(d[item]))
+    return d
+def make_graph():
+    res = func23()
+    # print(results)
+    G = nx.from_dict_of_lists(res)
+
+    color_map = []
+    for node in G:
+        if node in res:
+            x = res[node]
+        else:
+            x=[]
+        if len(x)>1:
+            color_map.append('red')
+        elif len(x)==0:
+            color_map.append('green')
+        else:
+            color_map.append('blue')
+
+    # G = nx.from_dict_of_lists(dol)
+    pos = nx.spring_layout(G, k=0.3 * 1 / np.sqrt(len(G.nodes())), iterations=20)
+    plt.figure(3, figsize=(30, 30))
+    nx.draw(G, pos=pos)
+    # nx.draw_networkx_labels(G, pos=pos)
+    # plt.show()
+    pos = graphviz_layout(G, prog="dot")
+    nx.draw(G, pos,node_color=color_map)
+    plt.savefig("{}/car_model/debug/tree.png".format(expanduser("~")))
+    plt.show()
+
+
 
 def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
@@ -84,9 +135,10 @@ def main_f():
 
     ax.view_init(azim=0, elev=100)
 
-    plt.savefig("{}/car_model/tmp.png".format(expanduser("~")))
+    plt.savefig("{}/car_model/debug/paths.png".format(expanduser("~")))
     plt.show()
 
 
 if __name__ == "__main__":
-   main_f()
+    main_f()
+    make_graph()

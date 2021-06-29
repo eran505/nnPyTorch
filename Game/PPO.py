@@ -14,42 +14,32 @@ SEED = 20205
 np.random.seed(SEED)
 torch.manual_seed(SEED)
 
-train_env = Game_Sim("/home/ERANHER/car_model/h/debug_10")
-test_env =  Game_Sim("/home/ERANHER/car_model/h/debug_test")
-rbf = RBF()
+train_env = Game_Sim("/home/eranhe/car_model/debug")
+test_env =  Game_Sim("/home/eranhe/car_model/debug")
+
+
+
+rbf = RBF(train_env)
 #self.rbf.featurize_state(observation)
 
 class MLP(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, dropout=0.1):
         super().__init__()
-        self.f1 = nn.Linear(input_dim, hidden_dim)
-        self.f2 =  nn.Linear(hidden_dim, hidden_dim)
-        self.f3 = nn.Linear(hidden_dim, output_dim)
-        self.drop1 = nn.Dropout(0.1)
-        self.drop2 = nn.Dropout(0.1)
-        self.p_relu = nn.PReLU()
-        # self.net = nn.Sequential(
-        #     nn.Linear(input_dim, hidden_dim),
-        #     nn.Dropout(dropout),
-        #     nn.PReLU(),
-        #     nn.Linear(hidden_dim, hidden_dim),
-        #     nn.Dropout(dropout),
-        #     nn.PReLU(),
-        #     nn.Linear(hidden_dim, output_dim)
-        # )
+
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.Dropout(dropout),
+            nn.PReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.Dropout(dropout),
+            nn.PReLU(),
+            nn.Linear(hidden_dim, output_dim)
+        )
 
     def forward(self, x):
         #print("input==="*10)
         #print(x)
-        x = self.f1(x)
-        x = self.drop1(x)
-        x = self.p_relu(x)
-        x = self.f2(x)
-        x = self.drop2(x)
-        x = self.p_relu(x)
-        x = self.f3(x)
-
-        #x = self.net(x)
+        x = self.net(x)
         #print("out==="*10)
         #print(x)
         return x
@@ -70,9 +60,10 @@ class ActorCritic(nn.Module):
 
 
 
-INPUT_DIM = 40
+INPUT_DIM = 4
 HIDDEN_DIM = 128
-OUTPUT_DIM = 7
+OUTPUT_DIM = 2
+EP=0.00001
 
 actor = MLP(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM)
 critic = MLP(INPUT_DIM, HIDDEN_DIM, 1)
@@ -88,7 +79,7 @@ def init_weights(m):
 
 
 policy.apply(init_weights)
-LEARNING_RATE = 0.0005
+LEARNING_RATE = 0.0001
 
 optimizer = optim.Adam(policy.parameters(), lr = LEARNING_RATE)
 
@@ -106,6 +97,7 @@ def train(env, policy, optimizer, discount_factor, ppo_steps, ppo_clip):
 
     state = env.reset()
     state = rbf.featurize_state(state)
+    info_array=[]
     while not done:
         state = torch.FloatTensor(state).unsqueeze(0)
 
@@ -120,9 +112,16 @@ def train(env, policy, optimizer, discount_factor, ppo_steps, ppo_clip):
 
         action = dist.sample()
 
+        # if np.random.random()<EP:
+        #     action[0] = np.random.randint(0,4)
+
         log_prob_action = dist.log_prob(action)
 
-        state, reward, done, _ = env.step(action.item())
+        state, reward, done, info = env.step(action.item())
+        #print("done:\t",done,"\tinfo:\t",info,"\tR:",reward)
+
+
+        info_array.append(info)
 
         state = rbf.featurize_state(state)
 
@@ -133,6 +132,7 @@ def train(env, policy, optimizer, discount_factor, ppo_steps, ppo_clip):
 
         episode_reward += reward
 
+    #print(info_array)
     states = torch.cat(states)
     actions = torch.cat(actions)
     log_prob_actions = torch.cat(log_prob_actions)
@@ -144,7 +144,7 @@ def train(env, policy, optimizer, discount_factor, ppo_steps, ppo_clip):
     policy_loss, value_loss = update_policy(policy, states, actions, log_prob_actions, advantages, returns, optimizer,
                                             ppo_steps, ppo_clip)
 
-    print(actions.numpy().flatten())
+    #print(actions.numpy().flatten())
 
     return policy_loss, value_loss, episode_reward
 
@@ -212,8 +212,8 @@ def update_policy(policy, states, actions, log_prob_actions, advantages, returns
         value_pred = value_pred.squeeze()
 
         value_loss = F.smooth_l1_loss(returns, value_pred).mean()
-        # print("policy_loss:",policy_loss)
-        # print("value_loss:",value_loss)
+        #print("policy_loss:",policy_loss)
+        #print("value_loss:",value_loss)
 
         optimizer.zero_grad()
 
@@ -254,16 +254,17 @@ def evaluate(env, policy):
     return episode_reward
 
 
-MAX_EPISODES = 1_0000
+MAX_EPISODES = 1_000
 DISCOUNT_FACTOR = 1.0
-N_TRIALS = 10
-REWARD_THRESHOLD = 1
+N_TRIALS = 3
+REWARD_THRESHOLD = 1000
 PRINT_EVERY = 10
-PPO_STEPS = 5
+PPO_STEPS = 1
 PPO_CLIP = 0.2
 
 train_rewards = []
 test_rewards = []
+train_rewards_eval=[]
 
 for episode in range(1, MAX_EPISODES + 1):
 
@@ -271,16 +272,19 @@ for episode in range(1, MAX_EPISODES + 1):
 
     test_reward = evaluate(test_env, policy)
 
+
+
     train_rewards.append(train_reward)
     test_rewards.append(test_reward)
+    #train_rewards_eval.append(evaluate(train_env, policy))
 
     mean_train_rewards = np.mean(train_rewards[-N_TRIALS:])
     mean_test_rewards = np.mean(test_rewards[-N_TRIALS:])
+    #mean_train_rewards_eval = np.mean(train_rewards_eval[-N_TRIALS:])
 
     if episode % PRINT_EVERY == 0:
         print(
-            f'| Episode: {episode:3} | Mean Train Rewards: {mean_train_rewards:7.1f} | Mean Test Rewards: {mean_test_rewards:7.1f} |')
-
+            f'| Episode: {episode:3} | Mean Train Rewards: {mean_train_rewards:7.1f} | Mean Test Rewards: {mean_test_rewards:7.1f} ')
     if mean_test_rewards >= REWARD_THRESHOLD:
         print(f'Reached reward threshold in {episode} episodes')
 

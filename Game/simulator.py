@@ -46,35 +46,37 @@ class schedulerAction(object):
 
 
 def get_action_dict():
-    d={2:np.array([0,1,0]),
-       3:np.array([1,0,0]),
-       0:np.array([0,-1,0]),
-       1:np.array([-1,0,0]),
-       4:np.array([0,0,0]),
-       5: np.array([0, 0, -1]),
-       6: np.array([0, 0, 1])
+    d={0:np.array([0,1,0]),
+       1:np.array([1,0,0]),
+       2:np.array([0,-1,0]),
+       3:np.array([-1,0,0]),
+       4:np.array([0,0,0])
+       # 5: np.array([0, 0, -1]),
+       # 6: np.array([0, 0, 1])
        }
     return d
 
-def get_random_samples(num,csv_path_dir="/home/ERANHER/car_model/h/debug"):
+def get_random_samples(num,Game_Sim_obj):
     l=[]
-    g=Game_Sim(csv_path_dir)
     for index_i in range(num):
         print(index_i)
-        s = g.reset()
+        s = Game_Sim_obj.reset()
         done=False
         while not done:
             l.append(s)
-            observation_, reward, done,info = g.step(np.random.randint(0,6))
+            observation_, reward, done,info = Game_Sim_obj.step(np.random.randint(0,2))
             s=observation_
             if done:
                 break
     return np.array(l)
 
-
-class Game_Sim(object):
+import gym
+from gym import spaces
+class Game_Sim(gym.Env):
 
     def __init__(self, csv_dir):
+        super(Game_Sim, self).__init__()
+        metadata = {'render.modes': ['human']}
         self.inital_state = np.zeros(12,dtype=float)
         self.ctr_round = 0
         self.all_paths = []
@@ -87,6 +89,23 @@ class Game_Sim(object):
         self.step_t = 0
         self.state=None
         self.d_action=get_action_dict()
+        self.ctr_index=0
+        #self.action_space=len(get_action_dict())
+        self.action_space=spaces.Discrete(len(get_action_dict()))
+
+
+
+        # In the discrete case, the agent act on the binary
+        # representation of the observation
+        self.observation_space = spaces.Box(np.array([-1,-1,-1,-3,-3,-3,-1,-1,-1,-2,-2,-2,0,0,0,0,0,0,0,0,0]),
+                                            np.array([15,15,15,3,3,3,15,15,15,2,2,2,4,4,4,4,4,4,15,15,15]))
+
+    def expand_state(self,state):
+        dif = state[:3]-state[6:9]
+        powerA = state[3:6]**2
+        powerD = state[9:12] ** 2
+        merge_arr = np.concatenate([state,powerA,powerD,dif], axis=0)
+        return merge_arr
 
     def get_norm_vector(self):
         a = np.zeros(12)
@@ -97,7 +116,7 @@ class Game_Sim(object):
         a[3:6] = 2
         return a
 
-    def _get_all_paths(self, csv_dir):
+    def _get_all_paths(self, csv_dir,add_sub_path=False):
         self._read_file(path.join(csv_dir,'p.csv'))
         obj = Loader(None)
         obj.load_game_setting(path.join(csv_dir,'con.csv'))
@@ -107,6 +126,19 @@ class Game_Sim(object):
                                self.game_setting_dict["Z"][0]])
         print(self.game_setting_dict)
         self._set_init_state()
+        l=[]
+        if add_sub_path:
+            l.append(self.all_paths[0][:,:])
+            l.append(self.all_paths[0][1:,:])
+            l.append(self.all_paths[0][2:,:])
+            self.all_paths=l
+            print("")
+
+    def render(self, mode='human'):
+        print("No render")
+
+    def close(self):
+        print("END")
 
     def _set_init_state(self):
         posA = [ eval(x) for x in str(self.game_setting_dict["A_start"][0]).split('|')]
@@ -133,6 +165,7 @@ class Game_Sim(object):
     def _next_move(self):
         done = False
         self.step_t += 1
+
         if self.step_t >= self.all_paths[self.path_number].shape[0]:
             self.step_t = self.all_paths[self.path_number].shape[0] - 1
             done = True
@@ -140,22 +173,42 @@ class Game_Sim(object):
         return done
 
     def reset(self):
+
         self.path_number = np.random.choice(self.path_indexes, 1, False)[0]
+
         self.ctr_round += 1
         self.path_number = self.ctr_round % len(self.path_indexes)
         self.step_t = 0
         self.state = deepcopy(self.inital_state)
-        return self.state
+        return self.expand_state(self.state)
 
-    def _check_for_end_game(self):
+    def on_attacker_path(self):
+        d_pos = self.state[6:9]
+        sub_path = self.all_paths[self.path_number][self.step_t:]
+        for idx,item in enumerate(sub_path):
+            if item == d_pos:
+                return True,idx
+        return False,-1
+
+    def _check_for_end_game(self,sub_reward=False):
 
         if (self.state[:3] == self.state[6:9]).all():
-            return True,1,'C'
+            print("Coll","P: ",self.path_number," \tloc:",self.state[:3])
+            r=1
+            # if self.path_number==1:
+            #     r=30
+            return True,r,'C'
         if (0 > self.state[6:9]).any():
-            return True,-1,'w'
+            return True,-2,'w'
         if (self.bound<=self.state[6:9]).any():
-            return True,-1,'w'
-        return False,-0.01,'-'
+            return True,-2,'w'
+
+        if sub_reward:
+            bol,idx=self.on_attacker_path()
+            if bol:
+                return False,0.03,'o'
+
+        return False,0,'-'
 
     def _make_action(self,a):
         self.state[-3:]+=a
@@ -168,13 +221,22 @@ class Game_Sim(object):
 
 
     def step(self,a):
+        a = int(a)
         self._make_action(self.d_action[a])
         if(self._next_move()):
-            return self.state,True,-1,"g"
+            return self.state,-1.5,True,{"episode":None,"is_success":None}
         done,r,info = self._check_for_end_game()
-        return self.state,r,done,info
-
+        #print(self.state)
+        return self.expand_state(self.state),r,done,{"episode":None,"is_success":None}
 
 
 if __name__ == '__main__':
-    pass
+
+    g = Game_Sim("/home/eranhe/car_model/debug")
+    for _ in range(4):
+        print("---NEW GAME---")
+        done = False
+        state = g.reset()
+        while not done:
+            print(state)
+            state,r,done,info = g.step(4)

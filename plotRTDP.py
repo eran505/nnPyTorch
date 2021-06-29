@@ -429,29 +429,8 @@ def get_data_from_exp(path_to_df):
 
 
 if __name__ == "__main__":
-
-    p="{}/car_model/out".format(expanduser('~'))
-    #res = pt.walk_rec("{}/car_model".format(expanduser('~')),[],"out",file_t=False,lv=-1)
-    sort_files_by_u_id(p,1)
-    sort_files_by_u_id(p,0)
-    exit()
-    convergence_plots(p)
-    exit(0)
-    print("hello world")
-    #p="/home/eranhe/Desktop/new_exp/data3"
-    exit()
-    one_path_ana("/home/ise/car_model/out/eranh")
-    one_vs_all(0)
-    one_vs_all(1)
-    play_data("/home/ERANHER/car_model/singal/all_path/all.csv",
-              "/home/ERANHER/car_model/singal/one_path/all.csv")
-
-    p = "/home/ERANHER/car_model/results/26_04/con1"
-    #p_path = "/home/ERANHER/car_model/results/dataEXP/old/sizeExp/roni/out"
-    p_path = "/home/eranhe/car_model/ABS/size__p_5"
-    # all_policy_eval(p_path,"ctr_at_goal") #ctr_at_goal  ctr_open
-    get_the_last_row(p_path)
-    # merge_all_policy_eval()
-    # res = merge_all_policy_eval(p)
-
+    #/home/eranhe/car_model/debug
+    p="{}/car_model/debug/S3_I0_M0_O1_H1_Eval.csv".format(expanduser('~'))
+    res = read_multi_csvs(p)
+    print(res)
 

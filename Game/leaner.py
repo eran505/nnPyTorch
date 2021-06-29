@@ -35,15 +35,15 @@ if device == 'cuda':
 
 class RBF(object):
 
-    def __init__(self):
+    def __init__(self,env):
         self.featurizer = None
         self.scaler = None
-        self.num_of_c = 10
+        self.num_of_c = 25
         self.num_rbf = 4
-        self.init_rbf()
+        self.init_rbf(env)
 
     def get_num_f(self):
-        return self.num_rbf*self.num_of_c
+        return 12 #self.num_rbf*self.num_of_c
 
     def get_norm(self):
         observation_examples = np.array(get_random_samples(20000))
@@ -51,8 +51,9 @@ class RBF(object):
         self.scaler.fit(observation_examples)
         self.featurizer.fit(self.scaler.transform(observation_examples))
 
-    def init_rbf(self):
-        observation_examples = np.array(get_random_samples(10000))
+    def init_rbf(self,env):
+        #observation_examples = np.array([env.observation_space.sample() for _ in range(100000)])
+        observation_examples = np.array(get_random_samples(10000,env))
         self.scaler = preprocessing.MaxAbsScaler()
         self.scaler.fit(observation_examples)
         self.featurizer = pipeline.FeatureUnion([
@@ -63,11 +64,22 @@ class RBF(object):
         ])
         self.featurizer.fit(self.scaler.transform(observation_examples))
 
+    def realtive(self,state_np):
+        state_np = state_np.flatten()
+        res = np.zeros(6,dtype=float)
+        for i in range(6):
+            res[i]=state_np[i]-state_np[i+6]
+        return res
+
     def featurize_state(self, state):
         # Transform data
+        # a = np.zeros(12+20,dtype=float)
         scaled = self.scaler.transform(state.reshape(1,-1))
         featurized = self.featurizer.transform(scaled)
-        return featurized
+        # a[:12]=scaled
+        # a[12:]=featurized
+        # a = np.expand_dims(a, axis=0)
+        return state
 
 
 
@@ -155,9 +167,9 @@ class CriticNet(nn.Module, ABC):
 
 
 class Agent(object):
-    def __init__(self, env,_norm_vec):
-        self.Rbf =RBF()
-        self.norm_vec = _norm_vec
+    def __init__(self, env):
+        self.Rbf =RBF(env)
+        #self.norm_vec = _norm_vec
         self.gamma = 1.0
         self.env = env
         self.log_prob = None
@@ -203,6 +215,8 @@ class Agent(object):
         critic_loss = advantage ** 2
 
         actor_loss = -self.log_prob * advantage.detach()
+
+        actor_loss = torch.clamp(-self.log_prob, min=1.0 - 0.2, max=1.0 + 0.2) * advantage.detach()
 
         critic_loss.backward()
         self.critic.optimizer.step()
@@ -260,10 +274,10 @@ class Agent(object):
 def main(dir_p):
     env = Game_Sim(dir_p)
     norm_vector = env.get_norm_vector()
-    agent = Agent(20,norm_vector)
+    agent = Agent(env)
     total_steps=0
 
-    num_of_iter=2000
+    num_of_iter=3000
 
     l_r = np.zeros(num_of_iter)
     env.reset()
@@ -282,8 +296,10 @@ def main(dir_p):
             agent.learn()
             observation = observation_
             total_steps += 1
-        print("score(",j,"):\t",score,"--",info,"\t\tA:",action_list)
         l_r[j]=score
+        if info=="C":
+            print("score(",j,"):\t",l_r[j-1:j+1].mean(),"--",info,"\t\tA:",action_list,"\t","P:",env.path_number)
+
 
 
     plt.plot([x for x in range(num_of_iter)],l_r)
