@@ -125,9 +125,52 @@ def make_collision_prop(df_l,name):
     y_arr = np.arange(0, len(df_subs), 1)
     plt.plot(y_arr, df_subs.values, label=name, ls=':')
     y_arr = np.arange(len(df_subs), len(df_subs) + len(df_l[-1]['"Collision"'].values), 1)
-    plt.plot(y_arr, df_l[-1]['"Collision"'].values, label=name + "_F", ls='--')
+    #plt.plot(y_arr, df_l[-1]['"Collision"'].values, label=name + "_F", ls='--')
     plt.legend()
     plt.show()
+
+def tmp(list_csvs):
+    d={}
+    thershold=0
+    for item in list_csvs:
+
+        learn_id = str(item).split("/")[-1].split("_")[2]
+
+        l_df = read_multi_csvs(item)
+
+        # if l_df[-1]['"Collision"'].iloc[-1]!=1.0:
+        #     continue
+
+        for df_i in l_df[:-1]:
+            df_i['"Collision"'] = df_i['"Collision"'] / (len(l_df)-1)
+        df = pd.concat(l_df)
+        #print(list(df))
+        #l_coll.append(df['"Collision"'].values)
+        if learn_id not in d:
+            d[learn_id]=[]
+        d[learn_id].append(df['"Collision"'].values)
+
+    for ky in d:
+
+        l_coll=d[ky]
+        max_line = 0
+
+
+        b = np.full([len(l_coll), len(max(l_coll, key=lambda x: len(x)))], 0,dtype=float)
+        for i, j_arr in enumerate(l_coll):
+            b[i,:len(j_arr)] = j_arr
+            if len(j_arr)<b.shape[1]:
+                b[i,len(j_arr):] = max(j_arr)
+        b[b<thershold]=0
+
+
+        plt.plot(b.mean(axis=0)[:], ls='--')
+    # print(ky_uid,"<----")
+    plt.legend()
+    # save_dir = pt.mkdir_system("{}/car_model/figs".format(expanduser('~')),str(list_csvs[0]).split('/')[-2],False)
+    # plt.savefig("{}/u{}_th={}_fig.png".format(save_dir,ky_uid,thershold))
+    plt.show()
+    print("end")
 
 def just_plot(dir_path="/home/eranhe/car_model/debug"):
     res = walk_rec(dir_path,[],"Eval.csv")
@@ -143,6 +186,8 @@ def just_plot(dir_path="/home/eranhe/car_model/debug"):
     return dico_list
 
 if __name__ == '__main__':
+    tmp(["/home/eranhe/car_model/debug/S3_I9_M1_O1_H1_A1_Eval.csv"])
+    exit()
     dico_d = just_plot()
     for item in dico_d:
         make_collision_prop(item['df'],item['id_exp'])

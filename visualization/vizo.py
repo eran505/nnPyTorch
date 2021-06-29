@@ -34,19 +34,14 @@ def make_graph():
     res = func23()
     # print(results)
     G = nx.from_dict_of_lists(res)
-
+    d_color = {0:'green',1:"blue",2:"red",3:"black",4:"yellow"}
     color_map = []
     for node in G:
+        x = []
         if node in res:
             x = res[node]
-        else:
-            x=[]
-        if len(x)>1:
-            color_map.append('red')
-        elif len(x)==0:
-            color_map.append('green')
-        else:
-            color_map.append('blue')
+        color = d_color[len(x)]
+        color_map.append(color)
 
     # G = nx.from_dict_of_lists(dol)
     pos = nx.spring_layout(G, k=0.3 * 1 / np.sqrt(len(G.nodes())), iterations=20)
