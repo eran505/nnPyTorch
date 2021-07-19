@@ -10,8 +10,87 @@ from os.path import expanduser
 import os_util as pt
 import networkx as nx
 from networkx.drawing.nx_pydot import graphviz_layout
+from queue import Queue
+from visualization.TreePlan import make_graph
 
-def func23():
+class Node(object):
+    def __init__(self,pos=None,speed=None,time=-1):
+        self.children=[]
+        self.plans=[]
+        self.prob=[]
+        self.pos=pos
+        self.speed = speed
+        self.t = time
+
+    def get_id(self):
+        return (self.pos,self.t,len(self.plans))
+    def is_unique_plan(self):
+        return len(self.plans)==1
+class PlanRec(object):
+
+    def __init__(self):
+        self.root_dummy=Node()
+        self.cur=None
+
+    def add_path(self,path,idx_plan):
+        time_t = 0
+        p = path['p']
+        trajectory = path['traj']
+        for state in trajectory:
+            pos = state[0]
+            speed = state[1]
+            node = self.search_node(self.cur.children,pos,time_t)
+            if node is None:
+                node = Node(pos, speed, time_t)
+                node.plans.append(idx_plan)
+                node.prob.append(p)
+                self.cur.children.append(node)
+            else:
+                node.plans.append(idx_plan)
+                node.prob.append(p)
+            self.cur=node
+            time_t+=1
+
+    def search_node(self,children,pos,time_t):
+        for child in children:
+            if (child.pos == pos and child.t == time_t):
+                return child
+        return None
+
+    def make_tree(self,paths):
+        for idx,path_i in enumerate(paths):
+            self.cur = self.root_dummy
+            self.add_path(path_i,idx)
+
+
+def make_tree():
+    path_to_file = "{}/{}".format(expanduser("~"), "/car_model/debug/p.csv")
+    results = hlp.load__p(path_to_file)
+    PR = PlanRec()
+    PR.make_tree(results)
+    d = tree_to_dict(PR.root_dummy.children[0])
+    return d,PR.root_dummy.children[0]
+
+def tree_to_dict(root):
+
+    q = Queue()
+    q.put(root)
+    d={}
+    while q.empty() is False:
+        node = q.get()
+        node_ky = node.get_id()
+        for child in node.children:
+            if node_ky not in d:
+                d[node_ky]=[child.get_id()]
+            else:
+                d[node_ky].append(child.get_id())
+            q.put(child)
+    for ky in d:
+        d[ky]=list(set(d[ky]))
+    return d
+
+
+def make_dict_from_csv():
     path_to_file = "{}/{}".format(expanduser("~"),"/car_model/debug/p.csv")
     results = hlp.load__p(path_to_file)
     d={}
@@ -30,29 +109,37 @@ def func23():
     for item in d.keys():
         d[item]=list(set(d[item]))
     return d
-def make_graph():
-    res = func23()
-    # print(results)
-    G = nx.from_dict_of_lists(res)
-    d_color = {0:'green',1:"blue",2:"red",3:"black",4:"yellow"}
-    color_map = []
-    for node in G:
-        x = []
-        if node in res:
-            x = res[node]
-        color = d_color[len(x)]
-        color_map.append(color)
-
-    # G = nx.from_dict_of_lists(dol)
-    pos = nx.spring_layout(G, k=0.3 * 1 / np.sqrt(len(G.nodes())), iterations=20)
-    plt.figure(3, figsize=(30, 30))
-    nx.draw(G, pos=pos)
-    # nx.draw_networkx_labels(G, pos=pos)
-    # plt.show()
-    pos = graphviz_layout(G, prog="dot")
-    nx.draw(G, pos,node_color=color_map)
-    plt.savefig("{}/car_model/debug/tree.png".format(expanduser("~")))
-    plt.show()
+#
+# def make_graph():
+#     # res = make_dict_from_csv()
+#     res,root = make_tree()
+#     # print(results)
+#     G = nx.from_dict_of_lists(res)
+#     d_color = {0:'green',1:"blue",2:"red",3:"black",4:"yellow",6:"pink",-1:"orange"}
+#     color_map = []
+#
+#     for node in G:
+#         x = []
+#         if node in res:
+#             x = res[node]
+#         color = d_color[len(x)]
+#         num_plans = node[-1]
+#         if num_plans==1:
+#             color=d_color[-1]
+#             if len(x)==0:
+#                 color=d_color[0]
+#         color_map.append(color)
+#
+#     # G = nx.from_dict_of_lists(dol)
+#     pos = nx.spring_layout(G, k=0.3 * 1 / np.sqrt(len(G.nodes())), iterations=20)
+#     plt.figure(3, figsize=(30, 30))
+#     nx.draw(G, pos=pos)
+#     # nx.draw_networkx_labels(G, pos=pos)
+#     # plt.show()
+#     pos = graphviz_layout(G, prog="dot",root=root.get_id())  # ‘dot’, ‘twopi’, ‘fdp’, ‘sfdp’, ‘circo’
+#     nx.draw(G, pos,node_color=color_map)
+#     plt.savefig("{}/car_model/debug/tree.png".format(expanduser("~")))
+#     plt.show()
 
 
 
@@ -136,4 +223,4 @@ def main_f():
 
 if __name__ == "__main__":
     main_f()
-    make_graph()
+    make_graph("/car_model/debug")
