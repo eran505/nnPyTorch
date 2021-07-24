@@ -87,14 +87,10 @@ def hurstic(state_s, all_paths):
         state_s[4] = add_speed(state_s[4])
         state_s[3] = [sum(x) for x in zip(list(state_s[3]), list(state_s[4]))]
         if int(h_mode) == 0:
-            v = h0(state_s, all_paths)
-        if int(h_mode) == 2:
-            v = h2(state_s, all_paths)
-        if int(h_mode) == 3:
-            v = h3(state_s, all_paths)
-        if int(h_mode) == 4:
+            v = h0(state_s)
+        if int(h_mode) == 1:
             v = h4(state_s, all_paths)
-        if int(h_mode) == 5:
+        if int(h_mode) == 2:
             v = h5(state_s, all_paths)
         # print(action, "\t", state_s, "  = ", v)
         vec.append(v)
@@ -112,70 +108,56 @@ def check_out_of_bound(state):
     return 0
 
 
-def h0(s, all_paths):
+def h0(s):
     if check_out_of_bound(s) == 1:
-        return WallReward * pow(discountF, s[-1])
-    return CollReward * pow(discountF, int(s[0]))
-
-
-def h2(s, all_paths):
-    if check_out_of_bound(s) == 1:
-        return WallReward * pow(discountF, s[-1])
-    l = []
-    for b in range(len(all_paths)):
-        pathz = all_paths[b]['traj']
-        for idx, item in enumerate(pathz[:-1]):
-            locE = item[0]
-            max_d = max(diff_tuple(locE, s[3]))
-            l.append(max_d)
-    min_d = min(l)
-    return CollReward * pow(discountF, min_d)
-
-
-def h3(s, all_paths):
-    if check_out_of_bound(s) == 1:
-        return WallReward * pow(discountF, s[-1])
-    l = []
-    for b in s[-2]:
-        pathz = all_paths[b]['traj']
-        for idx, item in enumerate(pathz[:-1]):
-            locE = item[0]
-            max_d = max(diff_tuple(locE, s[3]))
-            l.append(max_d)
-    min_d = min(l)
-    time = int(s[0]) + int(s[-1])
-    return CollReward * pow(discountF, min_d + time)
+        return WallReward * pow(discountF,1)
+    return CollReward * pow(discountF,1)
 
 def h4(s, all_paths):
     if check_out_of_bound(s) == 1:
         return WallReward * pow(discountF, s[-1])
-    l = []
+    min_val=10000
+    steps=[]
+    all_sum=0
     for b in s[-2]:
         pathz = all_paths[b]['traj']
-        for idx, item in enumerate(pathz[:-1]):
-            locE = item[0]
+        for idx in range(s[0],len(pathz)-1):
+            locE = pathz[idx][0]
             max_d = max(diff_tuple(locE, s[3]))
-            x = max(max_d,idx)
-            l.append(x)
-    min_d = min(l)
-    time = int(s[0]) + int(s[-1])
-    return CollReward * pow(discountF, min_d + time)
+            if idx>=max_d:
+                if min_val>idx :
+                    min_val = idx
+        if min_val==10000:
+            steps.append(0)
+        else:
+            steps.append(CollReward * pow(discountF, min_val))
+        all_sum+=1.0/len(all_paths)
+    return min(steps)
 
 def h5(s, all_paths):
     if check_out_of_bound(s) == 1:
         return WallReward * pow(discountF, s[-1])
+    min_val=10000
+    steps=[]
+    all_sum=0
     for b in s[-2]:
-        l = [len(b)]
         pathz = all_paths[b]['traj']
-        for idx, item in enumerate(pathz[:-1]):
-            locE = item[0]
+        for idx in range(s[0],len(pathz)-1):
+            locE = pathz[idx][0]
             max_d = max(diff_tuple(locE, s[3]))
-            if idx<=max_d:
-                x = max(max_d,idx)
-                l.append(x)
-    min_d = min(l)
-    time = int(s[0]) + int(s[-1])
-    return CollReward * pow(discountF, min_d + time)
+            time_pass = idx-s[0]
+            if time_pass>=max_d:
+                if min_val>time_pass :
+                    min_val = time_pass
+        if min_val==10000:
+            steps.append(0)
+        else:
+            steps.append(CollReward * pow(discountF, min_val))
+        all_sum+=1.0/len(all_paths)
+    x=0.0
+    for val in steps:
+        x+=((1/len(all_paths))/all_sum)*val
+    return x
 
 
 
@@ -190,7 +172,7 @@ def make_action_D():
 
 
 def read_state_map():
-    df_map = pd.read_csv("/home/eranhe/car_model/debug/MAP.csv", sep=';')
+    df_map = pd.read_csv("/home/eranhe/car_model/debug/all_MAP.csv", sep=';')
     print(list(df_map))
     df_map['State'].dropna(inplace=True)
     df_map['State'] = df_map['State'].apply(lambda x: string_to_state(x))
@@ -198,15 +180,17 @@ def read_state_map():
 
 
 def start_f(df_map, df_Q, all_paths):
-    n = 100
+    n = 1000
+    n = max(len(df_Q),n)
     ep = 1.97e-06
     sum = 0
+    print(df_Q.dtypes)
     df_Q_sample = df_Q.sample(n)
     d = df_Q_sample.to_dict('records')
     for item in d:
         key = item['ID']
         state = df_map.loc[df_map['ID'] == key, "State"]
-        print("----", key, "----")
+        # print("----", key, "----")
         if len(state) != 1:
             print(key, ":", len(state))
             continue
@@ -217,9 +201,9 @@ def start_f(df_map, df_Q, all_paths):
             if max_diff < val - item[str(i)]:
                 max_diff = val - item[str(i)]
             if item[str(i)] > val and ep < item[str(i)] - val:
-                print(i, " : ", key, "\t diff:", item[str(i)] - val)
+                print(i, " : ", key,"H:{} Q:{}".format(val,item[str(i)]),"\t diff:",   val/item[str(i)])
         sum += max_diff
-        print("MAX:", max_diff)
+        # print("MAX:", max_diff)
 
     print("mean: ", sum / n)
 
@@ -229,7 +213,7 @@ def main():
         df_map = read_state_map()
         df_map.to_csv("/home/eranhe/car_model/debug/map_object.csv", sep=';', index=False)
     df_map = pd.read_csv("/home/eranhe/car_model/debug/map_object.csv", sep=';')
-    df_Q = pd.read_csv("/home/eranhe/car_model/debug/Q.csv", skiprows=1, sep=';')
+    df_Q = pd.read_csv("/home/eranhe/car_model/debug/all_Q.csv", sep=';')
     return df_Q, df_map
 
 

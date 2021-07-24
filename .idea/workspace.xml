@@ -55,7 +55,29 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../tmp/mlflow" />
     <property name="settings.editor.selected.configurable" value="Jupyter Settings" />
   </component>
-  <component name="RunManager" selected="Python.csver">
+  <component name="RunManager" selected="Python.Q_table">
+    <configuration name="Efrat_Test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="nnPyTorch" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Efrat_Test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="true" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="Q_table" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="nnPyTorch" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -70,28 +92,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/CSV/Q_table.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="true" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="TreePlan" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="nnPyTorch" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/visualization" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/visualization/TreePlan.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="true" />
@@ -237,17 +237,17 @@
       <item itemvalue="Python.plotRTDP" />
       <item itemvalue="Python.csver" />
       <item itemvalue="Python.vizo" />
-      <item itemvalue="Python.TreePlan" />
       <item itemvalue="Python.test" />
       <item itemvalue="Python.Q_table" />
+      <item itemvalue="Python.Efrat_Test" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.csver" />
         <item itemvalue="Python.Q_table" />
-        <item itemvalue="Python.vizo" />
+        <item itemvalue="Python.Efrat_Test" />
         <item itemvalue="Python.test" />
-        <item itemvalue="Python.TreePlan" />
+        <item itemvalue="Python.csver" />
+        <item itemvalue="Python.vizo" />
       </list>
     </recent_temporary>
   </component>
@@ -353,7 +353,8 @@
       <workItem from="1625031754967" duration="5890000" />
       <workItem from="1625332664884" duration="28236000" />
       <workItem from="1625990418850" duration="1617000" />
-      <workItem from="1626024614075" duration="79350000" />
+      <workItem from="1626024614075" duration="97966000" />
+      <workItem from="1627157405143" duration="1418000" />
     </task>
     <servers />
   </component>
@@ -370,68 +371,68 @@
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state x="1068" y="478" key="#xdebugger.evaluate/61.27.2499.1413@61.27.2499.1413" timestamp="1626682457358" />
-    <state width="2431" height="819" key="DebuggerActiveHint" timestamp="1626696920784">
+    <state width="2431" height="819" key="DebuggerActiveHint" timestamp="1626966063814">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="1497" height="506" key="DebuggerActiveHint/61.27.1539.873@61.27.1539.873" timestamp="1624946474638" />
-    <state width="2431" height="819" key="DebuggerActiveHint/61.27.2499.1413@61.27.2499.1413" timestamp="1626696920784" />
+    <state width="2431" height="819" key="DebuggerActiveHint/61.27.2499.1413@61.27.2499.1413" timestamp="1626966063814" />
     <state x="1093" y="491" width="424" height="491" key="FileChooserDialogImpl" timestamp="1622575971860">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state x="1093" y="491" width="424" height="491" key="FileChooserDialogImpl/61.27.2499.1413@61.27.2499.1413" timestamp="1622575971860" />
-    <state width="627" height="452" key="GridCell.Tab.0.bottom" timestamp="1626727495822">
+    <state width="1378" height="538" key="GridCell.Tab.0.bottom" timestamp="1627159210236">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="885" height="137" key="GridCell.Tab.0.bottom/61.27.1539.873@61.27.1539.873" timestamp="1625032050517" />
     <state width="1434" height="538" key="GridCell.Tab.0.bottom/61.27.1859.1053@61.27.1859.1053" timestamp="1625476772142" />
-    <state width="627" height="452" key="GridCell.Tab.0.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1626727495822" />
-    <state width="627" height="452" key="GridCell.Tab.0.center" timestamp="1626727495822">
+    <state width="1378" height="538" key="GridCell.Tab.0.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1627159210236" />
+    <state width="1378" height="538" key="GridCell.Tab.0.center" timestamp="1627159210235">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="885" height="137" key="GridCell.Tab.0.center/61.27.1539.873@61.27.1539.873" timestamp="1625032050517" />
     <state width="1434" height="538" key="GridCell.Tab.0.center/61.27.1859.1053@61.27.1859.1053" timestamp="1625476772142" />
-    <state width="627" height="452" key="GridCell.Tab.0.center/61.27.2499.1413@61.27.2499.1413" timestamp="1626727495822" />
-    <state width="627" height="452" key="GridCell.Tab.0.left" timestamp="1626727495822">
+    <state width="1378" height="538" key="GridCell.Tab.0.center/61.27.2499.1413@61.27.2499.1413" timestamp="1627159210235" />
+    <state width="1378" height="538" key="GridCell.Tab.0.left" timestamp="1627159210233">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="885" height="137" key="GridCell.Tab.0.left/61.27.1539.873@61.27.1539.873" timestamp="1625032050517" />
     <state width="1434" height="538" key="GridCell.Tab.0.left/61.27.1859.1053@61.27.1859.1053" timestamp="1625476772141" />
-    <state width="627" height="452" key="GridCell.Tab.0.left/61.27.2499.1413@61.27.2499.1413" timestamp="1626727495822" />
-    <state width="627" height="452" key="GridCell.Tab.0.right" timestamp="1626727495822">
+    <state width="1378" height="538" key="GridCell.Tab.0.left/61.27.2499.1413@61.27.2499.1413" timestamp="1627159210233" />
+    <state width="1378" height="538" key="GridCell.Tab.0.right" timestamp="1627159210235">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="885" height="137" key="GridCell.Tab.0.right/61.27.1539.873@61.27.1539.873" timestamp="1625032050517" />
     <state width="1434" height="538" key="GridCell.Tab.0.right/61.27.1859.1053@61.27.1859.1053" timestamp="1625476772142" />
-    <state width="627" height="452" key="GridCell.Tab.0.right/61.27.2499.1413@61.27.2499.1413" timestamp="1626727495822" />
-    <state width="1385" height="538" key="GridCell.Tab.1.bottom" timestamp="1626701653854">
+    <state width="1378" height="538" key="GridCell.Tab.0.right/61.27.2499.1413@61.27.2499.1413" timestamp="1627159210235" />
+    <state width="1378" height="538" key="GridCell.Tab.1.bottom" timestamp="1627159232020">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="885" height="137" key="GridCell.Tab.1.bottom/61.27.1539.873@61.27.1539.873" timestamp="1625032051732" />
     <state width="1434" height="538" key="GridCell.Tab.1.bottom/61.27.1859.1053@61.27.1859.1053" timestamp="1625476772142" />
-    <state width="1385" height="538" key="GridCell.Tab.1.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1626701653854" />
-    <state width="1385" height="538" key="GridCell.Tab.1.center" timestamp="1626701653853">
+    <state width="1378" height="538" key="GridCell.Tab.1.bottom/61.27.2499.1413@61.27.2499.1413" timestamp="1627159232020" />
+    <state width="1378" height="538" key="GridCell.Tab.1.center" timestamp="1627159232018">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="885" height="137" key="GridCell.Tab.1.center/61.27.1539.873@61.27.1539.873" timestamp="1625032051732" />
     <state width="1434" height="538" key="GridCell.Tab.1.center/61.27.1859.1053@61.27.1859.1053" timestamp="1625476772142" />
-    <state width="1385" height="538" key="GridCell.Tab.1.center/61.27.2499.1413@61.27.2499.1413" timestamp="1626701653853" />
-    <state width="1385" height="538" key="GridCell.Tab.1.left" timestamp="1626701653853">
+    <state width="1378" height="538" key="GridCell.Tab.1.center/61.27.2499.1413@61.27.2499.1413" timestamp="1627159232018" />
+    <state width="1378" height="538" key="GridCell.Tab.1.left" timestamp="1627159232017">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="885" height="137" key="GridCell.Tab.1.left/61.27.1539.873@61.27.1539.873" timestamp="1625032051731" />
     <state width="1434" height="538" key="GridCell.Tab.1.left/61.27.1859.1053@61.27.1859.1053" timestamp="1625476772142" />
-    <state width="1385" height="538" key="GridCell.Tab.1.left/61.27.2499.1413@61.27.2499.1413" timestamp="1626701653853" />
-    <state width="1385" height="538" key="GridCell.Tab.1.right" timestamp="1626701653854">
+    <state width="1378" height="538" key="GridCell.Tab.1.left/61.27.2499.1413@61.27.2499.1413" timestamp="1627159232017" />
+    <state width="1378" height="538" key="GridCell.Tab.1.right" timestamp="1627159232019">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="885" height="137" key="GridCell.Tab.1.right/61.27.1539.873@61.27.1539.873" timestamp="1625032051732" />
     <state width="1434" height="538" key="GridCell.Tab.1.right/61.27.1859.1053@61.27.1859.1053" timestamp="1625476772142" />
-    <state width="1385" height="538" key="GridCell.Tab.1.right/61.27.2499.1413@61.27.2499.1413" timestamp="1626701653854" />
-    <state width="1249" height="706" key="XDebugger.FullValuePopup" timestamp="1626691949548">
+    <state width="1378" height="538" key="GridCell.Tab.1.right/61.27.2499.1413@61.27.2499.1413" timestamp="1627159232019" />
+    <state width="1249" height="706" key="XDebugger.FullValuePopup" timestamp="1627159163746">
       <screen x="61" y="27" width="2499" height="1413" />
     </state>
     <state width="769" height="436" key="XDebugger.FullValuePopup/61.27.1539.873@61.27.1539.873" timestamp="1624947136853" />
-    <state width="1249" height="706" key="XDebugger.FullValuePopup/61.27.2499.1413@61.27.2499.1413" timestamp="1626691949548" />
+    <state width="1249" height="706" key="XDebugger.FullValuePopup/61.27.2499.1413@61.27.2499.1413" timestamp="1627159163746" />
     <state x="640" y="302" width="588" height="522" key="find.popup" timestamp="1624946425480">
       <screen x="61" y="27" width="1539" height="873" />
     </state>
@@ -653,8 +654,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/CSV/Q_table.py</url>
-          <line>215</line>
-          <option name="timeStamp" value="685" />
+          <line>80</line>
+          <option name="timeStamp" value="690" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/CSV/Q_table.py</url>
+          <line>137</line>
+          <option name="timeStamp" value="691" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/CSV/Q_table.py</url>
+          <line>97</line>
+          <option name="timeStamp" value="692" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/CSV/Q_table.py</url>
+          <line>151</line>
+          <option name="timeStamp" value="694" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/CSV/Q_table.py</url>
+          <line>187</line>
+          <option name="timeStamp" value="696" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -662,7 +683,7 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/nnPyTorch$tmp__1_.coverage" NAME="tmp (1) Coverage Results" MODIFIED="1611758248585" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game/QRDQN" />
     <SUITE FILE_PATH="coverage/nnPyTorch$leaner.coverage" NAME="leaner Coverage Results" MODIFIED="1611741067946" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
-    <SUITE FILE_PATH="coverage/nnPyTorch$Q_table.coverage" NAME="Q_table Coverage Results" MODIFIED="1626714431066" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/CSV" />
+    <SUITE FILE_PATH="coverage/nnPyTorch$Q_table.coverage" NAME="Q_table Coverage Results" MODIFIED="1627159205575" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/CSV" />
     <SUITE FILE_PATH="coverage/nnPyTorch$BCQ.coverage" NAME="BCQ Coverage Results" MODIFIED="1609715966838" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/RL" />
     <SUITE FILE_PATH="coverage/nnPyTorch$preprocessor.coverage" NAME="preprocessor Coverage Results" MODIFIED="1609787578231" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/nnPyTorch$batch_learning.coverage" NAME="batch_learning Coverage Results" MODIFIED="1609797747031" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -673,8 +694,9 @@
     <SUITE FILE_PATH="coverage/nnPyTorch$simulator.coverage" NAME="simulator Coverage Results" MODIFIED="1614776842466" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
     <SUITE FILE_PATH="coverage/nnPyTorch$data_ana.coverage" NAME="data_ana Coverage Results" MODIFIED="1609777658319" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/visualization" />
     <SUITE FILE_PATH="coverage/nnPyTorch$init_training.coverage" NAME="init_training Coverage Results" MODIFIED="1609758297479" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/RL" />
-    <SUITE FILE_PATH="coverage/nnPyTorch$test.coverage" NAME="test Coverage Results" MODIFIED="1626624322307" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/nnPyTorch$test.coverage" NAME="test Coverage Results" MODIFIED="1627030637617" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/nnPyTorch$helper.coverage" NAME="helper Coverage Results" MODIFIED="1624995702853" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/nnPyTorch$Efrat_Test.coverage" NAME="Efrat_Test Coverage Results" MODIFIED="1627035343688" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/nnPyTorch$xgb_model.coverage" NAME="xgb_model Coverage Results" MODIFIED="1609315616438" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/nnPyTorch$main.coverage" NAME="main Coverage Results" MODIFIED="1609717329688" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/RL" />
     <SUITE FILE_PATH="coverage/nnPyTorch$TreePlan.coverage" NAME="TreePlan Coverage Results" MODIFIED="1626086360365" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/visualization" />
@@ -682,7 +704,7 @@
     <SUITE FILE_PATH="coverage/nnPyTorch$AC_net.coverage" NAME="AC_net Coverage Results" MODIFIED="1609801185524" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/RL" />
     <SUITE FILE_PATH="coverage/nnPyTorch$seg_tree.coverage" NAME="seg_tree Coverage Results" MODIFIED="1614450803033" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game" />
     <SUITE FILE_PATH="coverage/nnPyTorch$Agent.coverage" NAME="Agent Coverage Results" MODIFIED="1614466416986" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Game/Rainbow" />
-    <SUITE FILE_PATH="coverage/nnPyTorch$csver.coverage" NAME="csver Coverage Results" MODIFIED="1626727495815" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/CSV" />
+    <SUITE FILE_PATH="coverage/nnPyTorch$csver.coverage" NAME="csver Coverage Results" MODIFIED="1626953308902" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/CSV" />
     <SUITE FILE_PATH="coverage/nnPyTorch$DQN.coverage" NAME="DQN Coverage Results" MODIFIED="1609694347900" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/RL" />
     <SUITE FILE_PATH="coverage/nnPyTorch$game.coverage" NAME="game Coverage Results" MODIFIED="1609778893255" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/nnPyTorch$plotRTDP.coverage" NAME="plotRTDP Coverage Results" MODIFIED="1624997462980" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
