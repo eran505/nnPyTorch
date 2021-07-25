@@ -5,7 +5,7 @@ import numpy as np
 import os_util as pt
 from sys import exit
 from collections import Counter
-
+import os
 
 def agg_df(root_dir):
     res = pt.walk_rec(root_dir,[],'.txt')
@@ -34,7 +34,8 @@ def merge_files(root_dir):
     plt.show()
     exit(0)
 if __name__ == "__main__":
-    f_folder = "/home/ERANHER/eran/DA/DATASET/wisdm/wisdm-dataset/raw/phone/accel/"
+
+    f_folder = "/{}/eran/DA/DATASET/wisdm/wisdm-dataset/raw/phone/accel/"
     #merge_files(f_folder)
     file_ex1="{}/y_train.txt".format(f_folder)
     target_class_distribution(f_folder)

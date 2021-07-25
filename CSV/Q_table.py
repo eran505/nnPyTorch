@@ -23,7 +23,7 @@ def add_speed(a):
 
 
 def get_grid_size():
-    df = pd.read_csv("/home/eranhe/car_model/debug/con2.csv")
+    df = pd.read_csv("{}/car_model/debug/con2.csv".format(HOME))
     dz = df.to_dict()
     x = dz["X"][0]
     y = dz["Y"][0]
@@ -172,19 +172,23 @@ def make_action_D():
 
 
 def read_state_map():
-    df_map = pd.read_csv("/home/eranhe/car_model/debug/all_MAP.csv", sep=';')
+    df_map = pd.read_csv("{}/car_model/debug/all_MAP.csv".format(HOME), sep=';')
     print(list(df_map))
     df_map['State'].dropna(inplace=True)
     df_map['State'] = df_map['State'].apply(lambda x: string_to_state(x))
     return df_map
 
 
+def str_to_state_rep(arr):
+    arr = eval(arr[1:-1])
+    return "{}_A_{}_{}|D_{}_{}|_{}_{}".format(arr[0],arr[1],arr[2],arr[3],arr[4],arr[5],arr[6])
+
 def start_f(df_map, df_Q, all_paths):
     n = 1000
-    n = max(len(df_Q),n)
+    n = min(len(df_Q),n)
     ep = 1.97e-06
     sum = 0
-    print(df_Q.dtypes)
+    # print(df_Q.dtypes)
     df_Q_sample = df_Q.sample(n)
     d = df_Q_sample.to_dict('records')
     for item in d:
@@ -201,7 +205,8 @@ def start_f(df_map, df_Q, all_paths):
             if max_diff < val - item[str(i)]:
                 max_diff = val - item[str(i)]
             if item[str(i)] > val and ep < item[str(i)] - val:
-                print(i, " : ", key,"H:{} Q:{}".format(val,item[str(i)]),"\t diff:",   val/item[str(i)])
+                print()
+                print("S:",str_to_state_rep(state),"   action:",d_actions[i],":",i, " : ", key,"H:{} Q:{}".format(val,item[str(i)]),"\t diff:",   val/item[str(i)])
         sum += max_diff
         # print("MAX:", max_diff)
 
@@ -209,18 +214,18 @@ def start_f(df_map, df_Q, all_paths):
 
 
 def main():
-    if os.path.isfile("/home/eranhe/car_model/debug/map_object.csv") is False:
+    if os.path.isfile("{}/car_model/debug/map_object.csv".format(HOME)) is False:
         df_map = read_state_map()
-        df_map.to_csv("/home/eranhe/car_model/debug/map_object.csv", sep=';', index=False)
-    df_map = pd.read_csv("/home/eranhe/car_model/debug/map_object.csv", sep=';')
-    df_Q = pd.read_csv("/home/eranhe/car_model/debug/all_Q.csv", sep=';')
+        df_map.to_csv("{}/car_model/debug/map_object.csv".format(HOME), sep=';', index=False)
+    df_map = pd.read_csv("{}/car_model/debug/map_object.csv".format(HOME), sep=';')
+    df_Q = pd.read_csv("{}/car_model/debug/all_Q.csv".format(HOME), sep=';')
     return df_Q, df_map
 
-
+HOME = os.path.expanduser("~")
 d_actions = make_action_D()
 grid, h_mode = get_grid_size()
 
 if __name__ == '__main__':
-    l = hlp.load__p("/home/eranhe/car_model/debug/p.csv")
+    l = hlp.load__p("{}/car_model/debug/p.csv".format(HOME))
     df_Q, df_map = main()
     start_f(df_map, df_Q, l)
