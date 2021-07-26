@@ -212,7 +212,7 @@ def tmp(list_csvs):
     # print(ky_uid,"<----")
     plt.legend()
     # save_dir = pt.mkdir_system("{}/car_model/figs".format(expanduser('~')),str(list_csvs[0]).split('/')[-2],False)
-    # plt.savefig("{}/u{}_th={}_fig.png".format(save_dir,ky_uid,thershold))
+    plt.savefig("{}/{}/{}.png".format(os.path.expanduser("~"),"car_model/debug","res"))
     plt.show()
     print("end")
 

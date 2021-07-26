@@ -3,6 +3,7 @@ import os
 import helper as hlp
 from copy import deepcopy
 
+import matplotlib.pyplot as plt
 
 def diff_tuple(a, b):
     l = []
@@ -57,22 +58,24 @@ def string_to_state(string_state):
     if len(string_state) < 10:
         return None
     s = State()
-    s.time_t = int(string_state[0])
-    s.jumps = int(string_state[-1])
+
     arr = str(string_state).split('_')
+    s.time_t = int(arr[0])
+    s.jumps = int(arr[-1])
     s.loc_e = eval(arr[2])
     s.speed_e = eval(arr[3][:-2])
     s.loc_p = eval(arr[4])
     s.speed_p = eval(arr[5][:-1])
-    new_arr = arr[6].replace("{", "").replace("}", "")
-    l = []
-    for i in new_arr:
-        i = i.replace(" ", "")
-        if len(i) == 0:
-            continue
-        l.append(i)
-    new_arr = [int(x) for x in l]
-    s.belief_states = new_arr
+    str_a=""
+    b=[]
+    for i in arr[6]:
+        if i=="]":
+            str_a+="]"
+            b.append(eval(str_a))
+            str_a=""
+        else:
+            str_a+=i
+    s.belief_states=b
     return s.to_list()
 
 
@@ -95,7 +98,7 @@ def hurstic(state_s, all_paths):
         # print(action, "\t", state_s, "  = ", v)
         vec.append(v)
         state_s = deepcopy(old_state)
-    return vec
+    return vec,old_state
 
 
 def check_out_of_bound(state):
@@ -111,28 +114,28 @@ def check_out_of_bound(state):
 def h0(s):
     if check_out_of_bound(s) == 1:
         return WallReward * pow(discountF,1)
-    return CollReward * pow(discountF,1)
+    return CollReward * pow(discountF,0)
 
 def h4(s, all_paths):
     if check_out_of_bound(s) == 1:
         return WallReward * pow(discountF, s[-1])
     min_val=10000
     steps=[]
-    all_sum=0
-    for b in s[-2]:
-        pathz = all_paths[b]['traj']
-        for idx in range(s[0],len(pathz)-1):
-            locE = pathz[idx][0]
-            max_d = max(diff_tuple(locE, s[3]))
-            if idx>=max_d:
-                if min_val>idx :
-                    min_val = idx
-        if min_val==10000:
-            steps.append(0)
-        else:
-            steps.append(CollReward * pow(discountF, min_val))
-        all_sum+=1.0/len(all_paths)
-    return min(steps)
+    for b_goal in s[-2]:
+        for b in b_goal:
+            pathz = all_paths[b]['traj']
+            for idx in range(s[0],len(pathz)-1):
+                locE = pathz[idx][0]
+                max_d = max(diff_tuple(locE, s[3]))
+                time_pass = idx-s[0]
+                if time_pass>=max_d:
+                    if min_val>time_pass :
+                        min_val = time_pass
+            if min_val==10000:
+                steps.append(0)
+            else:
+                steps.append(CollReward * pow(discountF, min_val))
+    return max(steps)
 
 def h5(s, all_paths):
     if check_out_of_bound(s) == 1:
@@ -140,20 +143,21 @@ def h5(s, all_paths):
     min_val=10000
     steps=[]
     all_sum=0
-    for b in s[-2]:
-        pathz = all_paths[b]['traj']
-        for idx in range(s[0],len(pathz)-1):
-            locE = pathz[idx][0]
-            max_d = max(diff_tuple(locE, s[3]))
-            time_pass = idx-s[0]
-            if time_pass>=max_d:
-                if min_val>time_pass :
-                    min_val = time_pass
-        if min_val==10000:
-            steps.append(0)
-        else:
-            steps.append(CollReward * pow(discountF, min_val))
-        all_sum+=1.0/len(all_paths)
+    for b_goal in s[-2]:
+        for b in b_goal:
+            pathz = all_paths[b]['traj']
+            for idx in range(s[0],len(pathz)-1):
+                locE = pathz[idx][0]
+                max_d = max(diff_tuple(locE, s[3]))
+                time_pass = idx-s[0]
+                if time_pass>=max_d:
+                    if min_val>time_pass :
+                        min_val = time_pass
+            if min_val==10000:
+                steps.append(0)
+            else:
+                steps.append(CollReward * pow(discountF, min_val))
+            all_sum+=1.0/len(all_paths)
     x=0.0
     for val in steps:
         x+=((1/len(all_paths))/all_sum)*val
@@ -172,23 +176,27 @@ def make_action_D():
 
 
 def read_state_map():
-    df_map = pd.read_csv("{}/car_model/debug/all_MAP.csv".format(HOME), sep=';')
+    df_map = pd.read_csv("{}/car_model/debug/h_MAP.csv".format(HOME), sep=';')
     print(list(df_map))
     df_map['State'].dropna(inplace=True)
     df_map['State'] = df_map['State'].apply(lambda x: string_to_state(x))
     return df_map
 
+def arr_to_str_rep_state(arr):
+    return "{}_A_{}_{}|D_{}_{}|_{}_{}".format(arr[0],arr[1],arr[2],arr[3],arr[4],arr[5],arr[6])
 
 def str_to_state_rep(arr):
-    arr = eval(arr[1:-1])
-    return "{}_A_{}_{}|D_{}_{}|_{}_{}".format(arr[0],arr[1],arr[2],arr[3],arr[4],arr[5],arr[6])
+    return arr_to_str_rep_state(eval(arr[1:-1]))
 
 def start_f(df_map, df_Q, all_paths):
     n = 1000
     n = min(len(df_Q),n)
     ep = 1.97e-06
-    sum = 0
+    sum_h = 0
+    max_value=-100
     # print(df_Q.dtypes)
+    max_vec=0
+    dico=dict()
     df_Q_sample = df_Q.sample(n)
     d = df_Q_sample.to_dict('records')
     for item in d:
@@ -199,18 +207,39 @@ def start_f(df_map, df_Q, all_paths):
             print(key, ":", len(state))
             continue
         state = state.iloc[0]
-        h_vec = hurstic(state, all_paths)
-        max_diff = 0
+        h_vec,s = hurstic(state, all_paths)
+        sum_inter=0
         for i, val in enumerate(h_vec):
-            if max_diff < val - item[str(i)]:
-                max_diff = val - item[str(i)]
-            if item[str(i)] > val and ep < item[str(i)] - val:
-                print()
-                print("S:",str_to_state_rep(state),"   action:",d_actions[i],":",i, " : ", key,"H:{} Q:{}".format(val,item[str(i)]),"\t diff:",   val/item[str(i)])
-        sum += max_diff
+            diff_value = val - item[str(i)]
+            if diff_value > max_value:
+                max_value=diff_value
+            if item[str(i)] > val+ep :
+                print("S:",str_to_state_rep(state),"   action:",d_actions[i],":",i, " : ", key,"H:{} Q:{}".format(val,item[str(i)]),"\t diff:",   val-item[str(i)])
+            else:
+                sum_inter += diff_value
+            ky = round(diff_value, 4)
+            if inside_bubble(s,all_paths):
+                if ky not in dico:
+                    dico[ky]=0
+                dico[ky]+=1
+        if max_vec < sum_inter/len(h_vec):
+            max_vec=sum_inter/len(h_vec)
+        sum_h+=sum_inter/len(h_vec)
         # print("MAX:", max_diff)
+    dico = {k: v for k, v in sorted(dico.items(), key=lambda item: item[1],reverse=True)}
+    print("Mean:{} \t MAX:{} \t MAX_Vec{}".format( sum_h / n,max_value,max_vec))
+    print(dico)
+    mylist = [key for key, val in dico.items() for _ in range(val)]
+    plt.hist(mylist, bins=100)
+    plt.show()
 
-    print("mean: ", sum / n)
+def inside_bubble(s,all_paths):
+    for item in s[-2]:
+        for b in item:
+            max_size = len(all_paths[b]['traj'])-1
+            if s[0]>=max_size:
+                return False
+    return True
 
 
 def main():
@@ -218,7 +247,7 @@ def main():
         df_map = read_state_map()
         df_map.to_csv("{}/car_model/debug/map_object.csv".format(HOME), sep=';', index=False)
     df_map = pd.read_csv("{}/car_model/debug/map_object.csv".format(HOME), sep=';')
-    df_Q = pd.read_csv("{}/car_model/debug/all_Q.csv".format(HOME), sep=';')
+    df_Q = pd.read_csv("{}/car_model/debug/h_Q.csv".format(HOME), sep=';')
     return df_Q, df_map
 
 HOME = os.path.expanduser("~")

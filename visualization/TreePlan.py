@@ -134,7 +134,7 @@ def make_graph(dir_p):
     res,root,dict_node = make_tree(dir_p)
     # print(results)
     G = nx.from_dict_of_lists(res)
-    d_color = {0:'green',1:"turquoise",2:"red",3:"black",4:"yellow",6:"pink",-1:"silver"}
+    d_color = {0:'green',1:"turquoise",2:"red",3:"black",4:"yellow",5:"pink",-1:"silver"}
     color_map = []
     # min_d = get_the_min_time()
     for node in G:
