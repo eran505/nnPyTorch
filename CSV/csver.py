@@ -247,10 +247,10 @@ if __name__ == '__main__':
     # tmp33()
     # con_to_dico()
     # exit()
-    res = walk_rec('/home/eranhe/car_model/debug', [], "Eval.csv")
+    res = walk_rec('{}/car_model/debug'.format(os.path.expanduser('~')), [], "Eval.csv")
     print(res)
     tmp(res)
-    #
+
     # dico_d = just_plot()
     # for item in dico_d:
     #     make_collision_prop(item['df'],item['id_exp'])

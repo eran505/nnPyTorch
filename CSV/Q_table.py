@@ -124,7 +124,7 @@ def h4(s, all_paths):
     for b_goal in s[-2]:
         for b in b_goal:
             pathz = all_paths[b]['traj']
-            for idx in range(s[0],len(pathz)-1):
+            for idx in range(s[0]+s[-1],len(pathz)-1):
                 locE = pathz[idx][0]
                 max_d = max(diff_tuple(locE, s[3]))
                 time_pass = idx-s[0]
@@ -146,7 +146,7 @@ def h5(s, all_paths):
     for b_goal in s[-2]:
         for b in b_goal:
             pathz = all_paths[b]['traj']
-            for idx in range(s[0],len(pathz)-1):
+            for idx in range(s[0]+s[-1],len(pathz)-1):
                 locE = pathz[idx][0]
                 max_d = max(diff_tuple(locE, s[3]))
                 time_pass = idx-s[0]
