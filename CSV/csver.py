@@ -1,13 +1,13 @@
-from os_util import walk_rec
+from os_util import walk_rec,mkdir_system
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 from CSV.utils_csver import read_multi_csvs
-
+from CSV.get_info import  get_info_path_gen
 # "episodes";"Collision";"Wall";"Goal"
-
-color_array = ['red', 'green', 'blue', 'orange', 'gray', "yellow", "brown", "purple", "m"]
+from CSV.tabular_csv import get_both_csvs
+color_array = ['red', 'green', 'blue', 'orange', 'gray', "yellow", "brown", "purple", "m","pink"]
 
 
 def namer(mode, option, h):
@@ -95,6 +95,48 @@ def avg_coll(row, data, tail):
     return res
 
 
+def add_row_n(small_df,n_rows,num=1000,copy_last=False):
+    if n_rows<1:
+        return small_df
+    if small_df.iloc[-1]["Collision"]==num or copy_last:
+        small_df = small_df.append(small_df.iloc[[-1] * n_rows])
+    else:
+        avg = np.mean(small_df["Collision"].values[-3:])
+        small_df.iloc[-1]["Collision"]=avg
+        small_df = small_df.append(small_df.iloc[[-1] * n_rows])
+
+    return small_df
+
+# "episodes";"Collision";"Wall";"Goal";"stop";"States"
+def merge_two_csv(df1,df2):
+
+    diff = abs(len(df1)-len(df2))
+    if len(df1)>len(df2):
+        small=df2
+        big=df1
+        small = add_row_n(small,diff)
+    elif len(df1)<len(df2):
+        big=df2
+        small=df1
+        small = add_row_n(small, diff)
+    elif len(df1)==len(df2):
+        big = df2
+        small = df1
+    else:
+        assert False
+
+    assert (len(big) == len(small))
+    big.reset_index(drop=True, inplace=True)
+    small.reset_index(drop=True, inplace=True)
+    res = big.combine(small,np.add)
+    assert (len(big) == len(res))
+    return res
+    # mean_df = pd.concat([big, small]).groupby(level=0).sum()
+
+
+
+
+
 def get_T(row, data):
     id_ = str(row['ID'])
     data = data[id_]
@@ -155,8 +197,40 @@ def make_collision_prop(df_l, name):
     plt.legend()
     plt.show()
 
+def get_all_exp_path(dir_p="/home/eranhe/car_model/exp/paths"):
+    name_dir = os.path.basename(dir_p)
+    path_dst = mkdir_system(dir_p,"mean".format(name_dir))
+    res = walk_rec(dir_p,[],"_Eval.csv",lv=-1)
+    d_exp={}
+    for item in res:
+        name = os.path.basename(item)
+        arr = str(name).split("_")
+        idx_exp = int(arr[1][1:])
+        if idx_exp not in d_exp:
+            d_exp[idx_exp]=[]
+        d_exp[idx_exp].append(item)
+    for k,v in d_exp.items():
+        name = os.path.basename(v[-1])
+        l_df=list(map(lambda x: pd.read_csv(x,sep=";"),list(v)))
+        max_len = max([len(x) for x in l_df ])
+        l_df_mod = list(map(lambda x: add_row_n(x,abs(len(x)-max_len),1000) , l_df))
+        v = l_df_mod
+        size = len(v)
+        ctr=1
+        results_df = v[0]
 
-def tmp(list_csvs):
+        while ctr<size:
+            df_tmp = v[ctr]
+            results_df = merge_two_csv(df_tmp,results_df)
+            ctr+=1
+        results_df = results_df.select_dtypes(exclude=['object', 'datetime'])*1.0/size
+
+        results_df.to_csv(path_dst+"/"+name)
+    return path_dst
+
+
+
+def tmp(list_csvs,dir_p=None,constant=1000,two=False):
     d = {}
     d_pre_process = {}
     l_baseline = []
@@ -172,8 +246,8 @@ def tmp(list_csvs):
         #     continue
         pre_process = 0
         for df_i in l_df[:-1]:
-            df_i['"Collision"'] = df_i['"Collision"'] / (len(l_df) - 1)
-            pre_process += len(df_i['"Collision"'])
+            df_i["Collision"] = df_i["Collision"] / (len(l_df) - 1)
+            pre_process += len(df_i["Collision"])
         df = pd.concat(l_df[:])
 
         if d_info['mode'] == -1:
@@ -184,15 +258,19 @@ def tmp(list_csvs):
 
         if d_info['name'] not in d:
             d[d_info['name']] = []
-        d[d_info['name']].append(df['"Collision"'].values)
+        d[d_info['name']].append(df["Collision"].values)
 
         d_pre_process[d_info['name']] = pre_process
 
     for baseline_df in l_baseline:
-        val = baseline_df['"Collision"'].mean()
+        val = baseline_df["Collision"].mean()
         arr = np.full(int(max_ep), val)
-        plt.plot(arr, label="Plan_Rec", color='k')
-    for ky in d:
+        arr = arr/constant
+        plt.plot(arr, label="Baseline", color='k')
+
+    ky_list = list(d.keys())
+    ky_list.sort(key=lambda x: int(str(x).split("_")[1][1:]))
+    for j,ky in enumerate(ky_list):
 
         l_coll = d[ky]
 
@@ -203,19 +281,86 @@ def tmp(list_csvs):
                 b[i, len(j_arr):] = max(j_arr)
 
         # b[b<thershold]=0
-
+        b = b/constant
         pre_phase = d_pre_process[ky]
-        c = color_array[ctr_color]
+        c = color_array[ctr_color%len(color_array)]
         ctr_color += 1
-        plt.plot(b.mean(axis=0)[:], ls=':', color=c, label=ky)
-        plt.plot(b.mean(axis=0)[:pre_phase], ls='-', color=c)
+        name_label = get_name(ky)
+
+        plt.plot(b.mean(axis=0)[:], ls='-.', color=c, label=name_label)
+        plt.plot(b.mean(axis=0)[:], ls='-', color=c)
+        if j%2==1 and two:
+            plt.legend()
+            if dir_p is not None:
+                plt.savefig("{}/{}{}.png".format(dir_p,j, "res"))
+            else:
+                plt.savefig("{}/{}/{}{}.png".format(os.path.expanduser("~"), "car_model/debug", "res",j))
+            plt.show()
+            plt.clf()
     # print(ky_uid,"<----")
     plt.legend()
     # save_dir = pt.mkdir_system("{}/car_model/figs".format(expanduser('~')),str(list_csvs[0]).split('/')[-2],False)
-    plt.savefig("{}/{}/{}.png".format(os.path.expanduser("~"),"car_model/debug","res"))
+    if dir_p is not None:
+        plt.savefig("{}/{}.png".format(dir_p,"res"))
+    else:
+        plt.savefig("{}/{}/{}.png".format(os.path.expanduser("~"), "car_model/debug", "res"))
     plt.show()
     print("end")
 
+
+def get_name(str_name):
+    results = "Nan"
+    arr = str(str_name).split('_')
+    if int(arr[2][1:])==1:
+        results="Belief"
+    if int(arr[2][1:])==0:
+        results = "Position"
+    return results
+
+def get_state_generated(list_csvs,dir_p=None,two=False):
+    d = {}
+    d_pre_process = {}
+    l_baseline = []
+    max_ep = 0
+    ctr_color = 0
+
+    # sort by the exp ID
+    list_csvs.sort(key=lambda x: int(str(x).split(os.sep)[-1].split("_")[1][1:]))
+    # remove the base line
+    list_csvs = list(filter(lambda x: True if int(str(x).split(os.sep)[-1].split("_")[2][1:]) != -1 else False,list_csvs))
+
+    for j,item in enumerate(list_csvs):
+
+        d_info = path_to_config(str(item).split(os.sep)[-1].split('.')[0])
+
+        l_df = read_multi_csvs(item)
+
+        # if l_df[-1]['"Collision"'].iloc[-1]!=1.0:
+        #     continue
+        pre_process = 0
+        acc=0
+        for df_i in l_df[:]:
+            df_i["States"] = df_i["States"] + acc
+            acc +=df_i["States"].values[-1]
+        df = pd.concat(l_df[:])
+        name_label = get_name(d_info["name"])
+        l = df["States"].values
+        plt.plot(l,label=name_label,color=color_array[ctr_color%len(color_array)])
+        ctr_color+=1
+        if j%2==1 and two:
+            plt.legend()
+            if dir_p is not None:
+                plt.savefig("{}/{}{}.png".format(dir_p,j, "Gen"))
+            else:
+                plt.savefig("{}/{}/{}{}.png".format(os.path.expanduser("~"), "car_model/debug", "Gen",j))
+            plt.show()
+            plt.clf()
+    plt.legend()
+    if dir_p is not None:
+        plt.savefig("{}/{}.png".format(dir_p,"Gen"))
+    else:
+        plt.savefig("{}/{}/{}.png".format(os.path.expanduser("~"), "car_model/debug", "Gen"))
+    plt.show()
 
 def just_plot(dir_path="/home/eranhe/car_model/debug"):
     res = walk_rec(dir_path, [], "Eval.csv")
@@ -246,11 +391,17 @@ def tmp33():
 if __name__ == '__main__':
     # tmp33()
     # con_to_dico()
-    # exit()
-    res = walk_rec('{}/car_model/debug'.format(os.path.expanduser('~')), [], "Eval.csv")
-    print(res)
-    tmp(res)
+    get_info_path_gen()
+    p="/home/eranhe/car_model/exp/paths/e8"
+    p="/home/eranhe/car_model/debug"
+    path_dir = '{}/car_model/debug'.format(os.path.expanduser('~'))
+    #path_dir = "{}/car_model/exp/intersting/1".format(os.path.expanduser('~'))
+    path_dir = get_all_exp_path(p)
 
-    # dico_d = just_plot()
-    # for item in dico_d:
-    #     make_collision_prop(item['df'],item['id_exp'])
+
+    res = walk_rec(path_dir, [], "Eval.csv",lv=-1)
+    print(res)
+    tmp(res,path_dir,two=True)
+    get_state_generated(res,path_dir,two=True)
+
+    get_both_csvs(res,path_dir)

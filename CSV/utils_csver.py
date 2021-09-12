@@ -10,7 +10,7 @@ def read_multi_csvs(p):
             if len(line) < 1:
                 continue
             d = {}
-            if (str(line).startswith("\"e")) or (str(line).startswith("e")) :
+            if (str(line).startswith("\"e")) or (str(line).startswith("e")) or (str(line).startswith(",e"))  :
                 big_l.append(l_csv)
                 l_csv = []
                 if str(line).__contains__(";"):
@@ -26,7 +26,10 @@ def read_multi_csvs(p):
     df_l = []
     for item in big_l:
         if len(item) > 0:
-            df_l.append(pd.DataFrame(item))
+            df_x = pd.DataFrame(item)
+            df_x = df_x.rename(columns={'"Collision"': "Collision",
+                                        '"States"': "States"})
+            df_l.append(df_x)
     # for item in df_l:
     #     item = rename_col_remove_key(item)
     return df_l

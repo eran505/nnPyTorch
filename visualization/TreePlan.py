@@ -14,6 +14,8 @@ from os_util import walk_rec
 import pandas as pd
 import os
 
+
+
 class Node(object):
     def __init__(self,pos=None,speed=None,time=-1):
         self.children=[]
@@ -27,6 +29,7 @@ class Node(object):
         return (self.pos,self.t,len(self.plans))
     def is_unique_plan(self):
         return len(self.plans)==1
+
 class PlanRec(object):
 
     def __init__(self,dir_p):
@@ -162,6 +165,11 @@ def make_graph(dir_p):
     plt.savefig("{}{}/tree.png".format(expanduser("~"),dir_p))
     plt.show()
 
+
+def make_belief_tree(dir_p):
+    res,root,dict_node = make_tree(dir_p)
+
+
 def get_df_con(dir_p):
     path_to_dir = "{}/{}".format(expanduser("~"), dir_p)
 
@@ -188,4 +196,4 @@ def get_the_min_time(dir_p):
 
 if __name__ == "__main__":
 
-    make_graph(dir_p="/car_model/exp/2")
+    make_graph(dir_p="/car_model/debug")

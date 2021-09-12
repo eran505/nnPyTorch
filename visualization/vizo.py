@@ -1,6 +1,7 @@
 from mpl_toolkits import mplot3d
 
 #matplotlib inline
+from CSV.get_info import  get_info_path_gen
 import numpy as np
 import matplotlib.pyplot as plt
 import helper as hlp
@@ -8,11 +9,13 @@ from sys import exit
 from random import shuffle
 from os.path import expanduser
 import os_util as pt
+from visualization.BeliefTree import make_belief_G
 import networkx as nx
 from networkx.drawing.nx_pydot import graphviz_layout
 from queue import Queue
 from visualization.TreePlan import make_graph
-
+from os import path
+from os import system
 class Node(object):
     def __init__(self,pos=None,speed=None,time=-1):
         self.children=[]
@@ -220,7 +223,15 @@ def main_f():
     plt.savefig("{}/car_model/debug/paths.png".format(expanduser("~")))
     plt.show()
 
-
+def cp_p_file(dirx="/car_model/debug"):
+    dirx = "{}{}".format(expanduser("~"),dirx)
+    f1 ="{}/p_1.csv".format(dirx)
+    f = "{}/p.csv".format(dirx)
+    if path.isfile(f1):
+        system("cp {} {}".format(f1,f))
 if __name__ == "__main__":
+    get_info_path_gen()
+    cp_p_file()
     main_f()
     make_graph("/car_model/debug")
+    make_belief_G(dir_p="/car_model/debug")
