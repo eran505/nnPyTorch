@@ -235,7 +235,7 @@ def tmp(list_csvs,dir_p=None,constant=1000,two=False):
     d_pre_process = {}
     l_baseline = []
     max_ep = 0
-    ctr_color = 0;
+    ctr_color = 0
     for item in list_csvs:
 
         d_info = path_to_config(str(item).split(os.sep)[-1].split('.')[0])
@@ -270,7 +270,7 @@ def tmp(list_csvs,dir_p=None,constant=1000,two=False):
 
     ky_list = list(d.keys())
     ky_list.sort(key=lambda x: int(str(x).split("_")[1][1:]))
-    for j,ky in enumerate(ky_list):
+    for j,ky in enumerate(ky_list,1):
 
         l_coll = d[ky]
 
@@ -289,7 +289,8 @@ def tmp(list_csvs,dir_p=None,constant=1000,two=False):
 
         plt.plot(b.mean(axis=0)[:], ls='-.', color=c, label=name_label)
         plt.plot(b.mean(axis=0)[:], ls='-', color=c)
-        if j%2==1 and two:
+        if j%3==0 and two:
+            plt.title(ky)
             plt.legend()
             if dir_p is not None:
                 plt.savefig("{}/{}{}.png".format(dir_p,j, "res"))
@@ -315,6 +316,8 @@ def get_name(str_name):
         results="Belief"
     if int(arr[2][1:])==0:
         results = "Position"
+    if int(arr[2][1:])==2:
+        results = "Position(t)"
     return results
 
 def get_state_generated(list_csvs,dir_p=None,two=False):
@@ -392,7 +395,7 @@ if __name__ == '__main__':
     # tmp33()
     # con_to_dico()
     get_info_path_gen()
-    p="/home/eranhe/car_model/exp/paths/e8"
+    #p="/home/eranhe/car_model/exp/paths/e8"
     p="/home/eranhe/car_model/debug"
     path_dir = '{}/car_model/debug'.format(os.path.expanduser('~'))
     #path_dir = "{}/car_model/exp/intersting/1".format(os.path.expanduser('~'))
@@ -401,7 +404,7 @@ if __name__ == '__main__':
 
     res = walk_rec(path_dir, [], "Eval.csv",lv=-1)
     print(res)
-    tmp(res,path_dir,two=True)
-    get_state_generated(res,path_dir,two=True)
+    tmp(res,path_dir,two=False)
+    get_state_generated(res,path_dir,two=False)
 
     get_both_csvs(res,path_dir)

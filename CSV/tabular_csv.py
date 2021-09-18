@@ -79,8 +79,8 @@ def make_unnormalize_csv(dir_path,is_coll):
         df_big.to_csv("{}/big_Gen.csv".format(dir_path))
 
 if __name__ == '__main__':
-    make_unnormalize_csv("/home/eranhe/car_model/exp/path2",False)
-    make_unnormalize_csv("/home/eranhe/car_model/exp/path2",True)
+    make_unnormalize_csv("/home/eranhe/car_model/debug/mean",False)
+    make_unnormalize_csv("/home/eranhe/car_model/debug/mean",True)
     exit(0)
     is_coll=True
     p="/home/eranhe/car_model/debug/mean"
