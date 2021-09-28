@@ -218,18 +218,37 @@ def main_f():
         yline = np.array(p[:, 0])
         ax.plot3D(xline, yline, zline, color[i % len(color)])
 
-    ax.view_init(azim=0, elev=100)
+
+
+    ax.view_init(azim=0, elev=270)
 
     plt.savefig("{}/car_model/debug/paths.png".format(expanduser("~")))
     plt.show()
-
+    exit()
 def cp_p_file(dirx="/car_model/debug"):
     dirx = "{}{}".format(expanduser("~"),dirx)
     f1 ="{}/p_1.csv".format(dirx)
     f = "{}/p.csv".format(dirx)
     if path.isfile(f1):
         system("cp {} {}".format(f1,f))
+
+def comper_paths():
+    p='car_model/debug'
+    res = pt.walk_rec("{}/{}".format(expanduser("~"),p),[],"p.csv")
+    res = [x for x in res if str(x).split('/')[-1].__contains__("map") is False]
+    shuffle(res)
+    index = 0
+    l = hlp.load__p(res[index])
+    for j,item in enumerate(l):
+        x = item['traj']
+        for i in range(j+1,len(l)):
+            h = int(len(l[i]['traj'])*0.95)
+            if x[:h] == l[i]['traj'][:h]:
+                print("{} == {}".format(j,i))
+
+
 if __name__ == "__main__":
+    comper_paths()
     get_info_path_gen()
     cp_p_file()
     main_f()

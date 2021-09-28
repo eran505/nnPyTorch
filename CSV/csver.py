@@ -286,9 +286,10 @@ def tmp(list_csvs,dir_p=None,constant=1000,two=False):
         c = color_array[ctr_color%len(color_array)]
         ctr_color += 1
         name_label = get_name(ky)
-
+        h_name = get_h_name(ky)
+        name_label = "{0}({1})".format(name_label,h_name)
         plt.plot(b.mean(axis=0)[:], ls='-.', color=c, label=name_label)
-        plt.plot(b.mean(axis=0)[:], ls='-', color=c)
+        plt.plot(b.mean(axis=0)[:], ls='--', color=c)
         if j%3==0 and two:
             plt.title(ky)
             plt.legend()
@@ -308,6 +309,10 @@ def tmp(list_csvs,dir_p=None,constant=1000,two=False):
     plt.show()
     print("end")
 
+def get_h_name(str_name):
+    arr = str(str_name).split('_')
+    idx_h = arr[4][1:]
+    return idx_h
 
 def get_name(str_name):
     results = "Nan"
@@ -347,8 +352,10 @@ def get_state_generated(list_csvs,dir_p=None,two=False):
             acc +=df_i["States"].values[-1]
         df = pd.concat(l_df[:])
         name_label = get_name(d_info["name"])
+        h_name = get_h_name(d_info["name"])
+        name_label = "{0}({1})".format(name_label,h_name)
         l = df["States"].values
-        plt.plot(l,label=name_label,color=color_array[ctr_color%len(color_array)])
+        plt.plot(l,label=name_label,color=color_array[ctr_color%len(color_array)],ls="--")
         ctr_color+=1
         if j%2==1 and two:
             plt.legend()
