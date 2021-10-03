@@ -402,7 +402,6 @@ if __name__ == '__main__':
     # tmp33()
     # con_to_dico()
     get_info_path_gen()
-    #p="/home/eranhe/car_model/exp/paths/e8"
     p="/home/eranhe/car_model/debug"
     path_dir = '{}/car_model/debug'.format(os.path.expanduser('~'))
     #path_dir = "{}/car_model/exp/intersting/1".format(os.path.expanduser('~'))

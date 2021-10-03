@@ -34,16 +34,20 @@ def coverage_at_episode(csv_file_path,d=None):
     df = pd.read_csv(csv_file_path,sep=';')
     if d is None:
         d={}
+    d["max_iter"] = df["episodes"].max()
     d["max_col"] = df["Collision"].max()
-    d["ep_1000"] = df.loc[df["Collision"]==1000,"episodes"].min()
-    d["ep_900"] = df.loc[df["Collision"]>900,"episodes"].min()
-    d["ep_950"] = df.loc[df["Collision"] > 950, "episodes"].min()
+    d["tail"] = df["Collision"].values[-1]
+    d["ep_max"] =  df.loc[df["Collision"]>=d["max_col"],"episodes"].min()
+    list_ep=[x*100 for x in range(1,11)]
+    for item in list_ep:
+        d["ep_{}".format(item)] = df.loc[df["Collision"]>=item,"episodes"].min()
     return d
 
 
 def func(p="/home/eranhe/car_model/exp/paths"):
     res = pt.walk_rec(p,[],"_Eval.csv",lv=-2)
     d_l=[]
+    dir_to = mkdir_system(p,"res")
     for item in res:
         dico = path_to_config(os.path.basename(item))
         dico = coverage_at_episode(item,dico)
@@ -52,22 +56,17 @@ def func(p="/home/eranhe/car_model/exp/paths"):
         d_l.append(dico)
     df = pd.DataFrame(d_l)
     df.to_csv("{}/info.csv".format(p))
-    df_900 = pd.pivot_table(df,values="ep_900",index="mode",columns="base_dir",aggfunc="mean")
-    df_950 = pd.pivot_table(df,values="ep_950",index="mode",columns="base_dir",aggfunc="mean")
-    df_1000 = pd.pivot_table(df,values="ep_1000",index="mode",columns="base_dir",aggfunc="mean")
-    df_900.to_csv("{}/ep_90.csv".format(p))
-    df_1000.to_csv("{}/ep_100.csv".format(p))
-    df_950.to_csv("{}/ep_95.csv".format(p))
-    df_0 = df.loc[df["mode"]==2].sort_values(by=['seed'])
-    df_2 = df.loc[df["mode"] == 0].sort_values(by=['seed'])
-    print(len(df_2))
-    print(len(df_0))
-    plt.scatter(df_2['ep_1000'].values,df_0['ep_1000'].values)
-    plt.show()
+    colz = list(filter(lambda x : str(x).__contains__('ep_'),list(df)))
+    colz.extend(["max_col","tail"])
+    for col in colz:
+        df_i = pd.pivot_table(df,values=col,index="mode",columns="base_dir",aggfunc="mean")
+        if col.__contains__('ep'):
+            df_i=df_i/df['max_iter'].max()
+        df_i.to_csv("{}/{}.csv".format(dir_to,col))
     exit()
-    #plt.plot()
-if __name__ == '__main__':
-    pp="/home/eranhe/car_model/exp/paths2"
-    pp="/home/eranhe/car_model/debug"
 
-    # func(pp)
+if __name__ == '__main__':
+    pp="/home/eranhe/car_model/debug"
+    pp="/home/eranhe/car_model/exp/cc"
+
+    func(pp)

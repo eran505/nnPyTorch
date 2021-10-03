@@ -16,6 +16,23 @@ from queue import Queue
 from visualization.TreePlan import make_graph
 from os import path
 from os import system
+
+class wPoint(object):
+    def __init__(self, grid=(550.200,5), x_p=0.2, y=11 ,z_p=0.75):
+        self._grid=grid
+        self.x=x_p
+        self.y=y
+        self.z=z_p
+
+    def get_list_(self):
+        ans=[]
+        if self.y==1:
+            return [(self._grid[0]*self.x,int(self._grid[1]*0.5),self._grid[-1]*self.z)]
+        yi = np.linspace(0, self._grid[1], num=self.y+2)
+        for i in yi[1:-1]:
+            ans.append((self._grid[0]*self.x,i,self._grid[-1]*self.z))
+        return ans
+
 class Node(object):
     def __init__(self,pos=None,speed=None,time=-1):
         self.children=[]
@@ -220,6 +237,7 @@ def main_f():
 
 
 
+
     ax.view_init(azim=0, elev=270)
 
     plt.savefig("{}/car_model/debug/paths.png".format(expanduser("~")))
@@ -247,7 +265,65 @@ def comper_paths():
                 print("{} == {}".format(j,i))
 
 
+
+def crate_map(p="/home/eranhe/car_model/exp/cc/p.csv"):
+    l = hlp.load__p(p)
+
+    print(l)
+    matrix = []
+    for item in l:
+        size = len(item["traj"])
+        path = np.zeros([size, 3])
+        for idx, pos in enumerate(item["traj"]):
+            path[idx] = pos[0]
+        matrix.append(path)
+
+    grid=(550,200,5)
+    w_points = [0.1*grid[1],0.2*grid[1],0.9*grid[1]]
+    # Data for a three-dimensional line
+    color = ['red', 'green', 'gold', 'black', 'lime', 'violet', 'plum',
+             'orange', 'navy', 'salmon']
+    for i, p in enumerate(matrix):
+        xline = np.array(p[0:1, 1])
+        yline = np.array(p[0:1, 0])
+        plt.plot(yline,xline,marker='$S_e$',c='red',markersize=15,label='Evader')
+        break
+    for i, p in enumerate(matrix):
+        xline = np.array(p[-1:, 1])
+        yline = np.array(p[-1:, 0])
+        if i==0:
+            plt.plot(yline,xline,marker='*',c="green",markersize=10,label='Goal')
+        else:
+            plt.plot(yline, xline, marker='*', c="green", markersize=10)
+
+    w1 = wPoint(grid=(550,200,5),x_p=0.1,y=9)
+    w2 = wPoint(grid=(550, 200, 5), x_p=0.2, y=3)
+    w3 = wPoint(grid=(550, 200, 5), x_p=0.3, y=1)
+    w4 = wPoint(grid=(550, 200, 5), x_p=0.5, y=1)
+    l=[w1,w2,w3,w4]
+    for idx,obj in enumerate(l):
+        list_ppints = obj.get_list_()
+        c_i = color[idx % len(color)]
+        for i,item in enumerate(list_ppints) :
+            print(item)
+            if idx==0 and i==0:
+                plt.plot(item[0],item[1],marker='x',c='black',label='Way-point')
+            else:
+                plt.plot(item[0], item[1], marker='x', c='black')
+
+    sp=[(450,100),(470,100),(490,100),(510,100),(530,100),(550,100)]
+    for i,item in enumerate(sp):
+        if i==0:
+            plt.plot(item[0],item[1],marker='$s_p$',c='blue',markersize=10,label='Pursuer')
+        else:
+            plt.plot(item[0], item[1], marker='$s_p$', c='blue', markersize=10)
+    plt.legend()
+    plt.savefig("{}/car_model/debug/waypoint.png".format(expanduser("~")))
+    plt.show()
+    exit()
+
 if __name__ == "__main__":
+    #crate_map()
     comper_paths()
     get_info_path_gen()
     cp_p_file()

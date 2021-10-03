@@ -115,11 +115,38 @@ def test_seed():
     exit()
 def change_col():
     df = pd.read_csv("/home/eranhe/eran/repo/Pursuit_Evasion/csv/con2.csv")
-    df['Routes']=9
+    df['ep']=5000
     df.to_csv("/home/eranhe/eran/repo/Pursuit_Evasion/csv/con2.csv",index=False)
     exit()
+
+def re_order(dir_path="car_model/debug"):
+    p="{}/{}".format(os.path.expanduser('~'),dir_path)
+    res = walk_rec(p,[],".csv",lv=-1)
+    d={}
+    other_files=[]
+    for item in res:
+        name = os.path.basename(item)
+        if str(name).endswith("_Eval.csv"):
+            arr = str(name).split("_")
+            idndx = arr[1][1]
+            if idndx not in d:
+                d[idndx]=[item]
+            else:
+                d[idndx].append(item)
+        else:
+            other_files.append(item)
+    for ky in d.keys():
+        d_path = mkdir_system(p,ky)
+        for x in d[ky]:
+            os.system("mv {} {}/".format(x,d_path))
+        for x in other_files:
+            os.system("cp {} {}/".format(x, d_path))
+    exit()
 if __name__ == '__main__':
-    change_col()
+    re_order()
+    #change_col()
+    #test_seed()
+    p=""
     make_unnormalize_csv("/home/eranhe/car_model/debug",False)
     make_unnormalize_csv("/home/eranhe/car_model/debug",True)
     exit(0)
