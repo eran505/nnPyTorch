@@ -286,10 +286,12 @@ def tmp(list_csvs,dir_p=None,constant=1000,two=False):
         c = color_array[ctr_color%len(color_array)]
         ctr_color += 1
         name_label = get_name(ky)
+
         h_name = get_h_name(ky)
         name_label = "{0}({1})".format(name_label,h_name)
-        plt.plot(b.mean(axis=0)[:], ls='-.', color=c, label=name_label)
-        plt.plot(b.mean(axis=0)[:], ls='--', color=c)
+        z = [10e3*x for x in range(len(b.mean(axis=0)))]
+        plt.plot(z,b.mean(axis=0)[:], ls='-.', color=c, label=name_label)
+        plt.plot(z,b.mean(axis=0)[:], ls='--', color=c)
         if j%3==0 and two:
             plt.title(ky)
             plt.legend()
@@ -311,8 +313,12 @@ def tmp(list_csvs,dir_p=None,constant=1000,two=False):
 
 def get_h_name(str_name):
     arr = str(str_name).split('_')
-    idx_h = arr[4][1:]
-    return idx_h
+    idx_h = int(arr[4][1:])
+    if idx_h==8:
+        return "$H_{air}$"
+    if idx_h==0:
+        return "$H_{zero}$"
+    return "$H_{}$".format(idx_h)
 
 def get_name(str_name):
     results = "Nan"
@@ -322,7 +328,7 @@ def get_name(str_name):
     if int(arr[2][1:])==0:
         results = "Position"
     if int(arr[2][1:])==2:
-        results = "Position(t)"
+        results = "Position_t"
     return results
 
 def get_state_generated(list_csvs,dir_p=None,two=False):
@@ -355,7 +361,8 @@ def get_state_generated(list_csvs,dir_p=None,two=False):
         h_name = get_h_name(d_info["name"])
         name_label = "{0}({1})".format(name_label,h_name)
         l = df["States"].values
-        plt.plot(l,label=name_label,color=color_array[ctr_color%len(color_array)],ls="--")
+        z = [x*10e3 for x in range(len(l))]
+        plt.plot(z,l,label=name_label,color=color_array[ctr_color%len(color_array)],ls="--")
         ctr_color+=1
         if j%2==1 and two:
             plt.legend()
@@ -402,6 +409,7 @@ if __name__ == '__main__':
     # tmp33()
     # con_to_dico()
     get_info_path_gen()
+    p = "/home/eranhe/car_model/exp/new/h/6"
     p="/home/eranhe/car_model/debug"
     path_dir = '{}/car_model/debug'.format(os.path.expanduser('~'))
     #path_dir = "{}/car_model/exp/intersting/1".format(os.path.expanduser('~'))

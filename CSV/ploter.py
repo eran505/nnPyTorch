@@ -37,12 +37,15 @@ def coverage_at_episode(csv_file_path,d=None):
     d["max_iter"] = df["episodes"].max()
     d["max_col"] = df["Collision"].max()
     d["tail"] = df["Collision"].values[-1]
-    d["ep_max"] =  df.loc[df["Collision"]>=d["max_col"],"episodes"].min()
+    d["ep_max"] =  df.loc[df["Collision"]>=d["max_col"]-10,"episodes"].min()
+    d["state_coll"] = df.loc[df["Collision"] >=  d["max_col"], "States"].min()
+    d["state_max"]=df["States"].max()
     list_ep=[x*100 for x in range(1,11)]
     for item in list_ep:
         d["ep_{}".format(item)] = df.loc[df["Collision"]>=item,"episodes"].min()
     return d
 
+di={-1:"Baseline",0:"Position",1:"Belief",2:"Position_t"}
 
 def func(p="/home/eranhe/car_model/exp/paths"):
     res = pt.walk_rec(p,[],"_Eval.csv",lv=-2)
@@ -55,18 +58,24 @@ def func(p="/home/eranhe/car_model/exp/paths"):
         dico["base_dir"]=int(base_dir)
         d_l.append(dico)
     df = pd.DataFrame(d_l)
+    df.replace({"mode": di},inplace=True)
     df.to_csv("{}/info.csv".format(p))
     colz = list(filter(lambda x : str(x).__contains__('ep_'),list(df)))
-    colz.extend(["max_col","tail"])
+    colz.extend(["max_col","tail","state_max","state_coll"])
+    MAX_T =  df['max_iter'].max()
+    print("MAX EP:", df['max_iter'].max())
     for col in colz:
         df_i = pd.pivot_table(df,values=col,index="mode",columns="base_dir",aggfunc="mean")
         if col.__contains__('ep'):
-            df_i=df_i/df['max_iter'].max()
+            df_i=round(df_i/MAX_T,2)
+        if col.__contains__('col'):
+            df_i =round(df_i / 1000,2)
+
         df_i.to_csv("{}/{}.csv".format(dir_to,col))
     exit()
 
 if __name__ == '__main__':
-    pp="/home/eranhe/car_model/debug"
     pp="/home/eranhe/car_model/exp/cc"
-
+    pp="/home/eranhe/car_model/debug"
+    pp="/home/eranhe/car_model/exp/new/big_gap"
     func(pp)

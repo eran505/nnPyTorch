@@ -110,12 +110,12 @@ def test_seed():
         for _ in range(len(l_idx)):
             df['seed'][entry]=ctr
             entry+=1
-        ctr+=25
+        ctr+=13
     df.to_csv("/home/eranhe/eran/repo/Pursuit_Evasion/csv/con2.csv",index=False)
     exit()
 def change_col():
     df = pd.read_csv("/home/eranhe/eran/repo/Pursuit_Evasion/csv/con2.csv")
-    df['ep']=5000
+    df['Routes']=4
     df.to_csv("/home/eranhe/eran/repo/Pursuit_Evasion/csv/con2.csv",index=False)
     exit()
 
@@ -136,19 +136,19 @@ def re_order(dir_path="car_model/debug"):
         else:
             other_files.append(item)
     for ky in d.keys():
-        d_path = mkdir_system(p,ky)
+        d_path = mkdir_system(p,ky,is_del=False)
         for x in d[ky]:
             os.system("mv {} {}/".format(x,d_path))
         for x in other_files:
             os.system("cp {} {}/".format(x, d_path))
     exit()
 if __name__ == '__main__':
-    re_order()
-    #change_col()
-    #test_seed()
-    p=""
-    make_unnormalize_csv("/home/eranhe/car_model/debug",False)
-    make_unnormalize_csv("/home/eranhe/car_model/debug",True)
+    #re_order()
+    test_seed()
+    # change_col()
+    p="/home/eranhe/car_model/exp/new/h"
+    make_unnormalize_csv(p,False)
+    make_unnormalize_csv(p,True)
     exit(0)
     is_coll=True
     p="/home/eranhe/car_model/debug/mean"

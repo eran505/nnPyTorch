@@ -199,7 +199,7 @@ def path_score(path_to_csv_file):
 def main_f():
     cmap = get_cmap(15)
 
-    p='car_model/debug'
+    p='car_model/debug2'
     res = pt.walk_rec("{}/{}".format(expanduser("~"),p),[],"p.csv")
     res = [x for x in res if str(x).split('/')[-1].__contains__("map") is False]
     shuffle(res)
@@ -238,7 +238,7 @@ def main_f():
 
 
 
-    ax.view_init(azim=0, elev=270)
+    ax.view_init(azim=0, elev=180)
 
     plt.savefig("{}/car_model/debug/paths.png".format(expanduser("~")))
     plt.show()
@@ -296,8 +296,8 @@ def crate_map(p="/home/eranhe/car_model/exp/cc/p.csv"):
         else:
             plt.plot(yline, xline, marker='*', c="green", markersize=10)
 
-    w1 = wPoint(grid=(550,200,5),x_p=0.1,y=9)
-    w2 = wPoint(grid=(550, 200, 5), x_p=0.2, y=3)
+    w1 = wPoint(grid=(550,60,5),x_p=0.1,y=9)
+    w2 = wPoint(grid=(550, 60, 5), x_p=0.2, y=3)
     w3 = wPoint(grid=(550, 200, 5), x_p=0.3, y=1)
     w4 = wPoint(grid=(550, 200, 5), x_p=0.5, y=1)
     l=[w1,w2,w3,w4]
@@ -323,7 +323,7 @@ def crate_map(p="/home/eranhe/car_model/exp/cc/p.csv"):
     exit()
 
 if __name__ == "__main__":
-    #crate_map()
+    crate_map()
     comper_paths()
     get_info_path_gen()
     cp_p_file()
