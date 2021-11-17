@@ -286,9 +286,10 @@ def tmp(list_csvs,dir_p=None,constant=1000,two=False):
         c = color_array[ctr_color%len(color_array)]
         ctr_color += 1
         name_label = get_name(ky)
-
         h_name = get_h_name(ky)
-        name_label = "{0}({1})".format(name_label,h_name)
+        id_exp = get_ID_exp(ky)
+        name_label = "{0}({1}) - {2}".format(name_label,h_name,id_exp)
+
         z = [10e3*x for x in range(len(b.mean(axis=0)))]
         plt.plot(z,b.mean(axis=0)[:], ls='-.', color=c, label=name_label)
         plt.plot(z,b.mean(axis=0)[:], ls='--', color=c)
@@ -319,6 +320,9 @@ def get_h_name(str_name):
     if idx_h==0:
         return "$H_{zero}$"
     return "$H_{}$".format(idx_h)
+
+def get_ID_exp(str_name):
+    return str(str_name).split("_")[1][1:]
 
 def get_name(str_name):
     results = "Nan"

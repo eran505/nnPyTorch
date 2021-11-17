@@ -24,13 +24,13 @@ class wPoint(object):
         self.y=y
         self.z=z_p
 
-    def get_list_(self):
+    def get_list_(self,y_append=0):
         ans=[]
         if self.y==1:
             return [(self._grid[0]*self.x,int(self._grid[1]*0.5),self._grid[-1]*self.z)]
         yi = np.linspace(0, self._grid[1], num=self.y+2)
         for i in yi[1:-1]:
-            ans.append((self._grid[0]*self.x,i,self._grid[-1]*self.z))
+            ans.append((self._grid[0]*self.x,i+y_append,self._grid[-1]*self.z))
         return ans
 
 class Node(object):
@@ -199,7 +199,7 @@ def path_score(path_to_csv_file):
 def main_f():
     cmap = get_cmap(15)
 
-    p='car_model/debug2'
+    p='car_model/debug'
     res = pt.walk_rec("{}/{}".format(expanduser("~"),p),[],"p.csv")
     res = [x for x in res if str(x).split('/')[-1].__contains__("map") is False]
     shuffle(res)
@@ -238,7 +238,7 @@ def main_f():
 
 
 
-    ax.view_init(azim=0, elev=180)
+    ax.view_init(azim=0, elev=270)
 
     plt.savefig("{}/car_model/debug/paths.png".format(expanduser("~")))
     plt.show()
@@ -266,7 +266,7 @@ def comper_paths():
 
 
 
-def crate_map(p="/home/eranhe/car_model/exp/cc/p.csv"):
+def crate_map(p="/home/eranhe/car_model/exp/new/full/p.csv"):
     l = hlp.load__p(p)
 
     print(l)
@@ -296,13 +296,14 @@ def crate_map(p="/home/eranhe/car_model/exp/cc/p.csv"):
         else:
             plt.plot(yline, xline, marker='*', c="green", markersize=10)
 
-    w1 = wPoint(grid=(550,60,5),x_p=0.1,y=9)
+    w1 = wPoint(grid=(550,60,5),x_p=0.1,y=3)
     w2 = wPoint(grid=(550, 60, 5), x_p=0.2, y=3)
     w3 = wPoint(grid=(550, 200, 5), x_p=0.3, y=1)
     w4 = wPoint(grid=(550, 200, 5), x_p=0.5, y=1)
-    l=[w1,w2,w3,w4]
-    for idx,obj in enumerate(l):
-        list_ppints = obj.get_list_()
+    l=[(w1,70),(w2,70),(w3,0),(w4,0)]
+    for idx,tuple_object in enumerate(l):
+        obj,y_append =  tuple_object
+        list_ppints = obj.get_list_(y_append)
         c_i = color[idx % len(color)]
         for i,item in enumerate(list_ppints) :
             print(item)
@@ -323,10 +324,12 @@ def crate_map(p="/home/eranhe/car_model/exp/cc/p.csv"):
     exit()
 
 if __name__ == "__main__":
-    crate_map()
+    #crate_map()
     comper_paths()
     get_info_path_gen()
     cp_p_file()
     main_f()
     make_graph("/car_model/debug")
     make_belief_G(dir_p="/car_model/debug")
+
+

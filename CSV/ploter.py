@@ -10,6 +10,19 @@ import os_util as pt
 from CSV.tabular_csv import get_both_csvs
 color_array = ['red', 'green', 'blue', 'orange', 'gray', "yellow", "brown", "purple", "m","pink"]
 
+# def change_files():
+#     new_id=2
+#     p="/home/eranhe/car_model/exp/matrix/3"
+#     res = pt.walk_rec(p,[],"_Eval.csv",lv=-1)
+#     for item in res:
+#         name = str(item).split(os.sep)[-1][:-4]
+#         id_str = name.split("_")[1][:2]
+#         name_new = name.replace(id_str,"I2")
+#         command_mv = "mv {} {}{}{}{}".format(item,p,os.sep,name_new,".csv")
+#         print(command_mv)
+#         os.system(command_mv)
+#     exit()
+
 def path_to_config(name):
     arr_data = str(name).split("_")
     d = {}
@@ -78,4 +91,5 @@ if __name__ == '__main__':
     pp="/home/eranhe/car_model/exp/cc"
     pp="/home/eranhe/car_model/debug"
     pp="/home/eranhe/car_model/exp/new/big_gap"
+    pp="/home/eranhe/car_model/exp/matrix"
     func(pp)

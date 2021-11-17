@@ -104,13 +104,13 @@ def make_p_df(df):
 def test_seed():
     df = pd.read_csv("/home/eranhe/eran/repo/Pursuit_Evasion/csv/con2.csv")
     l_idx = list(df["ID"].unique())
-    ctr=1
+    ctr=7
     entry=0
     while entry<len(df):
         for _ in range(len(l_idx)):
             df['seed'][entry]=ctr
             entry+=1
-        ctr+=13
+        ctr+=21
     df.to_csv("/home/eranhe/eran/repo/Pursuit_Evasion/csv/con2.csv",index=False)
     exit()
 def change_col():
